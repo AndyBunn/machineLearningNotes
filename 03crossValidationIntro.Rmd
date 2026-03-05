@@ -1,0 +1,450 @@
+# Always Be Cross Validating (ABCv)
+
+
+```{r,echo=FALSE}
+set.seed(2613)
+```
+
+```{r, setup, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE,fig.align="center")
+```
+
+## Big Idea
+Cross validation is arguably the most important and under-taught area of applied statistics. It is really important for you to understand. Cross validation is a family of techniques that allows you to understand how skillful a model is at making predictions. It makes the most of what is usually limited data and can be used to pick the right algorithm for a given task. It is used ubiquitously in machine learning and increasingly in environmental science.
+
+
+## Packages
+```{r}
+library(tidyverse)
+library(caret)
+library(PNWColors)
+```
+
+## Reading
+Read Starmer's chapter on crossvalidation.
+
+Starmer J. 2022. The StatQuest Illustrated Guide To Machine Learning. ISBN 979-8811583607
+
+There are an awful lot of great resources out there for learning about cross validation. I think [this intro](https://towardsdatascience.com/cross-validation-a-beginners-guide-5b8ca04962cd) from Neale et al. covers the key points nicely.
+
+Neale C, Workman D, Dommalapati A. 2019. Cross Validation: A Beginner’s Guide. https://towardsdatascience.com/cross-validation-a-beginners-guide-5b8ca04962cd. Accessed on `r format(Sys.time(), '%d-%B-%Y %H:%M')`
+
+
+## Overfitting and Underfitting
+Underfitting is when a model is too simple to capture the signal. For instance, you try to model $y=f(x)$ when $x$ isn't a great predictor of $y$ or the function you propose doesn't match the underlying process (maybe $y\approx \beta_0 + \beta_1 x + \beta_2 x^2$ and you tried to model $y \approx \beta_0 + \beta_1 x$). If the model is underfit we say it has high bias. 
+
+Overfitting is when a model is fit to the noise in your data as well as the signal. When that happens the model is not generalizable. That is, the model wouldn't apply to new data very well and we say it has high variance. We might fit the observed data well (even optimally) but the model might not be very good at predicting data it hasn't seen yet. If your predictions correspond too closely to the observed data but fail to fit additional data your model might be overfit. This is extremely common with higher order models or the "black-box" prediction algorithms that are commonly used in machine learning and data science.
+
+The trick is, of course to solve the Goldilocks problem and get it just right.
+![](assets/overUnder.png)
+
+This conundrum in Machine Learning is sometimes called the [Bias-Variance Tradeoff](Bias–variance_tradeoff) and it is ubiquitous in modeling. In today's analytic world you can fit thousands of different models at the push of a button. And the word is increasingly data rich with many many covariates. How do you chose the most parsimonious model? If your model has parameters that might need tuning, how do you go about that?
+
+Answer: There is no perfect way of course but cross validation gets us started.
+
+The reading is more eloquent on this than I am but I'll show you here how we can implement model validation using these concepts below.
+
+## A worked example
+```{r,echo=FALSE}
+n <- 50
+b0 <- 100
+b1 <- 0.75
+x <- runif(n,min = -4,max = 4)
+eps <- rnorm(n,sd=10)
+y <- b0 + b1*x^3 + eps
+dat <- data.frame(x=x,y=y)
+write.csv(dat,"dat.csv",row.names = FALSE)
+```
+
+
+Let's start a worked example. 
+
+```{r, eval=FALSE}
+dat <- read.csv("data/dat_cv.csv")
+```
+
+We have a `data.frame` called `dat` with `r n` rows and two columns: `x` and `y`. Our goal will be to divide the data into training and test subsets and then test how well we can predict $y=f(x)$.
+
+```{r}
+summary(dat)
+head(dat)
+p1 <- ggplot(dat,aes(x=x,y=y)) + geom_point(size=3)
+p1
+```
+
+A first step might be to use a linear model and see how much variance we can explain. E.g.,
+
+```{r} 
+lm1 <- lm(y~x,data=dat)
+summary(lm1)
+p1 + geom_smooth(method="lm")
+```
+
+OK, the coefficient of determination (R$^2$) for the $y=\beta_0 + \beta_1 x$ model is `r round(summary(lm1)$r.squared,3)`. That's all well and good but recall that this is using all of the data for the model so we get a **point** estimate of R$^2$. We don't know how much that can vary with out-of-sample testing data. We can use cross validation is a really simple way to get R$^2$ as an **interval** estimate of expected out-of-sample predictive performance, conditional on the observed data and the chosen model. This is not a classical population parameter in the inferential statistics sense, but an estimate of how well this modeling approach is expected to perform on new data.
+
+## Holdouts, divide and conquer, train and test
+Before we start on true cross validation let's start with simple validation. The standard advice is (or used to be when we did statistics on legal pads) to withhold 1/3 of your data to validate your model. You could then build or **train** the model using the first 2/3 of the data and then have 1/3 of the samples as independent data to **test** the model. You'd then be able to evaluate the out-of-sample error one time.
+
+![](assets/TrainTest.png)
+
+
+Let's train a model on 2/3 of the data and then test it on the remaining 1/3. Here is how we can randomly designate some of the points to be **training** and others to be **testing**.
+
+```{r}
+n <- nrow(dat)
+rows2test <- sample(1:n,size = n * 1/3)
+dat$Test <- FALSE
+dat$Test[rows2test] <- TRUE
+head(dat,20)
+```
+
+Note that we have a ~1/3 the data to Test
+```{r}
+table(dat$Test)
+```
+
+Here is the same plot above to visualize the split. The TRUE points will be withheld from the model building.
+
+```{r}
+anem7 <- pnw_palette(name="Anemone",n=7,type="discrete")
+p1 <- ggplot(dat,aes(x=x,y=y,color=Test))+ geom_point(size=3) +
+  scale_color_manual(values=c(anem7[1],anem7[7]))
+p1
+```
+
+From here we could build a model on the training data and then test it to get out-of-sample skill or error.
+
+```{r}
+testing <- dat[dat$Test,]
+training <- dat[!dat$Test,]
+
+lm1 <- lm(y~x,data=training)
+summary(lm1)
+p1 + geom_abline(intercept = coef(lm1)[1], slope = coef(lm1)[2],
+                 color = anem7[1])
+```
+
+
+We can use the training model to predict the withheld testing data. Then we will get some idea of how well the model works on this unknown data using R$^2$. We will also calculate two other common validation statistics Mean Absolute Error (MAE) and Root Mean Squared Error (RMSE). These are very closely related.
+
+$$MAE= \frac{\sum_{i=1}^n |\hat y_i - y_i|}{n} $$
+where $\hat y$ is the model prediction of the observed value ($y$), $i$ is the observation and $n$ is the total number of observations. Thus, it is the mean of the absolute errors. 
+
+$$RMSE= \sqrt \frac{\sum_{i=1}^n (\hat y_i - y_i)^2}{n} $$
+These are both positive numbers in the units of $y$ and  lowers values indicate a better fit. A value of zero (never achieved in practice) would indicate a perfect fit to the data. Which to use? You can read a little more about the differences between them [here](https://stats.stackexchange.com/questions/48267/mean-absolute-error-or-root-mean-squared-error). Honestly, I'm happy to let the stats geeks fight about [this](https://en.wikipedia.org/wiki/Mean_absolute_error#Related_measures) but in general I prefer MAE because it's simpler. 
+
+Let's look at these measures of skill (accuracy) on our withheld data.
+
+First we can add the predictions to the `testing` data.
+```{r}
+testing$yhat <- predict(lm1,newdata=testing)
+ggplot(testing,aes(x=y,y=yhat)) + geom_point(size=3,color=anem7[7]) + 
+  geom_abline(intercept = 0, slope = 1) +
+  labs(title="Testing Data",x="Observed", y="Predicted") +
+  coord_equal()
+```
+
+And now get some numbers.
+
+```{r}
+rsq <- cor(testing$yhat,testing$y)^2
+mae <- mean(abs(testing$yhat - testing$y))
+rmse <- sqrt(mean((testing$yhat - testing$y)^2))
+rsq
+mae
+rmse
+```
+
+This is great. It gave us a one time test on out-of-sample data and we plotted it and saw that the R$^2$=`r round(rsq,3)`, the MAE=`r round(mae,3)`, and the RMSE=`r round(rmse,3)`. An easy way to think about these is that R$^2$ provides a scale-free measure of explained variance, MAE reflects typical absolute prediction error, and RMSE penalizes large errors more strongly. See links above for details. These skill metrics are an improvement over using the entire data sat `dat` to assess the skill of our linear model because we are exposing the model to data it hasn't seen before. But this was a one time shot and still gives us a point estimate. We have an independent skill check but no idea of how much that might vary with different testing data.
+
+## Doing k-fold cross validation
+A better approach than the one-off train and test split **validation** we did above is to to let the computer repeat this several times and create multiple test sets and average the out-of-sample error. This is generally called **cross validation** because we are **validating** a**cross** many subsets. This will give us a more precise estimate of true out-of-sample error. We will in fact get a distribution of out-of-sample errors if we are diligent enough. This will move us from point estimates to an interval estimates. 
+
+The most common approach for this kind of multiple test set approaches is called $k$-fold cross validation. 
+
+![](assets/folds.png)
+
+In this method, we split the data into $k$ folds or subsets and make the training and testing splits that way. The figure above shows a 10-fold schematic ($k=10$). With this, we'd create the folds so that each row of the data occurs in exactly one test set. So following the above, the first time we ran the comparison we'd train the model on folds 2 to 10 and test it on fold 1. The second time we ran it we'd train on folds 1, 3, 4, 5, 6, 7, 8, 9 and 10 and test it on fold 2. And so on.
+
+This gives us 10 test sets and assures us that every point gets to be in a test set once. So, we get a test set that is the same size as our training set, but is composed of out-of-sample predictions. We assign each row to its single test set randomly, to avoid any kind of systemic biases in how our data are laid out. 
+
+This is one of the best and simplest ways to estimate out-of-sample error for predictive models.
+
+```{r}
+# Create a new data.frame, drop the test column we added above,
+# then randomly shuffle the data to remove any systematic ordering 
+# of the rows.
+dat2 <- dat[,1:2]
+dat2 <- dat2[sample(n),]
+
+# Create k equally size folds
+k <- 10
+dat2$fold <- cut(seq(1,n),breaks=k,labels=FALSE)
+# Take a peek -- note the fold column
+head(dat2,20)
+# plot
+ggplot(dat2,aes(x=x,y=y,color=factor(fold))) + 
+  geom_point(size=3) +
+  scale_color_viridis_d()
+
+```
+
+Because the assignment of rows to folds is random, the results of k-fold cross validation will vary slightly each time it is run. In practice, cross validation is often repeated multiple times with different random fold assignments to stabilize estimates of out-of-sample performance. See below for a quick diatribe on repeating k-fold.
+
+Here is a better look at just fold 1:
+```{r}
+dat2 %>% mutate(fold1Only = ifelse(fold==1,"Fold one","All other folds")) %>%
+  ggplot(aes(x=x,y=y,color=fold1Only)) + 
+  geom_point(size=3,alpha=0.8) +
+  scale_color_manual(values = c("grey60","darkblue")) +
+  theme_minimal()
+
+```
+
+
+With that new variable `fold` we can do a proper cross validation.
+
+```{r}
+# object to store results
+lm1Results <- data.frame(rsq=rep(NA,k), 
+                         mae=rep(NA,k),
+                         rmse=rep(NA,k))
+
+# loop through each fold
+for(i in 1:k){
+  testing <- dat2[dat2$fold==i,]
+  training <- dat2[dat2$fold!=i,]
+  
+  lm1 <- lm(y~x,data=training)
+  testing$yhat <- predict(lm1,newdata=testing)
+  lm1Results$rsq[i] <- cor(testing$yhat,testing$y)^2
+  lm1Results$mae[i] <- mean(abs(testing$yhat - testing$y))
+  lm1Results$rmse[i] <- sqrt(mean((testing$yhat - testing$y)^2))
+}
+# Here is the mean rsq for lm1 
+mean(lm1Results$rsq)
+# and the SE on that mean
+sd(lm1Results$rsq)/sqrt(k)
+```
+
+Note that we have `k` instances of the metrics. Here are all the $R^2$ values
+
+```{r}
+ggplot(lm1Results, aes(x = "", y = rsq)) +
+  geom_boxplot(
+    width = 0.25,
+    fill = anem7[2],
+    outlier.shape = NA
+  ) +
+  geom_jitter(
+    width = 0.08,
+    size = 4, alpha=0.8,
+    color = anem7[7]
+  ) +
+  labs(
+    title = "Cross-validated R² across folds",
+    x = NULL,
+    y = expression(R^2)
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    panel.grid.minor = element_blank()
+  )
+```
+
+Each point represents the out-of-sample R$^2$ from a single cross-validation fold, while the boxplot summarizes the distribution of predictive performance across folds, highlighting the variability introduced by different training and test splits.
+
+We now have an interval estimate and can say that using 10-fold cross validation the mean for R$^2$ is `r round(mean(lm1Results$rsq),3)` along with the standard error of that mean as `r round(sd(lm1Results$rsq)/sqrt(k),3)`. Similarly, we can say the MAE is `r round(mean(lm1Results$mae),3)` with a standard error of `r round(sd(lm1Results$mae)/sqrt(k),3)`. This is calculated using held-out test folds samples and a far better estimate of R$^2$ and MAE than we started with before cross validation. Because the folds are not independent of one another, this standard error should be viewed as an approximate measure of variability across folds rather than a formal inferential standard error.
+
+In reality, you will almost never have to write a single loop to do cross validation. I dragged you through it because it's good for you to see how you might implement it yourself. There are many packages and functions out there for doing cross validation.
+
+It is important to distinguish cross validation from classical statistical inference. Cross validation is designed to estimate predictive performance, not to test hypotheses about model parameters or determine whether coefficients differ from zero.
+
+### Aside: Is this the same as bootstrapping? Or permutation?
+Answer? No. But they are all resampling methods! And if you are feeling like they are very similar you aren't alone. [Here](https://datascience.stackexchange.com/questions/32264/what-is-the-difference-between-bootstrapping-and-cross-validation) is a great thread on how they are similar and how they differ.
+
+## Doing LOOCV?
+Leave one out cross validation (LOOCV) is an extreme form of k-fold where $k=n$. That is one observation is left out each time. So, if in k-fold we estimate the performance of a model trained on a subset that uses $100 \frac{k-1}{k}$ percent of the available data, in LOOCV we'd use $100 \frac{n-1}{n}$ of the data to build the model. This can be prohibitively expensive for large data sets but is simple enough with the toy data above.
+
+
+```{r}
+loocvResults <- data.frame(y=rep(NA,n), yhat=rep(NA,n ))
+
+# loop n times and leave one out each time
+for(i in 1:n){
+  testing <- dat[i,]
+  training <- dat[-i,]
+  
+  lm1 <- lm(y~x,data=training)
+  testing$yhat <- predict(lm1,newdata=testing)
+  loocvResults$y[i] <- testing$y
+  loocvResults$yhat[i] <- testing$yhat
+}
+#rsq2
+cor(loocvResults$yhat,loocvResults$y)^2
+#mae
+mean(abs(loocvResults$yhat - loocvResults$y))
+```
+
+The reading discusses a bit about when LOOCV is preferable to k-fold in terms of variance and bias in the results. And you can find loads more discussion about it if you look. E.g., [here](https://stats.stackexchange.com/questions/61783/bias-and-variance-in-leave-one-out-vs-k-fold-cross-validation/357749#357749) and [here](https://stats.stackexchange.com/questions/280665/variance-of-k-fold-cross-validation-estimates-as-fk-what-is-the-role-of). I'm not conversant enough with the arguments to make an argument one way or another but in my experience the differences are small in resampling methods in general.
+
+## What about repeating k-fold?
+Heck yes! You can go as crazy as time and computer memory allow. You can repeat your k-fold procedure as many times are you like. I won't drag you through it with loops but the idea is that you can do a k-fold cross validation then reshuffle the data and repeat. This way you are getting a new suite of folds for your training and testing. This is really helpful to assess how stable a model is. I'll explain more in the video.
+
+## `caret`: Classification And REgression Training
+At the moment the `caret` package is the go-to resource for improving prediction from classification and regression models. [This is an excellent intro to it](http://topepo.github.io/caret/index.html). The strength of the `caret` implementation is that any almost algorithm with a `predict` method can be wrapped up and used in a really slick cross validation schema that includes model tuning and comparing different models. There are literally 100's of models you can use. [Here is a visualization of them](http://topepo.github.io/caret/models-clustered-by-tag-similarity.html).
+
+As a really simple example of `caret` I'll show how we can use `caret` for repeated k-fold cross validation on the toy data $y=f(x)$ that we started with and compare a Generalized Linear Model (`glm`) to a Generalized Additive Model using Splines (`gamSpline`) which allows for the response function to be non linear.
+
+
+```{r, warning=FALSE, message=FALSE}
+library(caret)
+## 10-fold CV with 10 repeats
+fitControl <- trainControl(
+  method = "repeatedcv",
+  number = 10,
+  repeats = 10)
+
+glm1 <- train(y ~ x, data = dat, 
+              method = "glm", 
+              trControl = fitControl)
+glm1
+
+# Note that if you run this, you might be prompted 
+# to install the `gam` library.
+# install.packages("gam")
+gam1 <- train(y ~ x, data = dat2, 
+              method = "gamSpline", 
+              trControl = fitControl)
+gam1
+```
+The cross validated GAM outperforms the linear model. And if we look at the predicted function we can indeed see the non-linear response from the GAM fit.
+
+```{r}
+newDat <- data.frame(x=seq(-4,4,by=0.1))
+newDat$yhat <- predict(gam1,newdata = newDat)
+
+ggplot() + 
+  geom_point(data = dat,aes(x=x,y=y),size=3,
+             shape=21,fill="darkred",alpha=0.7) + 
+  geom_line(data = newDat,aes(x=x,y=yhat),linewidth=1.1)
+```
+
+Because of the cross validation, we can be at least somewhat confident that this model isn't overfit and that the black line does describe $y=f(x)$. Note that I essentially choose the `gamSpline` at random from the 100's of possible prediction methods. If I were really interested in these data (like for a thesis), I'd spend a lot more time learning which methods work best with the data and especially how they might work well (or not) with the underlying processes. 
+
+## Final thoughts: ABCv
+
+That's all for now on cross validation. It's a powerful idea and, despite how central it is to modern modeling, it still tends to slip through the cracks of many statistics sequences. I tried to use graphics and explicit code above so you could step through the mechanics and see how cross validation actually works, rather than treating it as a black box.
+
+One reason cross validation matters so much is that it makes uncertainty visible. A single train–test split can give a very misleading impression of model performance, simply because of how the data happened to be divided. By repeatedly training and testing across multiple folds, cross validation forces us to confront the variability in predictive performance and moves us away from relying on a single point estimate.
+
+Cross validation is also something that should be taught earlier. Many of you were trained to think first about coefficients, p-values, and hypothesis tests, long before being asked to think seriously about prediction. That can create the impression that a model with statistically significant terms is necessarily a good model, even if it performs poorly on new data. Cross validation shifts the focus to a different question: how well should we expect this model to perform on data we have not yet seen?
+
+At the same time, it is important to keep the goal straight. Cross validation is about prediction, not inference. It does not test hypotheses or tell us whether parameters differ from zero. Instead, it gives us an empirical way to evaluate and compare models based on their out-of-sample behavior.
+
+I'm only scratching the surface here. Some of you will embrace, and perhaps build careers in, machine learning and data science. If so, you'll encounter many variations on these ideas, including different resampling schemes, repeated cross validation, and cross validation for model tuning and selection.
+
+But get this into your head when doing modeling: **ABCv**. Always be cross validating.
+
+Until the revolution comes, computers are happy to do repetitive resampling as many times as we like. Take advantage of it.
+
+## Your Work
+Let's use the adorable penguin data from the [Palmer Penguin library](https://allisonhorst.github.io/palmerpenguins/). And let's do something simple like ask if we can predict body mass ($y$) as a function of bill length ($x_1$) and species ($x_2$). 
+
+
+```{r}
+data(penguins)
+penguins <- penguins %>% na.omit()
+ggplot(data=penguins,mapping = aes(x=bill_len, y=body_mass,color=species)) +
+  geom_point() + geom_smooth(method="lm") +
+  labs(x="Bill length (mm)", y="Body mass (g)")
+```
+
+
+Here is a non-validated model using all the data.
+```{r}
+lmMass <- lm(body_mass ~ bill_len + species , data = penguins)
+summary(lmMass)
+```
+
+```{r, echo=FALSE}
+foo <- summary(lmMass)$r.squared
+bar <- mean(abs(lmMass$residuals))
+#mean(abs(predict(lmMass) - penguins$body_mass))
+```
+
+The R$^2$ for this unvalidated model is `r round(foo,3)` and the MAE is `r round(bar,3)`. 
+
+For your work this module, cross validate a model of body mass as a function of bill length and species. Do the cross validation how you see fit and report the mean R$^2$ and MAE. Be aware that there are a few `NA` values in the data. You should be able to do this "by hand" with a loop as well as use `caret`. Be aware of what the output structure from `caret::train` looks like. What is it actually returning?
+
+```{r, eval=FALSE, echo=FALSE}
+library(tidyverse)
+library(caret)
+data(penguins)
+# subset, clean, shuffle the data
+penguins2 <- penguins %>% 
+  select(body_mass, species,bill_len) %>%
+  drop_na() %>%
+  slice_sample(prop=1)
+
+# Create k equally size folds
+k <- 10
+penguins2$fold <- cut(seq(1,nrow(penguins2)),
+                      breaks=k,labels=FALSE)
+
+lm1Results <- data.frame(rsq=rep(NA,k), 
+                         mae=rep(NA,k),
+                         rmse=rep(NA,k))
+
+# loop through each fold
+for(i in 1:k){
+  testing <- penguins2[penguins2$fold==i,]
+  training <- penguins2[penguins2$fold!=i,]
+  
+  lm1 <- lm(body_mass~bill_len+species,data=training)
+  testing$yhat <- predict(lm1,newdata=testing)
+  lm1Results$rsq[i] <- cor(testing$yhat,testing$body_mass)^2
+  lm1Results$mae[i] <- mean(abs(testing$yhat - testing$body_mass))
+  lm1Results$rmse[i] <- sqrt(mean((testing$yhat - testing$body_mass)^2))
+}
+# Here is the mean rsq for lm1 
+mean(lm1Results$rsq)
+
+## Or
+fitControl <- trainControl(
+  method = "repeatedcv",
+  number = 10,
+  repeats = 10)
+
+lmCaretRepeatCV <- train(body_mass ~ bill_len + species, 
+                         data = penguins2, 
+                         method = "lm", 
+                         trControl = fitControl)
+lmCaretRepeatCV
+
+# or gam
+gamCaretRepeatCV <- train(body_mass ~ bill_len + species, 
+                          data = penguins2, 
+                          method = "gam", 
+                          trControl = fitControl)
+gamCaretRepeatCV
+
+# want to see the predictions?
+newDat <- expand_grid(bill_len=seq(30,60,by=1),
+                      species=levels(penguins2$species))
+newDat$body_mass_hat <- predict(gamCaretRepeatCV,newdata = newDat)
+
+ggplot() +
+  geom_point(data=penguins2,
+             mapping=aes(x=bill_len,
+                          y=body_mass,
+                          color=species),
+             alpha=0.5) +
+  geom_line(data = newDat,aes(x=bill_len,
+                              y=body_mass_hat,
+                              color=species),
+            size=1.1) +
+  labs(x="Bill length (mm)", y="Body mass (g)",
+       title = "Cross Validated Predictions with GAM")
+
+```

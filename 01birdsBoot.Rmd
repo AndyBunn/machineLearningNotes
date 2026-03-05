@@ -1,4 +1,4 @@
-# Boot a Bird
+# Bootstrapping
 
 ```{r,echo=FALSE}
 set.seed(3625)
