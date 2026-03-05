@@ -138,7 +138,7 @@ Your folder structure should look something like this:
     │   ├── faces.csv
     │   ├── mushroomsClean.csv
     │   └── ...
-    └── machineLearning-notes.Rproj
+    └── machineLearning-course.Rproj
 
 3.  **Refer to data files using relative paths**
 
