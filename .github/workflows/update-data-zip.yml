@@ -5,6 +5,9 @@ on:
     paths:
       - 'data/**'
 
+permissions:
+  contents: write
+
 jobs:
   zipdata:
     runs-on: ubuntu-latest
