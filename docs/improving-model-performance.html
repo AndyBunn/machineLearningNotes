@@ -1,0 +1,2016 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>10 Improving Model Performance | Machine Learning for Environmental Science: Notes for ESCI 506</title>
+  <meta name="description" content="Machine learning notes and exercises for ESCI 506" />
+  <meta name="generator" content="bookdown 0.46 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="10 Improving Model Performance | Machine Learning for Environmental Science: Notes for ESCI 506" />
+  <meta property="og:type" content="book" />
+  
+  <meta property="og:description" content="Machine learning notes and exercises for ESCI 506" />
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="10 Improving Model Performance | Machine Learning for Environmental Science: Notes for ESCI 506" />
+  
+  <meta name="twitter:description" content="Machine learning notes and exercises for ESCI 506" />
+  
+
+<meta name="author" content="Andy Bunn" />
+
+
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="aside-animate-a-nn.html"/>
+<link rel="next" href="eigen-faces.html"/>
+<script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+<link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
+<link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
+<link href="libs/htmltools-fill-0.5.9/fill.css" rel="stylesheet" />
+<script src="libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+<script src="libs/plotly-binding-4.12.0/plotly.js"></script>
+<script src="libs/typedarray-0.1/typedarray.min.js"></script>
+<link href="libs/crosstalk-1.2.2/css/crosstalk.min.css" rel="stylesheet" />
+<script src="libs/crosstalk-1.2.2/js/crosstalk.min.js"></script>
+<link href="libs/plotly-htmlwidgets-css-2.25.2/plotly-htmlwidgets.css" rel="stylesheet" />
+<script src="libs/plotly-main-2.25.2/plotly-latest.min.js"></script>
+<link href="libs/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet" />
+<script src="libs/datatables-binding-0.34.0/datatables.js"></script>
+<link href="libs/dt-core-1.13.6/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="libs/dt-core-1.13.6/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="libs/dt-core-1.13.6/js/jquery.dataTables.min.js"></script>
+<link href="libs/vis-9.1.0/vis-network.min.css" rel="stylesheet" />
+<script src="libs/vis-9.1.0/vis-network.min.js"></script>
+<script src="libs/visNetwork-binding-2.1.4/visNetwork.js"></script>
+<script src="libs/FileSaver-1.1.20151003/FileSaver.min.js"></script>
+<script src="libs/Blob-1.0/Blob.js"></script>
+<script src="libs/canvas-toBlob-1.0/canvas-toBlob.js"></script>
+<script src="libs/html2canvas-0.5.0/html2canvas.js"></script>
+<script src="libs/jspdf-1.3.2/jspdf.debug.js"></script>
+<link href="libs/jquery-sparkline-2.1.2/jquery.sparkline.css" rel="stylesheet" />
+<script src="libs/jquery-sparkline-2.1.2/jquery.sparkline.js"></script>
+<script src="libs/sparkline-binding-2.0/sparkline.js"></script>
+
+<script>
+/* ========================================================================
+ * Bootstrap: transition.js v3.3.7
+ * http://getbootstrap.com/javascript/#transitions
+ * ========================================================================
+ * Copyright 2011-2016 Twitter, Inc.
+ * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+ * ======================================================================== */
+
+
++function ($) {
+  'use strict';
+
+  // CSS TRANSITION SUPPORT (Shoutout: http://www.modernizr.com/)
+  // ============================================================
+
+  function transitionEnd() {
+    var el = document.createElement('bootstrap')
+
+    var transEndEventNames = {
+      WebkitTransition : 'webkitTransitionEnd',
+      MozTransition    : 'transitionend',
+      OTransition      : 'oTransitionEnd otransitionend',
+      transition       : 'transitionend'
+    }
+
+    for (var name in transEndEventNames) {
+      if (el.style[name] !== undefined) {
+        return { end: transEndEventNames[name] }
+      }
+    }
+
+    return false // explicit for ie8 (  ._.)
+  }
+
+  // http://blog.alexmaccaw.com/css-transitions
+  $.fn.emulateTransitionEnd = function (duration) {
+    var called = false
+    var $el = this
+    $(this).one('bsTransitionEnd', function () { called = true })
+    var callback = function () { if (!called) $($el).trigger($.support.transition.end) }
+    setTimeout(callback, duration)
+    return this
+  }
+
+  $(function () {
+    $.support.transition = transitionEnd()
+
+    if (!$.support.transition) return
+
+    $.event.special.bsTransitionEnd = {
+      bindType: $.support.transition.end,
+      delegateType: $.support.transition.end,
+      handle: function (e) {
+        if ($(e.target).is(this)) return e.handleObj.handler.apply(this, arguments)
+      }
+    }
+  })
+
+}(jQuery);
+</script>
+<script>
+/* ========================================================================
+ * Bootstrap: collapse.js v3.3.7
+ * http://getbootstrap.com/javascript/#collapse
+ * ========================================================================
+ * Copyright 2011-2016 Twitter, Inc.
+ * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+ * ======================================================================== */
+
+/* jshint latedef: false */
+
++function ($) {
+  'use strict';
+
+  // COLLAPSE PUBLIC CLASS DEFINITION
+  // ================================
+
+  var Collapse = function (element, options) {
+    this.$element      = $(element)
+    this.options       = $.extend({}, Collapse.DEFAULTS, options)
+    this.$trigger      = $('[data-toggle="collapse"][href="#' + element.id + '"],' +
+                           '[data-toggle="collapse"][data-target="#' + element.id + '"]')
+    this.transitioning = null
+
+    if (this.options.parent) {
+      this.$parent = this.getParent()
+    } else {
+      this.addAriaAndCollapsedClass(this.$element, this.$trigger)
+    }
+
+    if (this.options.toggle) this.toggle()
+  }
+
+  Collapse.VERSION  = '3.3.7'
+
+  Collapse.TRANSITION_DURATION = 350
+
+  Collapse.DEFAULTS = {
+    toggle: true
+  }
+
+  Collapse.prototype.dimension = function () {
+    var hasWidth = this.$element.hasClass('width')
+    return hasWidth ? 'width' : 'height'
+  }
+
+  Collapse.prototype.show = function () {
+    if (this.transitioning || this.$element.hasClass('in')) return
+
+    var activesData
+    var actives = this.$parent && this.$parent.children('.panel').children('.in, .collapsing')
+
+    if (actives && actives.length) {
+      activesData = actives.data('bs.collapse')
+      if (activesData && activesData.transitioning) return
+    }
+
+    var startEvent = $.Event('show.bs.collapse')
+    this.$element.trigger(startEvent)
+    if (startEvent.isDefaultPrevented()) return
+
+    if (actives && actives.length) {
+      Plugin.call(actives, 'hide')
+      activesData || actives.data('bs.collapse', null)
+    }
+
+    var dimension = this.dimension()
+
+    this.$element
+      .removeClass('collapse')
+      .addClass('collapsing')[dimension](0)
+      .attr('aria-expanded', true)
+
+    this.$trigger
+      .removeClass('collapsed')
+      .attr('aria-expanded', true)
+
+    this.transitioning = 1
+
+    var complete = function () {
+      this.$element
+        .removeClass('collapsing')
+        .addClass('collapse in')[dimension]('')
+      this.transitioning = 0
+      this.$element
+        .trigger('shown.bs.collapse')
+    }
+
+    if (!$.support.transition) return complete.call(this)
+
+    var scrollSize = $.camelCase(['scroll', dimension].join('-'))
+
+    this.$element
+      .one('bsTransitionEnd', $.proxy(complete, this))
+      .emulateTransitionEnd(Collapse.TRANSITION_DURATION)[dimension](this.$element[0][scrollSize])
+  }
+
+  Collapse.prototype.hide = function () {
+    if (this.transitioning || !this.$element.hasClass('in')) return
+
+    var startEvent = $.Event('hide.bs.collapse')
+    this.$element.trigger(startEvent)
+    if (startEvent.isDefaultPrevented()) return
+
+    var dimension = this.dimension()
+
+    this.$element[dimension](this.$element[dimension]())[0].offsetHeight
+
+    this.$element
+      .addClass('collapsing')
+      .removeClass('collapse in')
+      .attr('aria-expanded', false)
+
+    this.$trigger
+      .addClass('collapsed')
+      .attr('aria-expanded', false)
+
+    this.transitioning = 1
+
+    var complete = function () {
+      this.transitioning = 0
+      this.$element
+        .removeClass('collapsing')
+        .addClass('collapse')
+        .trigger('hidden.bs.collapse')
+    }
+
+    if (!$.support.transition) return complete.call(this)
+
+    this.$element
+      [dimension](0)
+      .one('bsTransitionEnd', $.proxy(complete, this))
+      .emulateTransitionEnd(Collapse.TRANSITION_DURATION)
+  }
+
+  Collapse.prototype.toggle = function () {
+    this[this.$element.hasClass('in') ? 'hide' : 'show']()
+  }
+
+  Collapse.prototype.getParent = function () {
+    return $(this.options.parent)
+      .find('[data-toggle="collapse"][data-parent="' + this.options.parent + '"]')
+      .each($.proxy(function (i, element) {
+        var $element = $(element)
+        this.addAriaAndCollapsedClass(getTargetFromTrigger($element), $element)
+      }, this))
+      .end()
+  }
+
+  Collapse.prototype.addAriaAndCollapsedClass = function ($element, $trigger) {
+    var isOpen = $element.hasClass('in')
+
+    $element.attr('aria-expanded', isOpen)
+    $trigger
+      .toggleClass('collapsed', !isOpen)
+      .attr('aria-expanded', isOpen)
+  }
+
+  function getTargetFromTrigger($trigger) {
+    var href
+    var target = $trigger.attr('data-target')
+      || (href = $trigger.attr('href')) && href.replace(/.*(?=#[^\s]+$)/, '') // strip for ie7
+
+    return $(target)
+  }
+
+
+  // COLLAPSE PLUGIN DEFINITION
+  // ==========================
+
+  function Plugin(option) {
+    return this.each(function () {
+      var $this   = $(this)
+      var data    = $this.data('bs.collapse')
+      var options = $.extend({}, Collapse.DEFAULTS, $this.data(), typeof option == 'object' && option)
+
+      if (!data && options.toggle && /show|hide/.test(option)) options.toggle = false
+      if (!data) $this.data('bs.collapse', (data = new Collapse(this, options)))
+      if (typeof option == 'string') data[option]()
+    })
+  }
+
+  var old = $.fn.collapse
+
+  $.fn.collapse             = Plugin
+  $.fn.collapse.Constructor = Collapse
+
+
+  // COLLAPSE NO CONFLICT
+  // ====================
+
+  $.fn.collapse.noConflict = function () {
+    $.fn.collapse = old
+    return this
+  }
+
+
+  // COLLAPSE DATA-API
+  // =================
+
+  $(document).on('click.bs.collapse.data-api', '[data-toggle="collapse"]', function (e) {
+    var $this   = $(this)
+
+    if (!$this.attr('data-target')) e.preventDefault()
+
+    var $target = getTargetFromTrigger($this)
+    var data    = $target.data('bs.collapse')
+    var option  = data ? 'toggle' : $this.data()
+
+    Plugin.call($target, option)
+  })
+
+}(jQuery);
+</script>
+<script>
+window.initializeCodeFolding = function(show) {
+
+  // handlers for show-all and hide all
+  $("#rmd-show-all-code").click(function() {
+    // close the dropdown menu when an option is clicked
+    $("#allCodeButton").dropdown("toggle");
+    $('div.r-code-collapse').each(function() {
+      $(this).collapse('show');
+    });
+  });
+  $("#rmd-hide-all-code").click(function() {
+    // close the dropdown menu when an option is clicked
+    $("#allCodeButton").dropdown("toggle");
+    $('div.r-code-collapse').each(function() {
+      $(this).collapse('hide');
+    });
+  });
+
+  // index for unique code element ids
+  var currentIndex = 1;
+
+  // select all R code blocks
+  var rCodeBlocks = $('pre.sourceCode, pre.r, pre.python, pre.bash, pre.sql, pre.cpp, pre.stan');
+  rCodeBlocks.each(function() {
+
+    // if code block has been labeled with class `fold-show`, show the code on init!
+    var classList = $(this).attr('class').split(/\s+/);
+    for (var i = 0; i < classList.length; i++) {
+    if (classList[i] === 'fold-show') {
+        show = true;
+      }
+      // AGB add fold-hide
+    if (classList[i] === 'fold-hide') {
+        show = false;
+      }
+    }
+    // AGB
+    // if code block has been labeled with class `fold-hide`, hide the code on init!
+//    var classList = $(this).attr('class').split(/\s+/);
+//    for (var i = 0; i < classList.length; i++) {
+//    if (classList[i] === 'fold-hide') {
+//        show = false;
+//      }
+//    }
+
+    // create a collapsable div to wrap the code in
+    var div = $('<div class="collapse r-code-collapse"></div>');
+    if (show)
+      div.addClass('in');
+    var id = 'rcode-643E0F36' + currentIndex++;
+    div.attr('id', id);
+    $(this).before(div);
+    $(this).detach().appendTo(div);
+
+    // add a show code button right above
+    var showCodeText = $('<span>' + (show ? 'Hide' : 'Code') + '</span>');
+    var showCodeButton = $('<button type="button" class="btn btn-default btn-xs code-folding-btn pull-right"></button>');
+    showCodeButton.append(showCodeText);
+    showCodeButton
+        .attr('data-toggle', 'collapse')
+        .attr('data-target', '#' + id)
+        .attr('aria-expanded', show)
+        .attr('aria-controls', id);
+
+    var buttonRow = $('<div class="row"></div>');
+    var buttonCol = $('<div class="col-md-12"></div>');
+
+    buttonCol.append(showCodeButton);
+    buttonRow.append(buttonCol);
+
+    div.before(buttonRow);
+
+    // hack: return show to false, otherwise all next codeBlocks will be shown!
+    show = true;
+
+    // update state of button on show/hide
+    div.on('hidden.bs.collapse', function () {
+      showCodeText.text('Code');
+    });
+    div.on('show.bs.collapse', function () {
+      showCodeText.text('Hide');
+    });
+  });
+
+}
+</script>
+<script>
+/* ========================================================================
+ * Bootstrap: dropdown.js v3.3.7
+ * http://getbootstrap.com/javascript/#dropdowns
+ * ========================================================================
+ * Copyright 2011-2016 Twitter, Inc.
+ * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+ * ======================================================================== */
+
+
++function ($) {
+  'use strict';
+
+  // DROPDOWN CLASS DEFINITION
+  // =========================
+
+  var backdrop = '.dropdown-backdrop'
+  var toggle   = '[data-toggle="dropdown"]'
+  var Dropdown = function (element) {
+    $(element).on('click.bs.dropdown', this.toggle)
+  }
+
+  Dropdown.VERSION = '3.3.7'
+
+  function getParent($this) {
+    var selector = $this.attr('data-target')
+
+    if (!selector) {
+      selector = $this.attr('href')
+      selector = selector && /#[A-Za-z]/.test(selector) && selector.replace(/.*(?=#[^\s]*$)/, '') // strip for ie7
+    }
+
+    var $parent = selector && $(selector)
+
+    return $parent && $parent.length ? $parent : $this.parent()
+  }
+
+  function clearMenus(e) {
+    if (e && e.which === 3) return
+    $(backdrop).remove()
+    $(toggle).each(function () {
+      var $this         = $(this)
+      var $parent       = getParent($this)
+      var relatedTarget = { relatedTarget: this }
+
+      if (!$parent.hasClass('open')) return
+
+      if (e && e.type == 'click' && /input|textarea/i.test(e.target.tagName) && $.contains($parent[0], e.target)) return
+
+      $parent.trigger(e = $.Event('hide.bs.dropdown', relatedTarget))
+
+      if (e.isDefaultPrevented()) return
+
+      $this.attr('aria-expanded', 'false')
+      $parent.removeClass('open').trigger($.Event('hidden.bs.dropdown', relatedTarget))
+    })
+  }
+
+  Dropdown.prototype.toggle = function (e) {
+    var $this = $(this)
+
+    if ($this.is('.disabled, :disabled')) return
+
+    var $parent  = getParent($this)
+    var isActive = $parent.hasClass('open')
+
+    clearMenus()
+
+    if (!isActive) {
+      if ('ontouchstart' in document.documentElement && !$parent.closest('.navbar-nav').length) {
+        // if mobile we use a backdrop because click events don't delegate
+        $(document.createElement('div'))
+          .addClass('dropdown-backdrop')
+          .insertAfter($(this))
+          .on('click', clearMenus)
+      }
+
+      var relatedTarget = { relatedTarget: this }
+      $parent.trigger(e = $.Event('show.bs.dropdown', relatedTarget))
+
+      if (e.isDefaultPrevented()) return
+
+      $this
+        .trigger('focus')
+        .attr('aria-expanded', 'true')
+
+      $parent
+        .toggleClass('open')
+        .trigger($.Event('shown.bs.dropdown', relatedTarget))
+    }
+
+    return false
+  }
+
+  Dropdown.prototype.keydown = function (e) {
+    if (!/(38|40|27|32)/.test(e.which) || /input|textarea/i.test(e.target.tagName)) return
+
+    var $this = $(this)
+
+    e.preventDefault()
+    e.stopPropagation()
+
+    if ($this.is('.disabled, :disabled')) return
+
+    var $parent  = getParent($this)
+    var isActive = $parent.hasClass('open')
+
+    if (!isActive && e.which != 27 || isActive && e.which == 27) {
+      if (e.which == 27) $parent.find(toggle).trigger('focus')
+      return $this.trigger('click')
+    }
+
+    var desc = ' li:not(.disabled):visible a'
+    var $items = $parent.find('.dropdown-menu' + desc)
+
+    if (!$items.length) return
+
+    var index = $items.index(e.target)
+
+    if (e.which == 38 && index > 0)                 index--         // up
+    if (e.which == 40 && index < $items.length - 1) index++         // down
+    if (!~index)                                    index = 0
+
+    $items.eq(index).trigger('focus')
+  }
+
+
+  // DROPDOWN PLUGIN DEFINITION
+  // ==========================
+
+  function Plugin(option) {
+    return this.each(function () {
+      var $this = $(this)
+      var data  = $this.data('bs.dropdown')
+
+      if (!data) $this.data('bs.dropdown', (data = new Dropdown(this)))
+      if (typeof option == 'string') data[option].call($this)
+    })
+  }
+
+  var old = $.fn.dropdown
+
+  $.fn.dropdown             = Plugin
+  $.fn.dropdown.Constructor = Dropdown
+
+
+  // DROPDOWN NO CONFLICT
+  // ====================
+
+  $.fn.dropdown.noConflict = function () {
+    $.fn.dropdown = old
+    return this
+  }
+
+
+  // APPLY TO STANDARD DROPDOWN ELEMENTS
+  // ===================================
+
+  $(document)
+    .on('click.bs.dropdown.data-api', clearMenus)
+    .on('click.bs.dropdown.data-api', '.dropdown form', function (e) { e.stopPropagation() })
+    .on('click.bs.dropdown.data-api', toggle, Dropdown.prototype.toggle)
+    .on('keydown.bs.dropdown.data-api', toggle, Dropdown.prototype.keydown)
+    .on('keydown.bs.dropdown.data-api', '.dropdown-menu', Dropdown.prototype.keydown)
+
+}(jQuery);
+</script>
+<style type="text/css">
+.code-folding-btn {
+  margin-bottom: 4px;
+}
+
+.row { display: flex; }
+.collapse { display: none; }
+.in { display:block }
+.pull-right > .dropdown-menu {
+    right: 0;
+    left: auto;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1000;
+    display: none;
+    float: left;
+    min-width: 160px;
+    padding: 5px 0;
+    margin: 2px 0 0;
+    font-size: 14px;
+    text-align: left;
+    list-style: none;
+    background-color: #fff;
+    -webkit-background-clip: padding-box;
+    background-clip: padding-box;
+    border: 1px solid #ccc;
+    border: 1px solid rgba(0,0,0,.15);
+    border-radius: 4px;
+    -webkit-box-shadow: 0 6px 12px rgba(0,0,0,.175);
+    box-shadow: 0 6px 12px rgba(0,0,0,.175);
+}
+
+.open > .dropdown-menu {
+    display: block;
+    color: #ffffff;
+    background-color: #ffffff;
+    background-image: none;
+    border-color: #92897e;
+}
+
+.dropdown-menu > li > a {
+  display: block;
+  padding: 3px 20px;
+  clear: both;
+  font-weight: 400;
+  line-height: 1.42857143;
+  color: #000000;
+  white-space: nowrap;
+}
+
+.dropdown-menu > li > a:hover,
+.dropdown-menu > li > a:focus {
+  color: #ffffff;
+  text-decoration: none;
+  background-color: #e95420;
+}
+
+.dropdown-menu > .active > a,
+.dropdown-menu > .active > a:hover,
+.dropdown-menu > .active > a:focus {
+  color: #ffffff;
+  text-decoration: none;
+  background-color: #e95420;
+  outline: 0;
+}
+.dropdown-menu > .disabled > a,
+.dropdown-menu > .disabled > a:hover,
+.dropdown-menu > .disabled > a:focus {
+  color: #aea79f;
+}
+
+.dropdown-menu > .disabled > a:hover,
+.dropdown-menu > .disabled > a:focus {
+  text-decoration: none;
+  cursor: not-allowed;
+  background-color: transparent;
+  background-image: none;
+  filter: progid:DXImageTransform.Microsoft.gradient(enabled = false);
+}
+
+.btn {
+  display: inline-block;
+  margin-bottom: 1;
+  font-weight: normal;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  -ms-touch-action: manipulation;
+      touch-action: manipulation;
+  cursor: pointer;
+  background-image: none;
+  border: 1px solid transparent;
+  padding: 4px 8px;
+  font-size: 14px;
+  line-height: 1.42857143;
+  border-radius: 4px;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.btn:focus,
+.btn:active:focus,
+.btn.active:focus,
+.btn.focus,
+.btn:active.focus,
+.btn.active.focus {
+  outline: 5px auto -webkit-focus-ring-color;
+  outline-offset: -2px;
+}
+.btn:hover,
+.btn:focus,
+.btn.focus {
+  color: #ffffff;
+  text-decoration: none;
+}
+.btn:active,
+.btn.active {
+  background-image: none;
+  outline: 0;
+  box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+}
+.btn.disabled,
+.btn[disabled],
+fieldset[disabled] .btn {
+  cursor: not-allowed;
+  filter: alpha(opacity=65);
+  opacity: 0.65;
+  box-shadow: none;
+}
+a.btn.disabled,
+fieldset[disabled] a.btn {
+  pointer-events: none;
+}
+.btn-default {
+  color: #ffffff;
+  background-color: #aea79f; #important
+  border-color: #aea79f;
+}
+
+.btn-default:focus,
+.btn-default.focus {
+  color: #ffffff;
+  background-color: #978e83;
+  border-color: #6f675e;
+}
+
+.btn-default:hover {
+  color: #ffffff;
+  background-color: #978e83;
+  border-color: #92897e;
+}
+.btn-default:active,
+.btn-default.active,
+.btn-group > .btn:not(:first-child):not(:last-child):not(.dropdown-toggle) {
+  border-radius: 0;
+}
+.btn-group > .btn:first-child {
+  margin-left: 0;
+}
+.btn-group > .btn:first-child:not(:last-child):not(.dropdown-toggle) {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.btn-group > .btn:last-child:not(:first-child),
+.btn-group > .dropdown-toggle:not(:first-child) {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+.btn-group > .btn-group {
+  float: left;
+}
+.btn-group > .btn-group:not(:first-child):not(:last-child) > .btn {
+  border-radius: 0;
+}
+.btn-group > .btn-group:first-child:not(:last-child) > .btn:last-child,
+.btn-group > .btn-group:first-child:not(:last-child) > .dropdown-toggle {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.btn-group > .btn-group:last-child:not(:first-child) > .btn:first-child {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+.btn-group .dropdown-toggle:active,
+.btn-group.open .dropdown-toggle {
+  outline: 0;
+}
+.btn-group > .btn + .dropdown-toggle {
+  padding-right: 8px;
+  padding-left: 8px;
+}
+.btn-group > .btn-lg + .dropdown-toggle {
+  padding-right: 12px;
+  padding-left: 12px;
+}
+.btn-group.open .dropdown-toggle {
+  box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+}
+.btn-group.open .dropdown-toggle.btn-link {
+  box-shadow: none;
+}
+
+</style>
+<script>
+var str = '<div class="btn-group pull-right" style="position: fixed; right: 50px; top: 10px; z-index: 200"><button type="button" class="btn btn-default btn-xs dropdown-toggle" id="allCodeButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" data-_extension-text-contrast=""><span>Code</span> <span class="caret"></span></button><ul class="dropdown-menu" style="min-width: 50px;"><li><a id="rmd-show-all-code" href="#">Show All Code</a></li><li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li></ul></div>';
+document.write(str);
+</script>
+<script>
+$(document).ready(function () {
+  // AGB add fold-hide changed === to !== to default to showing code
+  window.initializeCodeFolding("show" !== "hide");
+});
+</script>
+
+
+<style type="text/css">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<style type="text/css">
+  
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+</style>
+
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Welcome</a>
+<ul>
+<li class="chapter" data-level="1.1" data-path="index.html"><a href="index.html#how-to-use-these-notes"><i class="fa fa-check"></i><b>1.1</b> How to Use These Notes</a></li>
+<li class="chapter" data-level="1.2" data-path="index.html"><a href="index.html#whats-in-these-notes"><i class="fa fa-check"></i><b>1.2</b> What’s in These Notes</a></li>
+<li class="chapter" data-level="1.3" data-path="index.html"><a href="index.html#technical-setup"><i class="fa fa-check"></i><b>1.3</b> Technical Setup</a>
+<ul>
+<li class="chapter" data-level="1.3.1" data-path="index.html"><a href="index.html#project-structure"><i class="fa fa-check"></i><b>1.3.1</b> Project Structure</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="bootstrapping.html"><a href="bootstrapping.html"><i class="fa fa-check"></i><b>2</b> Bootstrapping</a>
+<ul>
+<li class="chapter" data-level="2.1" data-path="bootstrapping.html"><a href="bootstrapping.html#big-idea"><i class="fa fa-check"></i><b>2.1</b> Big Idea</a></li>
+<li class="chapter" data-level="2.2" data-path="bootstrapping.html"><a href="bootstrapping.html#reading"><i class="fa fa-check"></i><b>2.2</b> Reading</a></li>
+<li class="chapter" data-level="2.3" data-path="bootstrapping.html"><a href="bootstrapping.html#methods-as-historical-artifacts"><i class="fa fa-check"></i><b>2.3</b> Methods as Historical Artifacts</a></li>
+<li class="chapter" data-level="2.4" data-path="bootstrapping.html"><a href="bootstrapping.html#packages"><i class="fa fa-check"></i><b>2.4</b> Packages</a></li>
+<li class="chapter" data-level="2.5" data-path="bootstrapping.html"><a href="bootstrapping.html#a-worked-example-bootstrapping-a-mean"><i class="fa fa-check"></i><b>2.5</b> A Worked Example: Bootstrapping a Mean</a>
+<ul>
+<li class="chapter" data-level="2.5.1" data-path="bootstrapping.html"><a href="bootstrapping.html#the-tiny-observed-data"><i class="fa fa-check"></i><b>2.5.1</b> The (tiny) observed data</a></li>
+<li class="chapter" data-level="2.5.2" data-path="bootstrapping.html"><a href="bootstrapping.html#resampling-with-replacement"><i class="fa fa-check"></i><b>2.5.2</b> Resampling with replacement</a></li>
+</ul></li>
+<li class="chapter" data-level="2.6" data-path="bootstrapping.html"><a href="bootstrapping.html#why-replacement-matters"><i class="fa fa-check"></i><b>2.6</b> Why replacement matters</a>
+<ul>
+<li class="chapter" data-level="2.6.1" data-path="bootstrapping.html"><a href="bootstrapping.html#what-we-are-assuming-when-we-bootstrap"><i class="fa fa-check"></i><b>2.6.1</b> What We Are Assuming When We Bootstrap</a></li>
+</ul></li>
+<li class="chapter" data-level="2.7" data-path="bootstrapping.html"><a href="bootstrapping.html#bird-diversity-data"><i class="fa fa-check"></i><b>2.7</b> Bird Diversity Data</a></li>
+<li class="chapter" data-level="2.8" data-path="bootstrapping.html"><a href="bootstrapping.html#diversity"><i class="fa fa-check"></i><b>2.8</b> Diversity</a></li>
+<li class="chapter" data-level="2.9" data-path="bootstrapping.html"><a href="bootstrapping.html#roll-your-own-bootstrap-for-one-habitat"><i class="fa fa-check"></i><b>2.9</b> Roll your own bootstrap for one habitat</a>
+<ul>
+<li class="chapter" data-level="2.9.1" data-path="bootstrapping.html"><a href="bootstrapping.html#do-it-with-boot"><i class="fa fa-check"></i><b>2.9.1</b> Do it with <code>boot</code></a></li>
+</ul></li>
+<li class="chapter" data-level="2.10" data-path="bootstrapping.html"><a href="bootstrapping.html#your-work"><i class="fa fa-check"></i><b>2.10</b> Your work</a></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="permutation.html"><a href="permutation.html"><i class="fa fa-check"></i><b>3</b> Permutation</a>
+<ul>
+<li class="chapter" data-level="3.1" data-path="permutation.html"><a href="permutation.html#big-picture"><i class="fa fa-check"></i><b>3.1</b> Big Picture</a></li>
+<li class="chapter" data-level="3.2" data-path="permutation.html"><a href="permutation.html#reading-1"><i class="fa fa-check"></i><b>3.2</b> Reading</a></li>
+<li class="chapter" data-level="3.3" data-path="permutation.html"><a href="permutation.html#methods-as-historical-artifacts-1"><i class="fa fa-check"></i><b>3.3</b> Methods as Historical Artifacts</a></li>
+<li class="chapter" data-level="3.4" data-path="permutation.html"><a href="permutation.html#packages-1"><i class="fa fa-check"></i><b>3.4</b> Packages</a></li>
+<li class="chapter" data-level="3.5" data-path="permutation.html"><a href="permutation.html#alpaca-sim"><i class="fa fa-check"></i><b>3.5</b> Alpaca sim</a>
+<ul>
+<li class="chapter" data-level="3.5.1" data-path="permutation.html"><a href="permutation.html#data"><i class="fa fa-check"></i><b>3.5.1</b> Data</a></li>
+<li class="chapter" data-level="3.5.2" data-path="permutation.html"><a href="permutation.html#test-statistic"><i class="fa fa-check"></i><b>3.5.2</b> Test statistic</a></li>
+<li class="chapter" data-level="3.5.3" data-path="permutation.html"><a href="permutation.html#randomize-group-membership"><i class="fa fa-check"></i><b>3.5.3</b> Randomize group membership</a></li>
+<li class="chapter" data-level="3.5.4" data-path="permutation.html"><a href="permutation.html#run-many-random-permutations"><i class="fa fa-check"></i><b>3.5.4</b> Run many random permutations</a></li>
+<li class="chapter" data-level="3.5.5" data-path="permutation.html"><a href="permutation.html#assess-the-results"><i class="fa fa-check"></i><b>3.5.5</b> Assess the results</a></li>
+</ul></li>
+<li class="chapter" data-level="3.6" data-path="permutation.html"><a href="permutation.html#your-work-1"><i class="fa fa-check"></i><b>3.6</b> Your work</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html"><i class="fa fa-check"></i><b>4</b> Always Be Cross Validating (ABCv)</a>
+<ul>
+<li class="chapter" data-level="4.1" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#big-idea-1"><i class="fa fa-check"></i><b>4.1</b> Big Idea</a></li>
+<li class="chapter" data-level="4.2" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#packages-2"><i class="fa fa-check"></i><b>4.2</b> Packages</a></li>
+<li class="chapter" data-level="4.3" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#reading-2"><i class="fa fa-check"></i><b>4.3</b> Reading</a></li>
+<li class="chapter" data-level="4.4" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#overfitting-and-underfitting"><i class="fa fa-check"></i><b>4.4</b> Overfitting and Underfitting</a></li>
+<li class="chapter" data-level="4.5" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#a-worked-example"><i class="fa fa-check"></i><b>4.5</b> A worked example</a></li>
+<li class="chapter" data-level="4.6" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#holdouts-divide-and-conquer-train-and-test"><i class="fa fa-check"></i><b>4.6</b> Holdouts, divide and conquer, train and test</a></li>
+<li class="chapter" data-level="4.7" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#doing-k-fold-cross-validation"><i class="fa fa-check"></i><b>4.7</b> Doing k-fold cross validation</a>
+<ul>
+<li class="chapter" data-level="4.7.1" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#aside-is-this-the-same-as-bootstrapping-or-permutation"><i class="fa fa-check"></i><b>4.7.1</b> Aside: Is this the same as bootstrapping? Or permutation?</a></li>
+</ul></li>
+<li class="chapter" data-level="4.8" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#doing-loocv"><i class="fa fa-check"></i><b>4.8</b> Doing LOOCV?</a></li>
+<li class="chapter" data-level="4.9" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#what-about-repeating-k-fold"><i class="fa fa-check"></i><b>4.9</b> What about repeating k-fold?</a></li>
+<li class="chapter" data-level="4.10" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#caret-classification-and-regression-training"><i class="fa fa-check"></i><b>4.10</b> <code>caret</code>: Classification And REgression Training</a></li>
+<li class="chapter" data-level="4.11" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#final-thoughts-abcv"><i class="fa fa-check"></i><b>4.11</b> Final thoughts: ABCv</a></li>
+<li class="chapter" data-level="4.12" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#your-work-2"><i class="fa fa-check"></i><b>4.12</b> Your Work</a></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html"><i class="fa fa-check"></i><b>5</b> Classifying with kNN</a>
+<ul>
+<li class="chapter" data-level="5.1" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#big-idea-2"><i class="fa fa-check"></i><b>5.1</b> Big Idea</a></li>
+<li class="chapter" data-level="5.2" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#packages-3"><i class="fa fa-check"></i><b>5.2</b> Packages</a></li>
+<li class="chapter" data-level="5.3" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#reading-3"><i class="fa fa-check"></i><b>5.3</b> Reading</a></li>
+<li class="chapter" data-level="5.4" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#classification-voting-by-distance"><i class="fa fa-check"></i><b>5.4</b> Classification Voting by Distance</a></li>
+<li class="chapter" data-level="5.5" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#high-dimensional-space"><i class="fa fa-check"></i><b>5.5</b> High Dimensional Space</a>
+<ul>
+<li class="chapter" data-level="5.5.1" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#euclidean-distance"><i class="fa fa-check"></i><b>5.5.1</b> Euclidean Distance</a></li>
+<li class="chapter" data-level="5.5.2" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#space-in-knn"><i class="fa fa-check"></i><b>5.5.2</b> Space in kNN</a></li>
+</ul></li>
+<li class="chapter" data-level="5.6" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#the-knn-algorithm"><i class="fa fa-check"></i><b>5.6</b> The kNN Algorithm</a>
+<ul>
+<li class="chapter" data-level="5.6.1" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#eat-your-fruits-and-veggies"><i class="fa fa-check"></i><b>5.6.1</b> Eat Your Fruits and Veggies</a></li>
+</ul></li>
+<li class="chapter" data-level="5.7" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#other-tidbits"><i class="fa fa-check"></i><b>5.7</b> Other Tidbits</a>
+<ul>
+<li class="chapter" data-level="5.7.1" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#rescaling"><i class="fa fa-check"></i><b>5.7.1</b> Rescaling</a></li>
+<li class="chapter" data-level="5.7.2" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#categorical-predictors"><i class="fa fa-check"></i><b>5.7.2</b> Categorical Predictors</a></li>
+</ul></li>
+<li class="chapter" data-level="5.8" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#worked-example"><i class="fa fa-check"></i><b>5.8</b> Worked Example</a>
+<ul>
+<li class="chapter" data-level="5.8.1" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#diagnostic-wisconsin-breast-cancer-database"><i class="fa fa-check"></i><b>5.8.1</b> Diagnostic Wisconsin Breast Cancer Database</a></li>
+<li class="chapter" data-level="5.8.2" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#traintest"><i class="fa fa-check"></i><b>5.8.2</b> Train/Test</a></li>
+<li class="chapter" data-level="5.8.3" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#run-knn"><i class="fa fa-check"></i><b>5.8.3</b> Run kNN</a></li>
+<li class="chapter" data-level="5.8.4" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#the-confusion-matrix"><i class="fa fa-check"></i><b>5.8.4</b> The Confusion Matrix</a></li>
+<li class="chapter" data-level="5.8.5" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#some-interp"><i class="fa fa-check"></i><b>5.8.5</b> Some Interp</a></li>
+</ul></li>
+<li class="chapter" data-level="5.9" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#your-work-3"><i class="fa fa-check"></i><b>5.9</b> Your Work</a></li>
+</ul></li>
+<li class="chapter" data-level="6" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html"><i class="fa fa-check"></i><b>6</b> Classifying with Decision Trees</a>
+<ul>
+<li class="chapter" data-level="6.1" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#big-idea-3"><i class="fa fa-check"></i><b>6.1</b> Big Idea</a></li>
+<li class="chapter" data-level="6.2" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#packages-4"><i class="fa fa-check"></i><b>6.2</b> Packages</a></li>
+<li class="chapter" data-level="6.3" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#reading-4"><i class="fa fa-check"></i><b>6.3</b> Reading</a></li>
+<li class="chapter" data-level="6.4" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#growing-and-pruning"><i class="fa fa-check"></i><b>6.4</b> Growing and Pruning</a></li>
+<li class="chapter" data-level="6.5" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#entropy-and-information-gain"><i class="fa fa-check"></i><b>6.5</b> Entropy and Information Gain</a></li>
+<li class="chapter" data-level="6.6" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#toy-example"><i class="fa fa-check"></i><b>6.6</b> Toy Example</a>
+<ul>
+<li class="chapter" data-level="6.6.1" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#entropy"><i class="fa fa-check"></i><b>6.6.1</b> Entropy</a></li>
+<li class="chapter" data-level="6.6.2" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#getting-to-information-gain"><i class="fa fa-check"></i><b>6.6.2</b> Getting to Information Gain</a></li>
+<li class="chapter" data-level="6.6.3" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#deciding-on-a-split"><i class="fa fa-check"></i><b>6.6.3</b> Deciding on a Split</a></li>
+<li class="chapter" data-level="6.6.4" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#information-gain-splits-on-continuous-data"><i class="fa fa-check"></i><b>6.6.4</b> Information Gain Splits on Continuous Data</a></li>
+</ul></li>
+<li class="chapter" data-level="6.7" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#a-real-example"><i class="fa fa-check"></i><b>6.7</b> A Real Example</a>
+<ul>
+<li class="chapter" data-level="6.7.1" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#go-fish"><i class="fa fa-check"></i><b>6.7.1</b> Go Fish</a></li>
+<li class="chapter" data-level="6.7.2" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#fish-finder"><i class="fa fa-check"></i><b>6.7.2</b> Fish Finder</a></li>
+<li class="chapter" data-level="6.7.3" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#visualizing-the-tree"><i class="fa fa-check"></i><b>6.7.3</b> Visualizing the Tree</a></li>
+<li class="chapter" data-level="6.7.4" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#train-and-test"><i class="fa fa-check"></i><b>6.7.4</b> Train and Test</a></li>
+</ul></li>
+<li class="chapter" data-level="6.8" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#your-work-4"><i class="fa fa-check"></i><b>6.8</b> Your Work</a></li>
+</ul></li>
+<li class="chapter" data-level="7" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html"><i class="fa fa-check"></i><b>7</b> Continuous Prediction with Regression Trees</a>
+<ul>
+<li class="chapter" data-level="7.1" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#big-idea-4"><i class="fa fa-check"></i><b>7.1</b> Big Idea</a></li>
+<li class="chapter" data-level="7.2" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#packages-5"><i class="fa fa-check"></i><b>7.2</b> Packages</a></li>
+<li class="chapter" data-level="7.3" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#reading-5"><i class="fa fa-check"></i><b>7.3</b> Reading</a></li>
+<li class="chapter" data-level="7.4" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#growing-and-pruning-1"><i class="fa fa-check"></i><b>7.4</b> Growing and Pruning</a></li>
+<li class="chapter" data-level="7.5" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#weird-tree-terms-model-trees-use-regression-but-regression-trees-dont"><i class="fa fa-check"></i><b>7.5</b> Weird Tree Terms: Model Trees Use Regression but Regression Trees Don’t</a></li>
+<li class="chapter" data-level="7.6" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#toy-example-splitting-continuous-variables"><i class="fa fa-check"></i><b>7.6</b> Toy Example: Splitting Continuous Variables</a>
+<ul>
+<li class="chapter" data-level="7.6.1" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#iteration-1"><i class="fa fa-check"></i><b>7.6.1</b> Iteration 1</a></li>
+<li class="chapter" data-level="7.6.2" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#iteration-2"><i class="fa fa-check"></i><b>7.6.2</b> Iteration 2</a></li>
+<li class="chapter" data-level="7.6.3" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#iteration-3"><i class="fa fa-check"></i><b>7.6.3</b> Iteration 3</a></li>
+<li class="chapter" data-level="7.6.4" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#loop-it"><i class="fa fa-check"></i><b>7.6.4</b> Loop It</a></li>
+<li class="chapter" data-level="7.6.5" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#describing-the-first-split"><i class="fa fa-check"></i><b>7.6.5</b> Describing the First Split</a></li>
+<li class="chapter" data-level="7.6.6" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#another-split"><i class="fa fa-check"></i><b>7.6.6</b> Another Split?</a></li>
+<li class="chapter" data-level="7.6.7" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#are-we-done-now"><i class="fa fa-check"></i><b>7.6.7</b> Are We Done Now?</a></li>
+</ul></li>
+<li class="chapter" data-level="7.7" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#regression-tree-example-lead-levels-in-st-louis"><i class="fa fa-check"></i><b>7.7</b> Regression Tree Example: Lead Levels in St Louis</a></li>
+<li class="chapter" data-level="7.8" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#model-tree-example-lead-levels-in-st-louis"><i class="fa fa-check"></i><b>7.8</b> Model Tree Example: Lead Levels in St Louis</a></li>
+<li class="chapter" data-level="7.9" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#your-work-5"><i class="fa fa-check"></i><b>7.9</b> Your Work</a></li>
+</ul></li>
+<li class="chapter" data-level="8" data-path="neural-nets.html"><a href="neural-nets.html"><i class="fa fa-check"></i><b>8</b> Neural Nets</a>
+<ul>
+<li class="chapter" data-level="8.1" data-path="neural-nets.html"><a href="neural-nets.html#big-idea-5"><i class="fa fa-check"></i><b>8.1</b> Big Idea</a></li>
+<li class="chapter" data-level="8.2" data-path="neural-nets.html"><a href="neural-nets.html#packages-6"><i class="fa fa-check"></i><b>8.2</b> Packages</a></li>
+<li class="chapter" data-level="8.3" data-path="neural-nets.html"><a href="neural-nets.html#reading-6"><i class="fa fa-check"></i><b>8.3</b> Reading</a></li>
+<li class="chapter" data-level="8.4" data-path="neural-nets.html"><a href="neural-nets.html#punting"><i class="fa fa-check"></i><b>8.4</b> Punting</a></li>
+<li class="chapter" data-level="8.5" data-path="neural-nets.html"><a href="neural-nets.html#example-here-comes-the-sun"><i class="fa fa-check"></i><b>8.5</b> Example: Here Comes the Sun</a></li>
+<li class="chapter" data-level="8.6" data-path="neural-nets.html"><a href="neural-nets.html#train-and-test-1"><i class="fa fa-check"></i><b>8.6</b> Train and Test</a></li>
+<li class="chapter" data-level="8.7" data-path="neural-nets.html"><a href="neural-nets.html#regression-tree"><i class="fa fa-check"></i><b>8.7</b> Regression Tree</a></li>
+<li class="chapter" data-level="8.8" data-path="neural-nets.html"><a href="neural-nets.html#big-fancy-squiggle-fitting-machine-aka-neural-network"><i class="fa fa-check"></i><b>8.8</b> Big Fancy Squiggle Fitting Machine aka Neural Network</a></li>
+<li class="chapter" data-level="8.9" data-path="neural-nets.html"><a href="neural-nets.html#your-work-6"><i class="fa fa-check"></i><b>8.9</b> Your Work</a></li>
+</ul></li>
+<li class="chapter" data-level="9" data-path="aside-animate-a-nn.html"><a href="aside-animate-a-nn.html"><i class="fa fa-check"></i><b>9</b> Aside: Animate a NN</a>
+<ul>
+<li class="chapter" data-level="9.1" data-path="aside-animate-a-nn.html"><a href="aside-animate-a-nn.html#libraries"><i class="fa fa-check"></i><b>9.1</b> Libraries</a></li>
+<li class="chapter" data-level="9.2" data-path="aside-animate-a-nn.html"><a href="aside-animate-a-nn.html#the-data"><i class="fa fa-check"></i><b>9.2</b> The Data</a></li>
+<li class="chapter" data-level="9.3" data-path="aside-animate-a-nn.html"><a href="aside-animate-a-nn.html#predicting"><i class="fa fa-check"></i><b>9.3</b> Predicting</a></li>
+<li class="chapter" data-level="9.4" data-path="aside-animate-a-nn.html"><a href="aside-animate-a-nn.html#animate"><i class="fa fa-check"></i><b>9.4</b> Animate</a></li>
+</ul></li>
+<li class="chapter" data-level="10" data-path="improving-model-performance.html"><a href="improving-model-performance.html"><i class="fa fa-check"></i><b>10</b> Improving Model Performance</a>
+<ul>
+<li class="chapter" data-level="10.1" data-path="improving-model-performance.html"><a href="improving-model-performance.html#big-idea-many-models-beat-one-model"><i class="fa fa-check"></i><b>10.1</b> Big Idea: Many Models Beat One Model</a>
+<ul>
+<li class="chapter" data-level="10.1.1" data-path="improving-model-performance.html"><a href="improving-model-performance.html#why-bagging-works-well-for-trees"><i class="fa fa-check"></i><b>10.1.1</b> Why Bagging Works Well for Trees</a></li>
+</ul></li>
+<li class="chapter" data-level="10.2" data-path="improving-model-performance.html"><a href="improving-model-performance.html#packages-7"><i class="fa fa-check"></i><b>10.2</b> Packages</a></li>
+<li class="chapter" data-level="10.3" data-path="improving-model-performance.html"><a href="improving-model-performance.html#reading-7"><i class="fa fa-check"></i><b>10.3</b> Reading</a></li>
+<li class="chapter" data-level="10.4" data-path="improving-model-performance.html"><a href="improving-model-performance.html#decision-tree-to-bagging-to-tuning"><i class="fa fa-check"></i><b>10.4</b> Decision Tree to Bagging to Tuning</a>
+<ul>
+<li class="chapter" data-level="10.4.1" data-path="improving-model-performance.html"><a href="improving-model-performance.html#the-modeling-ladder"><i class="fa fa-check"></i><b>10.4.1</b> The Modeling Ladder</a></li>
+<li class="chapter" data-level="10.4.2" data-path="improving-model-performance.html"><a href="improving-model-performance.html#fish-your-wish"><i class="fa fa-check"></i><b>10.4.2</b> Fish Your Wish</a></li>
+<li class="chapter" data-level="10.4.3" data-path="improving-model-performance.html"><a href="improving-model-performance.html#train-and-test-2"><i class="fa fa-check"></i><b>10.4.3</b> Train and Test</a></li>
+<li class="chapter" data-level="10.4.4" data-path="improving-model-performance.html"><a href="improving-model-performance.html#straight-decision-tree"><i class="fa fa-check"></i><b>10.4.4</b> Straight Decision Tree</a></li>
+<li class="chapter" data-level="10.4.5" data-path="improving-model-performance.html"><a href="improving-model-performance.html#bagging"><i class="fa fa-check"></i><b>10.4.5</b> Bagging</a></li>
+<li class="chapter" data-level="10.4.6" data-path="improving-model-performance.html"><a href="improving-model-performance.html#random-forest-aka-randomforest-aka-rf"><i class="fa fa-check"></i><b>10.4.6</b> Random Forest (aka randomForest, aka rF)</a></li>
+<li class="chapter" data-level="10.4.7" data-path="improving-model-performance.html"><a href="improving-model-performance.html#a-tuned-random-forest"><i class="fa fa-check"></i><b>10.4.7</b> A Tuned Random Forest</a></li>
+<li class="chapter" data-level="10.4.8" data-path="improving-model-performance.html"><a href="improving-model-performance.html#skill"><i class="fa fa-check"></i><b>10.4.8</b> Skill</a></li>
+</ul></li>
+<li class="chapter" data-level="10.5" data-path="improving-model-performance.html"><a href="improving-model-performance.html#takeaway"><i class="fa fa-check"></i><b>10.5</b> Takeaway</a></li>
+<li class="chapter" data-level="10.6" data-path="improving-model-performance.html"><a href="improving-model-performance.html#but-where-is-the-tree"><i class="fa fa-check"></i><b>10.6</b> But where is the tree?</a>
+<ul>
+<li class="chapter" data-level="10.6.1" data-path="improving-model-performance.html"><a href="improving-model-performance.html#how-can-they-predict-new-data"><i class="fa fa-check"></i><b>10.6.1</b> How can they predict new data?</a></li>
+<li class="chapter" data-level="10.6.2" data-path="improving-model-performance.html"><a href="improving-model-performance.html#which-trees-are-used"><i class="fa fa-check"></i><b>10.6.2</b> Which trees are used?</a></li>
+</ul></li>
+<li class="chapter" data-level="10.7" data-path="improving-model-performance.html"><a href="improving-model-performance.html#your-work-7"><i class="fa fa-check"></i><b>10.7</b> Your Work</a></li>
+<li class="chapter" data-level="10.8" data-path="improving-model-performance.html"><a href="improving-model-performance.html#postscript-boosting-and-stacking"><i class="fa fa-check"></i><b>10.8</b> Postscript: Boosting and Stacking</a>
+<ul>
+<li class="chapter" data-level="10.8.1" data-path="improving-model-performance.html"><a href="improving-model-performance.html#boosting"><i class="fa fa-check"></i><b>10.8.1</b> Boosting</a></li>
+</ul></li>
+<li class="chapter" data-level="10.9" data-path="improving-model-performance.html"><a href="improving-model-performance.html#stacking-briefly"><i class="fa fa-check"></i><b>10.9</b> Stacking (briefly)</a></li>
+</ul></li>
+<li class="chapter" data-level="11" data-path="eigen-faces.html"><a href="eigen-faces.html"><i class="fa fa-check"></i><b>11</b> Eigen Faces</a>
+<ul>
+<li class="chapter" data-level="11.1" data-path="eigen-faces.html"><a href="eigen-faces.html#big-idea-6"><i class="fa fa-check"></i><b>11.1</b> Big Idea</a></li>
+<li class="chapter" data-level="11.2" data-path="eigen-faces.html"><a href="eigen-faces.html#packages-8"><i class="fa fa-check"></i><b>11.2</b> Packages</a></li>
+<li class="chapter" data-level="11.3" data-path="eigen-faces.html"><a href="eigen-faces.html#reading-8"><i class="fa fa-check"></i><b>11.3</b> Reading</a></li>
+<li class="chapter" data-level="11.4" data-path="eigen-faces.html"><a href="eigen-faces.html#a-bunch-of-mostly-white-guys"><i class="fa fa-check"></i><b>11.4</b> A bunch of mostly white guys</a></li>
+<li class="chapter" data-level="11.5" data-path="eigen-faces.html"><a href="eigen-faces.html#average-face"><i class="fa fa-check"></i><b>11.5</b> Average face</a></li>
+<li class="chapter" data-level="11.6" data-path="eigen-faces.html"><a href="eigen-faces.html#principal-component-analysis"><i class="fa fa-check"></i><b>11.6</b> Principal Component Analysis</a></li>
+<li class="chapter" data-level="11.7" data-path="eigen-faces.html"><a href="eigen-faces.html#mapping-individuals"><i class="fa fa-check"></i><b>11.7</b> Mapping individuals</a></li>
+<li class="chapter" data-level="11.8" data-path="eigen-faces.html"><a href="eigen-faces.html#facial-recognition"><i class="fa fa-check"></i><b>11.8</b> Facial recognition</a>
+<ul>
+<li class="chapter" data-level="11.8.1" data-path="eigen-faces.html"><a href="eigen-faces.html#traintest-1"><i class="fa fa-check"></i><b>11.8.1</b> Train/Test</a></li>
+<li class="chapter" data-level="11.8.2" data-path="eigen-faces.html"><a href="eigen-faces.html#pca-on-training"><i class="fa fa-check"></i><b>11.8.2</b> PCA on training</a></li>
+<li class="chapter" data-level="11.8.3" data-path="eigen-faces.html"><a href="eigen-faces.html#project-the-test-photos"><i class="fa fa-check"></i><b>11.8.3</b> Project the test photos</a></li>
+<li class="chapter" data-level="11.8.4" data-path="eigen-faces.html"><a href="eigen-faces.html#distance"><i class="fa fa-check"></i><b>11.8.4</b> Distance</a></li>
+<li class="chapter" data-level="11.8.5" data-path="eigen-faces.html"><a href="eigen-faces.html#classify"><i class="fa fa-check"></i><b>11.8.5</b> Classify</a></li>
+</ul></li>
+<li class="chapter" data-level="11.9" data-path="eigen-faces.html"><a href="eigen-faces.html#environmental-applications"><i class="fa fa-check"></i><b>11.9</b> Environmental applications</a></li>
+<li class="chapter" data-level="11.10" data-path="eigen-faces.html"><a href="eigen-faces.html#your-work-8"><i class="fa fa-check"></i><b>11.10</b> Your work</a></li>
+</ul></li>
+<li class="chapter" data-level="12" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i><b>12</b> References</a></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Machine Learning for Environmental Science: Notes for ESCI 506</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="improving-model-performance" class="section level1 hasAnchor" number="10">
+<h1><span class="header-section-number">10</span> Improving Model Performance<a href="improving-model-performance.html#improving-model-performance" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<div id="big-idea-many-models-beat-one-model" class="section level2 hasAnchor" number="10.1">
+<h2><span class="header-section-number">10.1</span> Big Idea: Many Models Beat One Model<a href="improving-model-performance.html#big-idea-many-models-beat-one-model" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Many machine learning algorithms are unstable. Small changes in the training data can lead to very different models. Decision trees are a classic example: change a few rows and the first split can change completely.</p>
+<p>Ensemble methods address this problem by building many models and combining them.</p>
+<p>Instead of trusting one model, we let a crowd of models vote.</p>
+<p>Three common ensemble strategies are:</p>
+<ul>
+<li><strong>Bagging (Bootstrap Aggregating)</strong> – train many models on bootstrap samples of the data and average their predictions.</li>
+<li><strong>Boosting</strong> – train models sequentially so that each new model focuses on correcting the errors of the previous one.</li>
+<li><strong>Stacking</strong> – combine predictions from multiple model types using a meta-model.</li>
+</ul>
+<p>In this module we focus mostly on bagging, which leads directly to one of the most widely used algorithms in machine learning: random forests.</p>
+<div id="why-bagging-works-well-for-trees" class="section level3 hasAnchor" number="10.1.1">
+<h3><span class="header-section-number">10.1.1</span> Why Bagging Works Well for Trees<a href="improving-model-performance.html#why-bagging-works-well-for-trees" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Decision trees have high variance. If we train the same tree algorithm on slightly different samples of the data we often get very different trees.</p>
+<p>That variability hurts prediction performance.</p>
+<p>Bagging fixes this by:</p>
+<ol style="list-style-type: decimal">
+<li>Drawing many bootstrap samples from the training data.</li>
+<li>Fitting a tree to each sample.</li>
+<li>Combining predictions across all trees (majority vote for classification).</li>
+</ol>
+<p>Each individual tree may be noisy, but the average of many trees is usually more stable and more accurate.</p>
+<p>This is the same idea behind the “wisdom of crowds.”</p>
+</div>
+</div>
+<div id="packages-7" class="section level2 hasAnchor" number="10.2">
+<h2><span class="header-section-number">10.2</span> Packages<a href="improving-model-performance.html#packages-7" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div class="sourceCode" id="cb356"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb356-1"><a href="improving-model-performance.html#cb356-1" tabindex="-1"></a><span class="fu">library</span>(tidyverse) <span class="co"># for general use</span></span></code></pre></div>
+<pre><code>## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+## ✔ dplyr     1.1.4     ✔ readr     2.1.6
+## ✔ forcats   1.0.1     ✔ stringr   1.6.0
+## ✔ ggplot2   4.0.1     ✔ tibble    3.3.1
+## ✔ lubridate 1.9.4     ✔ tidyr     1.3.2
+## ✔ purrr     1.2.1     
+## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+## ✖ dplyr::filter() masks stats::filter()
+## ✖ dplyr::lag()    masks stats::lag()
+## ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
+<div class="sourceCode" id="cb358"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb358-1"><a href="improving-model-performance.html#cb358-1" tabindex="-1"></a><span class="fu">library</span>(rpart) <span class="co"># for decision trees</span></span>
+<span id="cb358-2"><a href="improving-model-performance.html#cb358-2" tabindex="-1"></a><span class="fu">library</span>(visNetwork) <span class="co"># for plotting DT</span></span>
+<span id="cb358-3"><a href="improving-model-performance.html#cb358-3" tabindex="-1"></a><span class="fu">library</span>(ipred) <span class="co"># for bagging</span></span>
+<span id="cb358-4"><a href="improving-model-performance.html#cb358-4" tabindex="-1"></a><span class="fu">library</span>(randomForest) <span class="co"># for rf</span></span></code></pre></div>
+<pre><code>## randomForest 4.7-1.2
+## Type rfNews() to see new features/changes/bug fixes.
+## 
+## Attaching package: &#39;randomForest&#39;
+## 
+## The following object is masked from &#39;package:dplyr&#39;:
+## 
+##     combine
+## 
+## The following object is masked from &#39;package:ggplot2&#39;:
+## 
+##     margin</code></pre>
+<div class="sourceCode" id="cb360"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb360-1"><a href="improving-model-performance.html#cb360-1" tabindex="-1"></a><span class="fu">library</span>(caret) <span class="co"># and to tune the rf</span></span></code></pre></div>
+<pre><code>## Loading required package: lattice
+## 
+## Attaching package: &#39;caret&#39;
+## 
+## The following object is masked from &#39;package:purrr&#39;:
+## 
+##     lift</code></pre>
+<div class="sourceCode" id="cb362"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb362-1"><a href="improving-model-performance.html#cb362-1" tabindex="-1"></a><span class="fu">library</span>(gbm) <span class="co"># for boosting</span></span></code></pre></div>
+<pre><code>## Loaded gbm 2.2.3
+## This version of gbm is no longer under development. Consider transitioning to gbm3, https://github.com/gbm-developers/gbm3</code></pre>
+</div>
+<div id="reading-7" class="section level2 hasAnchor" number="10.3">
+<h2><span class="header-section-number">10.3</span> Reading<a href="improving-model-performance.html#reading-7" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Chapter 11: Improving Model Performance in Machine Learning with R: Expert techniques for predictive modeling, 3rd Edition. Link on Canvas.</p>
+</div>
+<div id="decision-tree-to-bagging-to-tuning" class="section level2 hasAnchor" number="10.4">
+<h2><span class="header-section-number">10.4</span> Decision Tree to Bagging to Tuning<a href="improving-model-performance.html#decision-tree-to-bagging-to-tuning" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>I’m going to show you four different approaches to the same classification problem. The first is a straight decision tree with <code>rpart</code>. The second is a “forest” of bagged trees. The third is a full “random forest.” And finally, we can tune the random forest approach. At each step we will look at performance on withheld testing data.</p>
+<div id="the-modeling-ladder" class="section level3 hasAnchor" number="10.4.1">
+<h3><span class="header-section-number">10.4.1</span> The Modeling Ladder<a href="improving-model-performance.html#the-modeling-ladder" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>We will build models of increasing complexity:</p>
+<table>
+<thead>
+<tr class="header">
+<th>Method</th>
+<th>Idea</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Decision Tree (<code>rpart</code>)</td>
+<td>One tree fit to the data</td>
+</tr>
+<tr class="even">
+<td>Bagging</td>
+<td>Many trees trained on bootstrap samples</td>
+</tr>
+<tr class="odd">
+<td>Random Forest</td>
+<td>Bagging + random feature selection</td>
+</tr>
+<tr class="even">
+<td>Tuned Random Forest</td>
+<td>Random forest with hyperparameters optimized</td>
+</tr>
+</tbody>
+</table>
+<p>Each step generally reduces variance and improves prediction accuracy.</p>
+</div>
+<div id="fish-your-wish" class="section level3 hasAnchor" number="10.4.2">
+<h3><span class="header-section-number">10.4.2</span> Fish Your Wish<a href="improving-model-performance.html#fish-your-wish" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Let’s go back to the fish data we used in the initial kNN module. Go back and take a look if you don’t remember. I’ll read the data in, filter it a bit, drop the <code>NA</code> values, and make the common name a factor.</p>
+<div class="sourceCode" id="cb364"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb364-1"><a href="improving-model-performance.html#cb364-1" tabindex="-1"></a>fish <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;data/fishcatch.csv&quot;</span>)</span></code></pre></div>
+<pre><code>## Rows: 159 Columns: 11
+## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## chr (3): std_name, common_name, sex
+## dbl (8): weight_g, length_nose2tail_base_cm, length_nose2tail_notch_cm, leng...
+## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<div class="sourceCode" id="cb366"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb366-1"><a href="improving-model-performance.html#cb366-1" tabindex="-1"></a>fishFiltered <span class="ot">&lt;-</span> fish <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="sc">-</span>std_name, <span class="sc">-</span>sex) <span class="sc">%&gt;%</span></span>
+<span id="cb366-2"><a href="improving-model-performance.html#cb366-2" tabindex="-1"></a>  <span class="fu">drop_na</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb366-3"><a href="improving-model-performance.html#cb366-3" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">common_name =</span> <span class="fu">factor</span>(common_name))</span></code></pre></div>
+</div>
+<div id="train-and-test-2" class="section level3 hasAnchor" number="10.4.3">
+<h3><span class="header-section-number">10.4.3</span> Train and Test<a href="improving-model-performance.html#train-and-test-2" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Because we are working with a reasonably large dataset (for our purposes), we’ll split the data for training and testing.</p>
+<p>Instead of randomly sampling rows, we use <code>createDataPartition()</code> from <code>caret</code>, which performs a stratified split. This keeps the proportion of each fish species roughly the same in both the training and testing sets.</p>
+<div class="sourceCode" id="cb367"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb367-1"><a href="improving-model-performance.html#cb367-1" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">3</span>) <span class="co"># for reproducibility </span></span>
+<span id="cb367-2"><a href="improving-model-performance.html#cb367-2" tabindex="-1"></a>rows2test <span class="ot">&lt;-</span> <span class="fu">createDataPartition</span>(fishFiltered<span class="sc">$</span>common_name, </span>
+<span id="cb367-3"><a href="improving-model-performance.html#cb367-3" tabindex="-1"></a>                                 <span class="at">p =</span> <span class="dv">1</span><span class="sc">/</span><span class="dv">2</span>, </span>
+<span id="cb367-4"><a href="improving-model-performance.html#cb367-4" tabindex="-1"></a>                                 <span class="at">list =</span> <span class="cn">FALSE</span>)[,<span class="dv">1</span>]</span>
+<span id="cb367-5"><a href="improving-model-performance.html#cb367-5" tabindex="-1"></a></span>
+<span id="cb367-6"><a href="improving-model-performance.html#cb367-6" tabindex="-1"></a>testingFish  <span class="ot">&lt;-</span> fishFiltered[rows2test, ]</span>
+<span id="cb367-7"><a href="improving-model-performance.html#cb367-7" tabindex="-1"></a>trainingFish <span class="ot">&lt;-</span> fishFiltered[<span class="sc">-</span>rows2test, ]</span></code></pre></div>
+</div>
+<div id="straight-decision-tree" class="section level3 hasAnchor" number="10.4.4">
+<h3><span class="header-section-number">10.4.4</span> Straight Decision Tree<a href="improving-model-performance.html#straight-decision-tree" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Here is the simplest version of this classification task. I’ll use <code>rpart</code> here. This is conceptually the same as using <code>C50</code> which we used in the decision tree. I want you to be aware that <code>rpart</code> is used commonly for classification as well as regression. Some of the details about how the splitting criteria are setup is different from <code>C50</code> but it’s very similar. And <code>rpart</code> plays nicely with the <code>visTree</code> function which is nice.</p>
+<div class="sourceCode" id="cb368"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb368-1"><a href="improving-model-performance.html#cb368-1" tabindex="-1"></a>rpartModel <span class="ot">&lt;-</span> <span class="fu">rpart</span>(common_name<span class="sc">~</span>.,</span>
+<span id="cb368-2"><a href="improving-model-performance.html#cb368-2" tabindex="-1"></a>                    <span class="at">data=</span>trainingFish)</span>
+<span id="cb368-3"><a href="improving-model-performance.html#cb368-3" tabindex="-1"></a><span class="fu">visTree</span>(rpartModel)</span></code></pre></div>
+<div id="htmlwidget-8746836e2be25030c0ef" style="width:100%;height:600px;" class="visNetwork html-widget"></div>
+<script type="application/json" data-for="htmlwidget-8746836e2be25030c0ef">{"x":{"nodes":{"id":[1,2,4,5,3,6,7],"label":["height2length_pct","weight_g","bream","silver_bream","height2length_pct","perch","pike"],"level":[1,2,3,3,2,3,3],"color":["#F1B8C2","#B4C7ED","#7D91B6","#B98099","#F1B8C2","#9F87B5","#AC83AE"],"value":[78,22,15,7,56,41,15],"shape":["dot","dot","square","square","dot","square","square"],"title":["<div style=\"text-align:center;\">N : <b>100%<\/b> (78)<br>Complexity : <b>0.34<\/b><br>bream : <b>21.8%<\/b> (17)<br>ide : <b>3.8%<\/b> (3)<br>perch : <b>35.9%<\/b> (28)<br>pike : <b>10.3%<\/b> (8)<br>roach : <b>12.8%<\/b> (10)<br>silver_bream : <b>6.4%<\/b> (5)<br>smelt : <b>9%<\/b> (7)<\/div>","<div style=\"text-align:center;\">N : <b>28.2%<\/b> (22)<br>Complexity : <b>0.06<\/b><br>bream : <b>77.3%<\/b> (17)<br>ide : <b>0%<\/b> (0)<br>perch : <b>0%<\/b> (0)<br>pike : <b>0%<\/b> (0)<br>roach : <b>0%<\/b> (0)<br>silver_bream : <b>22.7%<\/b> (5)<br>smelt : <b>0%<\/b> (0)<hr class = \"rPartvisNetwork\">\n<div class =\"showOnMe2\"><div style=\"text-align:center;\"><U style=\"color:blue;\"  onmouseover=\"this.style.cursor='pointer';\" onmouseout=\"this.style.cursor='default';\">Rules<\/U><\/div>\n<div class=\"showMeRpartTTp2\" style=\"display:none;\">\n<b> height2length_pct <\/b> >= 33.45<\/script><script type=\"text/javascript\">$(document).ready(function(){\n$(\".showOnMe2\").click(function(){\n$(\".showMeRpartTTp2\").toggle();\n$.sparkline_display_visible();\n});\n  });<\/script><\/div><\/div>\n\n<\/div>","<div style=\"text-align:center;\">N : <b>19.2%<\/b> (15)<br>Complexity : <b>0.01<\/b><br>bream : <b>100%<\/b> (15)<br>ide : <b>0%<\/b> (0)<br>perch : <b>0%<\/b> (0)<br>pike : <b>0%<\/b> (0)<br>roach : <b>0%<\/b> (0)<br>silver_bream : <b>0%<\/b> (0)<br>smelt : <b>0%<\/b> (0)<hr class = \"rPartvisNetwork\">\n<div class =\"showOnMe2\"><div style=\"text-align:center;\"><U style=\"color:blue;\"  onmouseover=\"this.style.cursor='pointer';\" onmouseout=\"this.style.cursor='default';\">Rules<\/U><\/div>\n<div class=\"showMeRpartTTp2\" style=\"display:none;\">\n<b> height2length_pct <\/b> >= 33.45<br><b> weight_g <\/b> >= 395<\/script><script type=\"text/javascript\">$(document).ready(function(){\n$(\".showOnMe2\").click(function(){\n$(\".showMeRpartTTp2\").toggle();\n$.sparkline_display_visible();\n});\n  });<\/script><\/div><\/div>\n\n<\/div>","<div style=\"text-align:center;\">N : <b>9%<\/b> (7)<br>Complexity : <b>0.01<\/b><br>bream : <b>28.6%<\/b> (2)<br>ide : <b>0%<\/b> (0)<br>perch : <b>0%<\/b> (0)<br>pike : <b>0%<\/b> (0)<br>roach : <b>0%<\/b> (0)<br>silver_bream : <b>71.4%<\/b> (5)<br>smelt : <b>0%<\/b> (0)<hr class = \"rPartvisNetwork\">\n<div class =\"showOnMe2\"><div style=\"text-align:center;\"><U style=\"color:blue;\"  onmouseover=\"this.style.cursor='pointer';\" onmouseout=\"this.style.cursor='default';\">Rules<\/U><\/div>\n<div class=\"showMeRpartTTp2\" style=\"display:none;\">\n<b> height2length_pct <\/b> >= 33.45<br><b> weight_g <\/b> < 395<\/script><script type=\"text/javascript\">$(document).ready(function(){\n$(\".showOnMe2\").click(function(){\n$(\".showMeRpartTTp2\").toggle();\n$.sparkline_display_visible();\n});\n  });<\/script><\/div><\/div>\n\n<\/div>","<div style=\"text-align:center;\">N : <b>71.8%<\/b> (56)<br>Complexity : <b>0.16<\/b><br>bream : <b>0%<\/b> (0)<br>ide : <b>5.4%<\/b> (3)<br>perch : <b>50%<\/b> (28)<br>pike : <b>14.3%<\/b> (8)<br>roach : <b>17.9%<\/b> (10)<br>silver_bream : <b>0%<\/b> (0)<br>smelt : <b>12.5%<\/b> (7)<hr class = \"rPartvisNetwork\">\n<div class =\"showOnMe2\"><div style=\"text-align:center;\"><U style=\"color:blue;\"  onmouseover=\"this.style.cursor='pointer';\" onmouseout=\"this.style.cursor='default';\">Rules<\/U><\/div>\n<div class=\"showMeRpartTTp2\" style=\"display:none;\">\n<b> height2length_pct <\/b> < 33.45<\/script><script type=\"text/javascript\">$(document).ready(function(){\n$(\".showOnMe2\").click(function(){\n$(\".showMeRpartTTp2\").toggle();\n$.sparkline_display_visible();\n});\n  });<\/script><\/div><\/div>\n\n<\/div>","<div style=\"text-align:center;\">N : <b>52.6%<\/b> (41)<br>Complexity : <b>0<\/b><br>bream : <b>0%<\/b> (0)<br>ide : <b>7.3%<\/b> (3)<br>perch : <b>68.3%<\/b> (28)<br>pike : <b>0%<\/b> (0)<br>roach : <b>24.4%<\/b> (10)<br>silver_bream : <b>0%<\/b> (0)<br>smelt : <b>0%<\/b> (0)<hr class = \"rPartvisNetwork\">\n<div class =\"showOnMe2\"><div style=\"text-align:center;\"><U style=\"color:blue;\"  onmouseover=\"this.style.cursor='pointer';\" onmouseout=\"this.style.cursor='default';\">Rules<\/U><\/div>\n<div class=\"showMeRpartTTp2\" style=\"display:none;\">\n<b>  <\/b> 21.45 <= <b>height2length_pct<\/b> < 33.45<\/script><script type=\"text/javascript\">$(document).ready(function(){\n$(\".showOnMe2\").click(function(){\n$(\".showMeRpartTTp2\").toggle();\n$.sparkline_display_visible();\n});\n  });<\/script><\/div><\/div>\n\n<\/div>","<div style=\"text-align:center;\">N : <b>19.2%<\/b> (15)<br>Complexity : <b>0.01<\/b><br>bream : <b>0%<\/b> (0)<br>ide : <b>0%<\/b> (0)<br>perch : <b>0%<\/b> (0)<br>pike : <b>53.3%<\/b> (8)<br>roach : <b>0%<\/b> (0)<br>silver_bream : <b>0%<\/b> (0)<br>smelt : <b>46.7%<\/b> (7)<hr class = \"rPartvisNetwork\">\n<div class =\"showOnMe2\"><div style=\"text-align:center;\"><U style=\"color:blue;\"  onmouseover=\"this.style.cursor='pointer';\" onmouseout=\"this.style.cursor='default';\">Rules<\/U><\/div>\n<div class=\"showMeRpartTTp2\" style=\"display:none;\">\n<b> height2length_pct <\/b> < 21.45<\/script><script type=\"text/javascript\">$(document).ready(function(){\n$(\".showOnMe2\").click(function(){\n$(\".showMeRpartTTp2\").toggle();\n$.sparkline_display_visible();\n});\n  });<\/script><\/div><\/div>\n\n<\/div>"],"fixed":[true,true,true,true,true,true,true],"colorClust":["#9F87B5","#7D91B6","#7D91B6","#B98099","#9F87B5","#9F87B5","#AC83AE"],"labelClust":["perch","bream","bream","silver_bream","perch","perch","pike"],"Leaf":[0,0,1,1,0,1,1],"font.size":[16,16,16,16,16,16,16],"scaling.min":[22.5,22.5,22.5,22.5,22.5,22.5,22.5],"scaling.max":[22.5,22.5,22.5,22.5,22.5,22.5,22.5]},"edges":{"id":["edge1","edge2","edge3","edge4","edge5","edge6"],"from":[1,2,2,1,3,3],"to":[2,4,5,3,6,7],"label":[">= 33.45",">= 395","< 395","< 33.45",">= 21.45","< 21.45"],"value":[22,15,7,56,41,15],"title":["<div style=\"text-align:center;\"><b>height2length_pct<\/b><\/div><div style=\"text-align:center;\">>=33.45<\/div>","<div style=\"text-align:center;\"><b>weight_g<\/b><\/div><div style=\"text-align:center;\">>=395<\/div>","<div style=\"text-align:center;\"><b>weight_g<\/b><\/div><div style=\"text-align:center;\"><395<\/div>","<div style=\"text-align:center;\"><b>height2length_pct<\/b><\/div><div style=\"text-align:center;\"><33.45<\/div>","<div style=\"text-align:center;\"><b>height2length_pct<\/b><\/div><div style=\"text-align:center;\">>=21.45<\/div>","<div style=\"text-align:center;\"><b>height2length_pct<\/b><\/div><div style=\"text-align:center;\"><21.45<\/div>"],"color":["#8181F7","#8181F7","#8181F7","#8181F7","#8181F7","#8181F7"],"font.size":[14,14,14,14,14,14],"font.align":["horizontal","horizontal","horizontal","horizontal","horizontal","horizontal"],"smooth.enabled":[true,true,true,true,true,true],"smooth.type":["cubicBezier","cubicBezier","cubicBezier","cubicBezier","cubicBezier","cubicBezier"],"smooth.roundness":[0.5,0.5,0.5,0.5,0.5,0.5]},"nodesToDataframe":true,"edgesToDataframe":true,"options":{"width":"100%","height":"100%","nodes":{"shape":"dot"},"manipulation":{"enabled":false},"layout":{"hierarchical":{"enabled":true,"direction":"UD"}},"interaction":{"dragNodes":false,"selectConnectedEdges":false,"tooltipDelay":500,"zoomSpeed":1},"edges":{"scaling":{"label":{"enabled":false}}}},"groups":null,"width":"100%","height":"600px","idselection":{"enabled":false,"style":"width: 150px; height: 26px","useLabels":true,"main":"Select by id"},"byselection":{"enabled":false,"style":"width: 150px; height: 26px","multiple":false,"hideColor":"rgba(200,200,200,0.5)","highlight":false},"main":{"text":"","style":"font-family:Georgia, Times New Roman, Times, serif;font-weight:bold;font-size:20px;text-align:center;"},"submain":{"text":"","style":"font-family:Georgia, Times New Roman, Times, serif;font-size:12px;text-align:center;"},"footer":{"text":"","style":"font-family:Georgia, Times New Roman, Times, serif;font-size:12px;text-align:center;"},"background":"rgba(0, 0, 0, 0)","highlight":{"enabled":true,"hoverNearest":false,"degree":{"from":50000,"to":0},"algorithm":"hierarchical","hideColor":"rgba(200,200,200,0.5)","labelOnly":true},"collapse":{"enabled":true,"fit":true,"resetHighlight":true,"clusterOptions":{"fixed":true,"physics":false},"keepCoord":true,"labelSuffix":"(cluster)"},"tooltipStay":300,"tooltipStyle":"position: fixed;visibility:hidden;padding: 5px;\n                      white-space: nowrap;\n                      font-family: cursive;font-size:12px;font-color:purple;background-color: #E6E6E6;\n                      border-radius: 15px;","OnceEvents":{"stabilized":"function() { \n        this.setOptions({layout:{hierarchical:false}, physics:{solver:'barnesHut', enabled:true, stabilization : false}, nodes : {physics : false, fixed : true}});\n    }"},"legend":{"width":0.1,"useGroups":false,"position":"left","ncol":1,"stepX":100,"stepY":100,"zoom":true,"nodes":{"label":["height2length_pct","weight_g","bream","ide","perch","pike","roach","silver_bream","smelt"],"color":["#F1B8C2","#B4C7ED","#7D91B6","#8F8CB7","#9F87B5","#AC83AE","#B481A5","#B98099","#B9828C"],"shape":["dot","dot","square","square","square","square","square","square","square"],"size":[22,22,22,22,22,22,22,22,22],"Leaf":[0,0,1,1,1,1,1,1,1],"font.size":[16,16,16,16,16,16,16,16,16],"id":[10000,10001,10002,10003,10004,10005,10006,10007,10008]},"nodesToDataframe":true},"tree":{"updateShape":true,"shapeVar":"dot","shapeY":"square","colorVar":{"variable":["height2length_pct","weight_g"],"color":["#F1B8C2","#B4C7ED"]},"colorY":{"colorY":{"modality":["bream","ide","perch","pike","roach","silver_bream","smelt"],"color":["#7D91B6","#8F8CB7","#9F87B5","#AC83AE","#B481A5","#B98099","#B9828C"]},"vardecidedClust":["perch","bream","bream","silver_bream","perch","perch","pike"]}},"export":{"type":"png","css":"float:right;-webkit-border-radius: 10;\n                  -moz-border-radius: 10;\n                  border-radius: 10px;\n                  font-family: Arial;\n                  color: #ffffff;\n                  font-size: 12px;\n                  background: #090a0a;\n                  padding: 4px 8px 4px 4px;\n                  text-decoration: none;","background":"#fff","name":"network.png","label":"Export as png"}},"evals":["OnceEvents.stabilized"],"jsHooks":[]}</script>
+<p>One of the things to beware of is that this is the last graphical tree you’ll see as we move forward. Because we are going to on to forests of trees, there is no easy visualization with other methods. Instead we interpret via performance metrics like accuarcy and kappa.</p>
+<p>And here is the confusion matrix on the testing data.</p>
+<div class="sourceCode" id="cb369"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb369-1"><a href="improving-model-performance.html#cb369-1" tabindex="-1"></a>obs <span class="ot">&lt;-</span> testingFish<span class="sc">$</span>common_name</span>
+<span id="cb369-2"><a href="improving-model-performance.html#cb369-2" tabindex="-1"></a>pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(rpartModel,testingFish, <span class="at">type =</span> <span class="st">&quot;class&quot;</span>)</span>
+<span id="cb369-3"><a href="improving-model-performance.html#cb369-3" tabindex="-1"></a>rpartCM <span class="ot">&lt;-</span> <span class="fu">confusionMatrix</span>(<span class="at">data =</span> pred, <span class="at">reference =</span> obs)</span>
+<span id="cb369-4"><a href="improving-model-performance.html#cb369-4" tabindex="-1"></a>rpartCM</span></code></pre></div>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##               Reference
+## Prediction     bream ide perch pike roach silver_bream smelt
+##   bream           14   0     0    0     0            0     0
+##   ide              0   0     0    0     0            0     0
+##   perch            0   3    27    0    10            0     0
+##   pike             0   0     1    9     0            0     7
+##   roach            0   0     0    0     0            0     0
+##   silver_bream     3   0     0    0     0            6     0
+##   smelt            0   0     0    0     0            0     0
+## 
+## Overall Statistics
+##                                           
+##                Accuracy : 0.7             
+##                  95% CI : (0.5872, 0.7974)
+##     No Information Rate : 0.35            
+##     P-Value [Acc &gt; NIR] : 1.984e-10       
+##                                           
+##                   Kappa : 0.6029          
+##                                           
+##  Mcnemar&#39;s Test P-Value : NA              
+## 
+## Statistics by Class:
+## 
+##                      Class: bream Class: ide Class: perch Class: pike
+## Sensitivity                0.8235     0.0000       0.9643      1.0000
+## Specificity                1.0000     1.0000       0.7500      0.8873
+## Pos Pred Value             1.0000        NaN       0.6750      0.5294
+## Neg Pred Value             0.9545     0.9625       0.9750      1.0000
+## Prevalence                 0.2125     0.0375       0.3500      0.1125
+## Detection Rate             0.1750     0.0000       0.3375      0.1125
+## Detection Prevalence       0.1750     0.0000       0.5000      0.2125
+## Balanced Accuracy          0.9118     0.5000       0.8571      0.9437
+##                      Class: roach Class: silver_bream Class: smelt
+## Sensitivity                 0.000              1.0000       0.0000
+## Specificity                 1.000              0.9595       1.0000
+## Pos Pred Value                NaN              0.6667          NaN
+## Neg Pred Value              0.875              1.0000       0.9125
+## Prevalence                  0.125              0.0750       0.0875
+## Detection Rate              0.000              0.0750       0.0000
+## Detection Prevalence        0.000              0.1125       0.0000
+## Balanced Accuracy           0.500              0.9797       0.5000</code></pre>
+</div>
+<div id="bagging" class="section level3 hasAnchor" number="10.4.5">
+<h3><span class="header-section-number">10.4.5</span> Bagging<a href="improving-model-performance.html#bagging" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Bagging stands for Bootstrap Aggregating.</p>
+<p>The algorithm works like this:</p>
+<ol style="list-style-type: decimal">
+<li>Draw a bootstrap sample from the training data.</li>
+<li>Train a decision tree on that sample.</li>
+<li>Repeat this many times (often hundreds).</li>
+<li>Combine predictions across trees.</li>
+</ol>
+<p>Because each tree sees a slightly different dataset, the trees differ from each other. When we aggregate their predictions, random noise tends to cancel out.</p>
+<p>The result is usually lower variance and better predictive performance than a single tree.</p>
+<p>Now we will do a bootstrap aggregate of the same classification task with the <code>bagging</code> function. We will use 100 separate bootstrap replications (so 100 different trees).</p>
+<div class="sourceCode" id="cb371"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb371-1"><a href="improving-model-performance.html#cb371-1" tabindex="-1"></a>baggedModel <span class="ot">&lt;-</span> <span class="fu">bagging</span>(common_name<span class="sc">~</span>., </span>
+<span id="cb371-2"><a href="improving-model-performance.html#cb371-2" tabindex="-1"></a>                       <span class="at">data=</span>trainingFish,</span>
+<span id="cb371-3"><a href="improving-model-performance.html#cb371-3" tabindex="-1"></a>                       <span class="at">nbagg =</span> <span class="dv">100</span>,</span>
+<span id="cb371-4"><a href="improving-model-performance.html#cb371-4" tabindex="-1"></a>                       <span class="at">coob =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb371-5"><a href="improving-model-performance.html#cb371-5" tabindex="-1"></a>baggedModel</span></code></pre></div>
+<pre><code>## 
+## Bagging classification trees with 100 bootstrap replications 
+## 
+## Call: bagging.data.frame(formula = common_name ~ ., data = trainingFish, 
+##     nbagg = 100, coob = TRUE)
+## 
+## Out-of-bag estimate of misclassification error:  0.2564</code></pre>
+<p>And the confusion matrix on the testing data. Same testing and training split, right?</p>
+<div class="sourceCode" id="cb373"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb373-1"><a href="improving-model-performance.html#cb373-1" tabindex="-1"></a>pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(baggedModel,testingFish)</span>
+<span id="cb373-2"><a href="improving-model-performance.html#cb373-2" tabindex="-1"></a>baggedCM <span class="ot">&lt;-</span> <span class="fu">confusionMatrix</span>(<span class="at">data =</span> pred, <span class="at">reference =</span> obs)</span>
+<span id="cb373-3"><a href="improving-model-performance.html#cb373-3" tabindex="-1"></a>baggedCM</span></code></pre></div>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##               Reference
+## Prediction     bream ide perch pike roach silver_bream smelt
+##   bream           17   0     0    0     0            0     0
+##   ide              0   1     1    0     0            0     0
+##   perch            0   2    23    0     3            0     0
+##   pike             0   0     0    9     0            0     0
+##   roach            0   0     3    0     7            0     0
+##   silver_bream     0   0     0    0     0            6     0
+##   smelt            0   0     1    0     0            0     7
+## 
+## Overall Statistics
+##                                           
+##                Accuracy : 0.875           
+##                  95% CI : (0.7821, 0.9384)
+##     No Information Rate : 0.35            
+##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16       
+##                                           
+##                   Kappa : 0.8415          
+##                                           
+##  Mcnemar&#39;s Test P-Value : NA              
+## 
+## Statistics by Class:
+## 
+##                      Class: bream Class: ide Class: perch Class: pike
+## Sensitivity                1.0000     0.3333       0.8214      1.0000
+## Specificity                1.0000     0.9870       0.9038      1.0000
+## Pos Pred Value             1.0000     0.5000       0.8214      1.0000
+## Neg Pred Value             1.0000     0.9744       0.9038      1.0000
+## Prevalence                 0.2125     0.0375       0.3500      0.1125
+## Detection Rate             0.2125     0.0125       0.2875      0.1125
+## Detection Prevalence       0.2125     0.0250       0.3500      0.1125
+## Balanced Accuracy          1.0000     0.6602       0.8626      1.0000
+##                      Class: roach Class: silver_bream Class: smelt
+## Sensitivity                0.7000               1.000       1.0000
+## Specificity                0.9571               1.000       0.9863
+## Pos Pred Value             0.7000               1.000       0.8750
+## Neg Pred Value             0.9571               1.000       1.0000
+## Prevalence                 0.1250               0.075       0.0875
+## Detection Rate             0.0875               0.075       0.0875
+## Detection Prevalence       0.1250               0.075       0.1000
+## Balanced Accuracy          0.8286               1.000       0.9932</code></pre>
+<div id="reminder-why-is-bootstrapping-ok" class="section level4 hasAnchor" number="10.4.5.1">
+<h4><span class="header-section-number">10.4.5.1</span> Reminder: Why is bootstrapping OK?<a href="improving-model-performance.html#reminder-why-is-bootstrapping-ok" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p>You might sometimes feel like bootstrapping is cheating. We are repeatedly sampling from the same dataset, so it can feel like we are just reusing the same information.</p>
+<p>The important idea is that our dataset is not the population. It is only a sample from a much larger population of possible observations.</p>
+<p>Bootstrapping treats the observed dataset as the best available approximation of that population. By sampling from it with replacement, we create many slightly different datasets that mimic the variability we might see if we repeatedly sampled from the real population.</p>
+<p>Each bootstrap dataset contains:
+- some observations multiple times
+- some observations not at all</p>
+<p>Those small differences are enough to produce slightly different models.</p>
+<p>Bagging takes advantage of this. Instead of trusting one model trained on one dataset, we train many models on many bootstrap versions of the data and combine their predictions.</p>
+<p>The goal is not to create new information. The goal is to expose how sensitive the model is to small changes in the data and stabilize the predictions by averaging across many models.</p>
+</div>
+</div>
+<div id="random-forest-aka-randomforest-aka-rf" class="section level3 hasAnchor" number="10.4.6">
+<h3><span class="header-section-number">10.4.6</span> Random Forest (aka randomForest, aka rF)<a href="improving-model-performance.html#random-forest-aka-randomforest-aka-rf" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>And now we will pull in the big algorithm. The <code>randomForest</code> approach is pretty ubiquitous in ML now. Make sure to read this section in the text and <a href="https://www.youtube.com/watch?v=J4Wdy0Wc_xQ&amp;ab_channel=StatQuestwithJoshStarmer">watch the StatQuest guy explain it all</a>.</p>
+<p>Random forests build on bagging but add an additional layer of randomness.</p>
+<p>In bagging:
+- every tree can consider all predictor variables when choosing a split.</p>
+<p>In random forests:
+- each split only considers a random subset of predictors.</p>
+<p>Why do this?</p>
+<p>If one predictor is very strong, bagged trees will tend to split on it first every time. This makes the trees highly correlated.</p>
+<p>Random forests force trees to explore different predictors, making the trees less correlated, which improves the ensemble when we average them.</p>
+<div id="bagging-vs-random-forest" class="section level4 hasAnchor" number="10.4.6.1">
+<h4><span class="header-section-number">10.4.6.1</span> Bagging vs Random Forest?<a href="improving-model-performance.html#bagging-vs-random-forest" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p>Both methods train many trees on bootstrap samples. In bagging, every split can consider all predictors. In a random forest, each split considers only a random subset of predictors (mtry). This reduces correlation among trees and usually improves prediction. Or a simple way I think about it is that bagging uses different rows from the data and random forest uses different rows and different columns.</p>
+<p>Let’s grow a random forest of 100 trees.</p>
+<div class="sourceCode" id="cb375"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb375-1"><a href="improving-model-performance.html#cb375-1" tabindex="-1"></a>rfModel <span class="ot">&lt;-</span> <span class="fu">randomForest</span>(common_name<span class="sc">~</span>.,</span>
+<span id="cb375-2"><a href="improving-model-performance.html#cb375-2" tabindex="-1"></a>                        <span class="at">ntree =</span> <span class="dv">100</span>,</span>
+<span id="cb375-3"><a href="improving-model-performance.html#cb375-3" tabindex="-1"></a>                        <span class="at">data=</span>trainingFish)</span>
+<span id="cb375-4"><a href="improving-model-performance.html#cb375-4" tabindex="-1"></a>rfModel</span></code></pre></div>
+<pre><code>## 
+## Call:
+##  randomForest(formula = common_name ~ ., data = trainingFish,      ntree = 100) 
+##                Type of random forest: classification
+##                      Number of trees: 100
+## No. of variables tried at each split: 2
+## 
+##         OOB estimate of  error rate: 32.05%
+## Confusion matrix:
+##              bream ide perch pike roach silver_bream smelt class.error
+## bream           16   0     0    0     0            1     0  0.05882353
+## ide              0   0     3    0     0            0     0  1.00000000
+## perch            0   1    18    0     7            0     2  0.35714286
+## pike             0   0     0    8     0            0     0  0.00000000
+## roach            0   0     9    0     1            0     0  0.90000000
+## silver_bream     1   0     0    0     0            4     0  0.20000000
+## smelt            0   0     1    0     0            0     6  0.14285714</code></pre>
+<p>And the confusion matrix on the testing data.</p>
+<div class="sourceCode" id="cb377"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb377-1"><a href="improving-model-performance.html#cb377-1" tabindex="-1"></a>pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(rfModel,testingFish)</span>
+<span id="cb377-2"><a href="improving-model-performance.html#cb377-2" tabindex="-1"></a>rfCM <span class="ot">&lt;-</span> <span class="fu">confusionMatrix</span>(<span class="at">data =</span> pred, <span class="at">reference =</span> obs)</span>
+<span id="cb377-3"><a href="improving-model-performance.html#cb377-3" tabindex="-1"></a>rfCM</span></code></pre></div>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##               Reference
+## Prediction     bream ide perch pike roach silver_bream smelt
+##   bream           17   0     0    0     0            0     0
+##   ide              0   1     0    0     0            0     0
+##   perch            0   2    24    0     2            0     0
+##   pike             0   0     0    9     0            0     0
+##   roach            0   0     4    0     8            0     0
+##   silver_bream     0   0     0    0     0            6     0
+##   smelt            0   0     0    0     0            0     7
+## 
+## Overall Statistics
+##                                           
+##                Accuracy : 0.9             
+##                  95% CI : (0.8124, 0.9558)
+##     No Information Rate : 0.35            
+##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16       
+##                                           
+##                   Kappa : 0.873           
+##                                           
+##  Mcnemar&#39;s Test P-Value : NA              
+## 
+## Statistics by Class:
+## 
+##                      Class: bream Class: ide Class: perch Class: pike
+## Sensitivity                1.0000     0.3333       0.8571      1.0000
+## Specificity                1.0000     1.0000       0.9231      1.0000
+## Pos Pred Value             1.0000     1.0000       0.8571      1.0000
+## Neg Pred Value             1.0000     0.9747       0.9231      1.0000
+## Prevalence                 0.2125     0.0375       0.3500      0.1125
+## Detection Rate             0.2125     0.0125       0.3000      0.1125
+## Detection Prevalence       0.2125     0.0125       0.3500      0.1125
+## Balanced Accuracy          1.0000     0.6667       0.8901      1.0000
+##                      Class: roach Class: silver_bream Class: smelt
+## Sensitivity                0.8000               1.000       1.0000
+## Specificity                0.9429               1.000       1.0000
+## Pos Pred Value             0.6667               1.000       1.0000
+## Neg Pred Value             0.9706               1.000       1.0000
+## Prevalence                 0.1250               0.075       0.0875
+## Detection Rate             0.1000               0.075       0.0875
+## Detection Prevalence       0.1500               0.075       0.0875
+## Balanced Accuracy          0.8714               1.000       1.0000</code></pre>
+</div>
+</div>
+<div id="a-tuned-random-forest" class="section level3 hasAnchor" number="10.4.7">
+<h3><span class="header-section-number">10.4.7</span> A Tuned Random Forest<a href="improving-model-performance.html#a-tuned-random-forest" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>The main tuning parameter in a random forest is <code>mtry</code>, the number of predictors randomly considered at each split.</p>
+<p>Small values increase tree diversity but may weaken individual trees. Larger values make trees more similar.</p>
+<p>Cross-validation helps find a good balance.</p>
+<p>So let’s try to tune this model.</p>
+<div class="sourceCode" id="cb379"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb379-1"><a href="improving-model-performance.html#cb379-1" tabindex="-1"></a>cvScheme <span class="ot">&lt;-</span> <span class="fu">trainControl</span>(<span class="at">method =</span> <span class="st">&quot;repeatedcv&quot;</span>,</span>
+<span id="cb379-2"><a href="improving-model-performance.html#cb379-2" tabindex="-1"></a>                         <span class="at">number=</span><span class="dv">5</span>,<span class="at">repeats =</span> <span class="dv">20</span>)</span>
+<span id="cb379-3"><a href="improving-model-performance.html#cb379-3" tabindex="-1"></a>rfTuningGrid <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">mtry =</span> <span class="dv">2</span><span class="sc">:</span><span class="dv">6</span>)</span>
+<span id="cb379-4"><a href="improving-model-performance.html#cb379-4" tabindex="-1"></a></span>
+<span id="cb379-5"><a href="improving-model-performance.html#cb379-5" tabindex="-1"></a>rfTuned <span class="ot">&lt;-</span> <span class="fu">train</span>(common_name<span class="sc">~</span>.,</span>
+<span id="cb379-6"><a href="improving-model-performance.html#cb379-6" tabindex="-1"></a>                 <span class="at">data=</span>trainingFish,</span>
+<span id="cb379-7"><a href="improving-model-performance.html#cb379-7" tabindex="-1"></a>                 <span class="at">method=</span><span class="st">&quot;rf&quot;</span>,</span>
+<span id="cb379-8"><a href="improving-model-performance.html#cb379-8" tabindex="-1"></a>                 <span class="at">trControl =</span> cvScheme,</span>
+<span id="cb379-9"><a href="improving-model-performance.html#cb379-9" tabindex="-1"></a>                 <span class="at">tuneGrid =</span> rfTuningGrid)</span>
+<span id="cb379-10"><a href="improving-model-performance.html#cb379-10" tabindex="-1"></a>rfTuned</span></code></pre></div>
+<pre><code>## Random Forest 
+## 
+## 78 samples
+##  8 predictor
+##  7 classes: &#39;bream&#39;, &#39;ide&#39;, &#39;perch&#39;, &#39;pike&#39;, &#39;roach&#39;, &#39;silver_bream&#39;, &#39;smelt&#39; 
+## 
+## No pre-processing
+## Resampling: Cross-Validated (5 fold, repeated 20 times) 
+## Summary of sample sizes: 64, 60, 62, 63, 63, 62, ... 
+## Resampling results across tuning parameters:
+## 
+##   mtry  Accuracy   Kappa    
+##   2     0.7317534  0.6487901
+##   3     0.7386554  0.6596274
+##   4     0.7428917  0.6650762
+##   5     0.7485912  0.6722428
+##   6     0.7552825  0.6816600
+## 
+## Accuracy was used to select the optimal model using the largest value.
+## The final value used for the model was mtry = 6.</code></pre>
+<p>And the confusion matrix on the testing data.</p>
+<div class="sourceCode" id="cb381"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb381-1"><a href="improving-model-performance.html#cb381-1" tabindex="-1"></a>pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(rfTuned,testingFish)</span>
+<span id="cb381-2"><a href="improving-model-performance.html#cb381-2" tabindex="-1"></a>rfTunedCM <span class="ot">&lt;-</span> <span class="fu">confusionMatrix</span>(<span class="at">data =</span> pred, <span class="at">reference =</span> obs)</span>
+<span id="cb381-3"><a href="improving-model-performance.html#cb381-3" tabindex="-1"></a>rfTunedCM</span></code></pre></div>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##               Reference
+## Prediction     bream ide perch pike roach silver_bream smelt
+##   bream           17   0     0    0     0            0     0
+##   ide              0   1     0    0     0            0     0
+##   perch            0   2    25    0     2            0     0
+##   pike             0   0     0    9     0            0     0
+##   roach            0   0     3    0     8            0     0
+##   silver_bream     0   0     0    0     0            6     0
+##   smelt            0   0     0    0     0            0     7
+## 
+## Overall Statistics
+##                                          
+##                Accuracy : 0.9125         
+##                  95% CI : (0.828, 0.9641)
+##     No Information Rate : 0.35           
+##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16      
+##                                          
+##                   Kappa : 0.8884         
+##                                          
+##  Mcnemar&#39;s Test P-Value : NA             
+## 
+## Statistics by Class:
+## 
+##                      Class: bream Class: ide Class: perch Class: pike
+## Sensitivity                1.0000     0.3333       0.8929      1.0000
+## Specificity                1.0000     1.0000       0.9231      1.0000
+## Pos Pred Value             1.0000     1.0000       0.8621      1.0000
+## Neg Pred Value             1.0000     0.9747       0.9412      1.0000
+## Prevalence                 0.2125     0.0375       0.3500      0.1125
+## Detection Rate             0.2125     0.0125       0.3125      0.1125
+## Detection Prevalence       0.2125     0.0125       0.3625      0.1125
+## Balanced Accuracy          1.0000     0.6667       0.9080      1.0000
+##                      Class: roach Class: silver_bream Class: smelt
+## Sensitivity                0.8000               1.000       1.0000
+## Specificity                0.9571               1.000       1.0000
+## Pos Pred Value             0.7273               1.000       1.0000
+## Neg Pred Value             0.9710               1.000       1.0000
+## Prevalence                 0.1250               0.075       0.0875
+## Detection Rate             0.1000               0.075       0.0875
+## Detection Prevalence       0.1375               0.075       0.0875
+## Balanced Accuracy          0.8786               1.000       1.0000</code></pre>
+</div>
+<div id="skill" class="section level3 hasAnchor" number="10.4.8">
+<h3><span class="header-section-number">10.4.8</span> Skill<a href="improving-model-performance.html#skill" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>While there is lots and lots of information in each of the confusion matrices, here is what most folks think is the bottom line for classification skill.</p>
+<p>We will focus on two summary metrics:</p>
+<ul>
+<li><strong>Accuracy</strong> – proportion of correct predictions</li>
+<li><strong>Kappa</strong> – improvement over random guessing</li>
+</ul>
+<p>Higher values indicate better classification performance.</p>
+<div class="sourceCode" id="cb383"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb383-1"><a href="improving-model-performance.html#cb383-1" tabindex="-1"></a><span class="fu">rbind</span>(<span class="at">rpart=</span>rpartCM<span class="sc">$</span>overall[<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>],</span>
+<span id="cb383-2"><a href="improving-model-performance.html#cb383-2" tabindex="-1"></a>      <span class="at">bagging=</span>baggedCM<span class="sc">$</span>overall[<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>],</span>
+<span id="cb383-3"><a href="improving-model-performance.html#cb383-3" tabindex="-1"></a>      <span class="at">randomForest =</span> rfCM<span class="sc">$</span>overall[<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>],</span>
+<span id="cb383-4"><a href="improving-model-performance.html#cb383-4" tabindex="-1"></a>      <span class="at">tunedRandomForest =</span> rfTunedCM<span class="sc">$</span>overall[<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>])</span></code></pre></div>
+<pre><code>##                   Accuracy     Kappa
+## rpart               0.7000 0.6028956
+## bagging             0.8750 0.8415214
+## randomForest        0.9000 0.8729655
+## tunedRandomForest   0.9125 0.8884462</code></pre>
+</div>
+</div>
+<div id="takeaway" class="section level2 hasAnchor" number="10.5">
+<h2><span class="header-section-number">10.5</span> Takeaway<a href="improving-model-performance.html#takeaway" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Decision trees are easy to understand but often unstable.</p>
+<p>Bagging stabilizes trees by averaging across many bootstrap samples.</p>
+<p>Random forests go one step further by forcing trees to explore different predictors, producing a strong and reliable ensemble.</p>
+</div>
+<div id="but-where-is-the-tree" class="section level2 hasAnchor" number="10.6">
+<h2><span class="header-section-number">10.6</span> But where is the tree?<a href="improving-model-performance.html#but-where-is-the-tree" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>If you trained a single decision tree earlier in the course, you could draw it.<br />
+There was one model and it had a visible structure.</p>
+<p>Bagging and random forests are different.</p>
+<p>Instead of fitting one tree, these methods fit many trees. Often hundreds.</p>
+<p>Each tree is trained on:
+- a bootstrap sample of the rows, and
+- (for random forests) a random subset of predictors when choosing splits.</p>
+<p>We can look at variable importance with something like <code>varImp(rfTuned)</code> to get an idea of what the critical drivers are but forests are much more opaque than individual trees in terms of inference.</p>
+<div id="how-can-they-predict-new-data" class="section level3 hasAnchor" number="10.6.1">
+<h3><span class="header-section-number">10.6.1</span> How can they predict new data?<a href="improving-model-performance.html#how-can-they-predict-new-data" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>You might notice something odd: each tree only sees a bootstrap sample of the training data. Some observations are left out. So how can the model make predictions for new data?</p>
+<p>The important thing to understand is that a decision tree does not memorize rows. It just learns rules about predictor values.</p>
+<p>For example a tree might learn rules like:</p>
+<pre><code>if length &lt; 25 → perch
+if length ≥ 25 and height &lt; 12 → roach
+if length ≥ 25 and height ≥ 12 → bream</code></pre>
+<p>Those rules apply to any observation with those predictor values, whether or not that observation appeared in the bootstrap sample.</p>
+<p>So when we make a prediction for a new data point:</p>
+<ol style="list-style-type: decimal">
+<li>The observation is sent down every tree in the ensemble.</li>
+<li>Each tree produces a prediction.</li>
+<li>The predictions are combined.</li>
+</ol>
+<p>For classification:
+- trees vote, and the majority class wins.</p>
+<p>For regression:
+- predictions are averaged.</p>
+</div>
+<div id="which-trees-are-used" class="section level3 hasAnchor" number="10.6.2">
+<h3><span class="header-section-number">10.6.2</span> Which trees are used?<a href="improving-model-performance.html#which-trees-are-used" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>All of them.</p>
+<p>If the model contains 500 trees, the new observation is run through all 500 trees, and their predictions are aggregated.</p>
+<p>The individual trees are usually noisy and not very interesting on their own. The strength of bagging and random forests comes from the combined prediction of many trees.</p>
+</div>
+</div>
+<div id="your-work-7" class="section level2 hasAnchor" number="10.7">
+<h2><span class="header-section-number">10.7</span> Your Work<a href="improving-model-performance.html#your-work-7" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Let’s assume that you are hip to the general idea of how <code>rpart</code> is doing its classification. Remember it works like the C5.0 algorithm with some differences in how many samples are required for a split. But it’s essentially the same as C5.0.</p>
+<p>For each bullet below write a paragraph, or so, explaining to your peer reviewer:</p>
+<ul>
+<li><p>How <code>bagging</code> differs from the straight <code>rpart</code> approach,</p></li>
+<li><p>How <code>randomForest</code> differs from <code>bagging</code> and,</p></li>
+<li><p>How the <code>caret</code> approach using <code>train</code> differs from <code>randomForest</code>.</p></li>
+</ul>
+<p>Next, try something nutty: Go find a model we have never used. Start by looking <a href="https://topepo.github.io/caret/models-clustered-by-tag-similarity.html">here</a>. Pick either a classification or a dual-use model (can be used for classification or regression) and run it on the fish data.</p>
+<p>For instance here is a “Model Averaged Neural Network” without paying any attention to the tuning or cross validation.</p>
+<div class="sourceCode" id="cb386"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb386-1"><a href="improving-model-performance.html#cb386-1" tabindex="-1"></a>avNNetModel <span class="ot">&lt;-</span> <span class="fu">train</span>(common_name<span class="sc">~</span>.,<span class="at">data=</span>trainingFish,</span>
+<span id="cb386-2"><a href="improving-model-performance.html#cb386-2" tabindex="-1"></a>                     <span class="at">method=</span><span class="st">&quot;avNNet&quot;</span>,</span>
+<span id="cb386-3"><a href="improving-model-performance.html#cb386-3" tabindex="-1"></a>                     <span class="at">preProcess =</span> <span class="st">&quot;range&quot;</span>, <span class="co"># recall that NN need preprocessing!</span></span>
+<span id="cb386-4"><a href="improving-model-performance.html#cb386-4" tabindex="-1"></a>                     <span class="at">trace =</span> <span class="cn">FALSE</span>) <span class="co"># makes it quiet</span></span></code></pre></div>
+<pre><code>## Warning: executing %dopar% sequentially: no parallel backend registered</code></pre>
+<div class="sourceCode" id="cb388"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb388-1"><a href="improving-model-performance.html#cb388-1" tabindex="-1"></a>avNNetModel</span></code></pre></div>
+<pre><code>## Model Averaged Neural Network 
+## 
+## 78 samples
+##  8 predictor
+##  7 classes: &#39;bream&#39;, &#39;ide&#39;, &#39;perch&#39;, &#39;pike&#39;, &#39;roach&#39;, &#39;silver_bream&#39;, &#39;smelt&#39; 
+## 
+## Pre-processing: re-scaling to [0, 1] (8) 
+## Resampling: Bootstrapped (25 reps) 
+## Summary of sample sizes: 78, 78, 78, 78, 78, 78, ... 
+## Resampling results across tuning parameters:
+## 
+##   size  decay  Accuracy   Kappa    
+##   1     0e+00  0.5190170  0.3002396
+##   1     1e-04  0.5791789  0.4176441
+##   1     1e-01  0.5441244  0.3391690
+##   3     0e+00  0.5294712  0.3540930
+##   3     1e-04  0.6654848  0.5386148
+##   3     1e-01  0.7180472  0.6040233
+##   5     0e+00  0.4761047  0.2772846
+##   5     1e-04  0.6817720  0.5561172
+##   5     1e-01  0.7415262  0.6396381
+## 
+## Tuning parameter &#39;bag&#39; was held constant at a value of FALSE
+## Accuracy was used to select the optimal model using the largest value.
+## The final values used for the model were size = 5, decay = 0.1 and bag = FALSE.</code></pre>
+<div class="sourceCode" id="cb390"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb390-1"><a href="improving-model-performance.html#cb390-1" tabindex="-1"></a>pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(avNNetModel,testingFish)</span>
+<span id="cb390-2"><a href="improving-model-performance.html#cb390-2" tabindex="-1"></a>avNNetCM <span class="ot">&lt;-</span> <span class="fu">confusionMatrix</span>(<span class="at">data =</span> pred, <span class="at">reference =</span> obs)</span>
+<span id="cb390-3"><a href="improving-model-performance.html#cb390-3" tabindex="-1"></a>avNNetCM</span></code></pre></div>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##               Reference
+## Prediction     bream ide perch pike roach silver_bream smelt
+##   bream           17   0     0    0     0            6     0
+##   ide              0   0     0    0     0            0     0
+##   perch            0   3    28    0    10            0     0
+##   pike             0   0     0    9     0            0     0
+##   roach            0   0     0    0     0            0     0
+##   silver_bream     0   0     0    0     0            0     0
+##   smelt            0   0     0    0     0            0     7
+## 
+## Overall Statistics
+##                                           
+##                Accuracy : 0.7625          
+##                  95% CI : (0.6542, 0.8505)
+##     No Information Rate : 0.35            
+##     P-Value [Acc &gt; NIR] : 5.955e-14       
+##                                           
+##                   Kappa : 0.6787          
+##                                           
+##  Mcnemar&#39;s Test P-Value : NA              
+## 
+## Statistics by Class:
+## 
+##                      Class: bream Class: ide Class: perch Class: pike
+## Sensitivity                1.0000     0.0000       1.0000      1.0000
+## Specificity                0.9048     1.0000       0.7500      1.0000
+## Pos Pred Value             0.7391        NaN       0.6829      1.0000
+## Neg Pred Value             1.0000     0.9625       1.0000      1.0000
+## Prevalence                 0.2125     0.0375       0.3500      0.1125
+## Detection Rate             0.2125     0.0000       0.3500      0.1125
+## Detection Prevalence       0.2875     0.0000       0.5125      0.1125
+## Balanced Accuracy          0.9524     0.5000       0.8750      1.0000
+##                      Class: roach Class: silver_bream Class: smelt
+## Sensitivity                 0.000               0.000       1.0000
+## Specificity                 1.000               1.000       1.0000
+## Pos Pred Value                NaN                 NaN       1.0000
+## Neg Pred Value              0.875               0.925       1.0000
+## Prevalence                  0.125               0.075       0.0875
+## Detection Rate              0.000               0.000       0.0875
+## Detection Prevalence        0.000               0.000       0.0875
+## Balanced Accuracy           0.500               0.500       1.0000</code></pre>
+<p>Skill is meh.</p>
+<p>What if we wanted to tune it? We can see what parameters are available via <code>modelLookup("avNNet")</code></p>
+<div class="sourceCode" id="cb392"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb392-1"><a href="improving-model-performance.html#cb392-1" tabindex="-1"></a><span class="fu">modelLookup</span>(<span class="st">&quot;avNNet&quot;</span>)</span></code></pre></div>
+<pre><code>##    model parameter         label forReg forClass probModel
+## 1 avNNet      size #Hidden Units   TRUE     TRUE      TRUE
+## 2 avNNet     decay  Weight Decay   TRUE     TRUE      TRUE
+## 3 avNNet       bag       Bagging   TRUE     TRUE      TRUE</code></pre>
+<p>This tells us that there are three tweaks we can make to try to improve performance: <code>size</code>, <code>decay</code>, and <code>bag</code>. What are reasonable values for those? I have no idea! But looking at the help for <code>avNNet</code> tells us that it calls <code>nnet</code>. By looking at those I was able to make an initial stab at figuring it out. I’m still not sure if these are in the right range for this algorithm frankly but it’s a start. Oh and I’ll cross validate it too.</p>
+<p>Warning. This will take awhile to run.</p>
+<div class="sourceCode" id="cb394"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb394-1"><a href="improving-model-performance.html#cb394-1" tabindex="-1"></a>avNNetTuningGrid <span class="ot">&lt;-</span> <span class="fu">expand.grid</span>(<span class="at">bag =</span> <span class="fu">c</span>(<span class="cn">TRUE</span>,<span class="cn">FALSE</span>),</span>
+<span id="cb394-2"><a href="improving-model-performance.html#cb394-2" tabindex="-1"></a>                                <span class="at">decay =</span> <span class="fu">seq</span>(<span class="dv">0</span>,<span class="fl">0.01</span>,<span class="at">by=</span><span class="fl">0.005</span>),</span>
+<span id="cb394-3"><a href="improving-model-performance.html#cb394-3" tabindex="-1"></a>                                <span class="at">size =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">3</span>,<span class="dv">5</span>,<span class="dv">10</span>,<span class="dv">20</span>))</span>
+<span id="cb394-4"><a href="improving-model-performance.html#cb394-4" tabindex="-1"></a></span>
+<span id="cb394-5"><a href="improving-model-performance.html#cb394-5" tabindex="-1"></a>avNNetModelTuned <span class="ot">&lt;-</span> <span class="fu">train</span>(common_name<span class="sc">~</span>.,<span class="at">data=</span>trainingFish,</span>
+<span id="cb394-6"><a href="improving-model-performance.html#cb394-6" tabindex="-1"></a>                     <span class="at">method=</span><span class="st">&quot;avNNet&quot;</span>,</span>
+<span id="cb394-7"><a href="improving-model-performance.html#cb394-7" tabindex="-1"></a>                     <span class="at">preProcess =</span> <span class="st">&quot;range&quot;</span>,</span>
+<span id="cb394-8"><a href="improving-model-performance.html#cb394-8" tabindex="-1"></a>                     <span class="at">trControl =</span> cvScheme,</span>
+<span id="cb394-9"><a href="improving-model-performance.html#cb394-9" tabindex="-1"></a>                     <span class="at">tuneGrid =</span> avNNetTuningGrid,</span>
+<span id="cb394-10"><a href="improving-model-performance.html#cb394-10" tabindex="-1"></a>                     <span class="at">trace =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb394-11"><a href="improving-model-performance.html#cb394-11" tabindex="-1"></a>avNNetModelTuned</span>
+<span id="cb394-12"><a href="improving-model-performance.html#cb394-12" tabindex="-1"></a></span>
+<span id="cb394-13"><a href="improving-model-performance.html#cb394-13" tabindex="-1"></a>pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(avNNetModelTuned,testingFish)</span>
+<span id="cb394-14"><a href="improving-model-performance.html#cb394-14" tabindex="-1"></a>avNNetTunedCM <span class="ot">&lt;-</span> <span class="fu">confusionMatrix</span>(<span class="at">data =</span> pred, <span class="at">reference =</span> obs)</span>
+<span id="cb394-15"><a href="improving-model-performance.html#cb394-15" tabindex="-1"></a></span>
+<span id="cb394-16"><a href="improving-model-performance.html#cb394-16" tabindex="-1"></a>avNNetTunedCM</span></code></pre></div>
+<p>This worked well on the testing data.</p>
+<p>What monstrous algorithm did you unleash on the data? A kNN variant? A SVM? Neural network? Multivariate Adaptive Regression Spline? Model Tree? Radial Basis Function? Self-Organizing Map? Did it work well on the testing data? Do you have any idea what it does? How did you tune it?</p>
+</div>
+<div id="postscript-boosting-and-stacking" class="section level2 hasAnchor" number="10.8">
+<h2><span class="header-section-number">10.8</span> Postscript: Boosting and Stacking<a href="improving-model-performance.html#postscript-boosting-and-stacking" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div id="boosting" class="section level3 hasAnchor" number="10.8.1">
+<h3><span class="header-section-number">10.8.1</span> Boosting<a href="improving-model-performance.html#boosting" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>I’ve given you a lot above! But I’d be remiss if I didn’t crack the door open for boosting which is a very common technique.</p>
+<p>Bagging and random forests build many independent trees and combine their predictions.</p>
+<p>Boosting takes a different approach.</p>
+<p>Instead of training trees independently, boosting builds trees sequentially. Each new tree focuses on correcting the errors made by the previous trees.</p>
+<p>The idea is simple:</p>
+<ol style="list-style-type: decimal">
+<li>Fit a small tree to the data.</li>
+<li>Identify where that tree makes mistakes.</li>
+<li>Fit another tree that focuses on those mistakes.</li>
+<li>Repeat many times.</li>
+</ol>
+<p>The final prediction combines the contribution of all trees.</p>
+<div id="a-helpful-way-to-think-about-boosting" class="section level4 hasAnchor" number="10.8.1.1">
+<h4><span class="header-section-number">10.8.1.1</span> A helpful way to think about boosting<a href="improving-model-performance.html#a-helpful-way-to-think-about-boosting" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p>Bagging and random forests rely on the wisdom of crowds. Many independent trees vote.</p>
+<p>Boosting is more like an iterative improvement process. Each tree tries to fix the remaining errors.</p>
+</div>
+<div id="weak-learners" class="section level4 hasAnchor" number="10.8.1.2">
+<h4><span class="header-section-number">10.8.1.2</span> Weak learners<a href="improving-model-performance.html#weak-learners" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p>Boosting typically uses very small trees, sometimes called <em>weak learners</em>. These trees might be:</p>
+<ul>
+<li>shallow</li>
+<li>simple</li>
+<li>not very accurate on their own</li>
+</ul>
+<p>But when hundreds of them are added together, the combined model can become very powerful.</p>
+</div>
+<div id="how-predictions-work" class="section level4 hasAnchor" number="10.8.1.3">
+<h4><span class="header-section-number">10.8.1.3</span> How predictions work<a href="improving-model-performance.html#how-predictions-work" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p>Even though trees are built sequentially, predictions still use all trees in the model.</p>
+<p>For regression:
+- predictions are added together across trees.</p>
+<p>For classification:
+- trees contribute weighted votes that are combined into a final prediction.</p>
+</div>
+<div id="the-key-difference-from-bagging-and-random-forests" class="section level4 hasAnchor" number="10.8.1.4">
+<h4><span class="header-section-number">10.8.1.4</span> The key difference from bagging and random forests<a href="improving-model-performance.html#the-key-difference-from-bagging-and-random-forests" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p>Bagging and random forests:
+- trees are built independently
+- trees reduce variance</p>
+<p>Boosting:
+- trees are built sequentially
+- trees reduce bias by correcting errors</p>
+<p>Because of this, boosting models can often outperform random forests, but they are usually more sensitive to tuning.</p>
+<p>Here is an untuned boosting attempt.</p>
+<div class="sourceCode" id="cb395"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb395-1"><a href="improving-model-performance.html#cb395-1" tabindex="-1"></a>gbmCaret <span class="ot">&lt;-</span> <span class="fu">train</span>(common_name<span class="sc">~</span>.,</span>
+<span id="cb395-2"><a href="improving-model-performance.html#cb395-2" tabindex="-1"></a>                  <span class="at">data=</span>trainingFish,</span>
+<span id="cb395-3"><a href="improving-model-performance.html#cb395-3" tabindex="-1"></a>                  <span class="at">method=</span><span class="st">&quot;gbm&quot;</span>,</span>
+<span id="cb395-4"><a href="improving-model-performance.html#cb395-4" tabindex="-1"></a>                  <span class="at">trControl =</span> cvScheme,</span>
+<span id="cb395-5"><a href="improving-model-performance.html#cb395-5" tabindex="-1"></a>                  <span class="at">verbose =</span> <span class="cn">FALSE</span>) <span class="co"># makes it quiet</span></span>
+<span id="cb395-6"><a href="improving-model-performance.html#cb395-6" tabindex="-1"></a>gbmCaret</span></code></pre></div>
+<pre><code>## Stochastic Gradient Boosting 
+## 
+## 78 samples
+##  8 predictor
+##  7 classes: &#39;bream&#39;, &#39;ide&#39;, &#39;perch&#39;, &#39;pike&#39;, &#39;roach&#39;, &#39;silver_bream&#39;, &#39;smelt&#39; 
+## 
+## No pre-processing
+## Resampling: Cross-Validated (5 fold, repeated 20 times) 
+## Summary of sample sizes: 61, 62, 62, 65, 62, 63, ... 
+## Resampling results across tuning parameters:
+## 
+##   interaction.depth  n.trees  Accuracy   Kappa    
+##   1                   50      0.7664745  0.6965524
+##   1                  100      0.7532854  0.6801043
+##   1                  150      0.7421058  0.6658439
+##   2                   50      0.7692778  0.7006079
+##   2                  100      0.7548527  0.6826783
+##   2                  150      0.7394383  0.6637660
+##   3                   50      0.7708838  0.7025738
+##   3                  100      0.7517874  0.6782875
+##   3                  150      0.7411605  0.6655430
+## 
+## Tuning parameter &#39;shrinkage&#39; was held constant at a value of 0.1
+## 
+## Tuning parameter &#39;n.minobsinnode&#39; was held constant at a value of 10
+## Accuracy was used to select the optimal model using the largest value.
+## The final values used for the model were n.trees = 50, interaction.depth =
+##  3, shrinkage = 0.1 and n.minobsinnode = 10.</code></pre>
+<div class="sourceCode" id="cb397"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb397-1"><a href="improving-model-performance.html#cb397-1" tabindex="-1"></a>pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(gbmCaret,testingFish)</span>
+<span id="cb397-2"><a href="improving-model-performance.html#cb397-2" tabindex="-1"></a>gbmCaretCM <span class="ot">&lt;-</span> <span class="fu">confusionMatrix</span>(<span class="at">data =</span> pred, <span class="at">reference =</span> obs)</span>
+<span id="cb397-3"><a href="improving-model-performance.html#cb397-3" tabindex="-1"></a>gbmCaretCM</span></code></pre></div>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##               Reference
+## Prediction     bream ide perch pike roach silver_bream smelt
+##   bream           17   0     0    0     0            0     0
+##   ide              0   0     0    0     0            0     0
+##   perch            0   3    23    1     3            0     0
+##   pike             0   0     0    8     0            0     0
+##   roach            0   0     4    0     7            0     0
+##   silver_bream     0   0     0    0     0            6     0
+##   smelt            0   0     1    0     0            0     7
+## 
+## Overall Statistics
+##                                         
+##                Accuracy : 0.85          
+##                  95% CI : (0.7526, 0.92)
+##     No Information Rate : 0.35          
+##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16     
+##                                         
+##                   Kappa : 0.8079        
+##                                         
+##  Mcnemar&#39;s Test P-Value : NA            
+## 
+## Statistics by Class:
+## 
+##                      Class: bream Class: ide Class: perch Class: pike
+## Sensitivity                1.0000     0.0000       0.8214      0.8889
+## Specificity                1.0000     1.0000       0.8654      1.0000
+## Pos Pred Value             1.0000        NaN       0.7667      1.0000
+## Neg Pred Value             1.0000     0.9625       0.9000      0.9861
+## Prevalence                 0.2125     0.0375       0.3500      0.1125
+## Detection Rate             0.2125     0.0000       0.2875      0.1000
+## Detection Prevalence       0.2125     0.0000       0.3750      0.1000
+## Balanced Accuracy          1.0000     0.5000       0.8434      0.9444
+##                      Class: roach Class: silver_bream Class: smelt
+## Sensitivity                0.7000               1.000       1.0000
+## Specificity                0.9429               1.000       0.9863
+## Pos Pred Value             0.6364               1.000       0.8750
+## Neg Pred Value             0.9565               1.000       1.0000
+## Prevalence                 0.1250               0.075       0.0875
+## Detection Rate             0.0875               0.075       0.0875
+## Detection Prevalence       0.1375               0.075       0.1000
+## Balanced Accuracy          0.8214               1.000       0.9932</code></pre>
+<p>To tune this you can look fire up <code>modelLookup("gbm")</code> and then build a tuning grid. Note that this code will take awhile to run.</p>
+<div class="sourceCode" id="cb399"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb399-1"><a href="improving-model-performance.html#cb399-1" tabindex="-1"></a>gbmTuningGrid <span class="ot">&lt;-</span> <span class="fu">expand.grid</span>(</span>
+<span id="cb399-2"><a href="improving-model-performance.html#cb399-2" tabindex="-1"></a>  <span class="at">n.trees =</span> <span class="fu">c</span>(<span class="dv">300</span>, <span class="dv">600</span>, <span class="dv">1000</span>),</span>
+<span id="cb399-3"><a href="improving-model-performance.html#cb399-3" tabindex="-1"></a>  <span class="at">interaction.depth =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>),</span>
+<span id="cb399-4"><a href="improving-model-performance.html#cb399-4" tabindex="-1"></a>  <span class="at">shrinkage =</span> <span class="fu">c</span>(<span class="fl">0.025</span>, <span class="fl">0.05</span>, <span class="fl">0.1</span>),</span>
+<span id="cb399-5"><a href="improving-model-performance.html#cb399-5" tabindex="-1"></a>  <span class="at">n.minobsinnode =</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">10</span>)</span>
+<span id="cb399-6"><a href="improving-model-performance.html#cb399-6" tabindex="-1"></a>)</span>
+<span id="cb399-7"><a href="improving-model-performance.html#cb399-7" tabindex="-1"></a></span>
+<span id="cb399-8"><a href="improving-model-performance.html#cb399-8" tabindex="-1"></a>gbmCaretTuned <span class="ot">&lt;-</span> <span class="fu">train</span>(common_name<span class="sc">~</span>.,</span>
+<span id="cb399-9"><a href="improving-model-performance.html#cb399-9" tabindex="-1"></a>                  <span class="at">data=</span>trainingFish,</span>
+<span id="cb399-10"><a href="improving-model-performance.html#cb399-10" tabindex="-1"></a>                  <span class="at">method=</span><span class="st">&quot;gbm&quot;</span>,</span>
+<span id="cb399-11"><a href="improving-model-performance.html#cb399-11" tabindex="-1"></a>                  <span class="at">trControl =</span> cvScheme, </span>
+<span id="cb399-12"><a href="improving-model-performance.html#cb399-12" tabindex="-1"></a>                  <span class="at">tuneGrid =</span> gbmTuningGrid,</span>
+<span id="cb399-13"><a href="improving-model-performance.html#cb399-13" tabindex="-1"></a>                  <span class="at">verbose =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb399-14"><a href="improving-model-performance.html#cb399-14" tabindex="-1"></a></span>
+<span id="cb399-15"><a href="improving-model-performance.html#cb399-15" tabindex="-1"></a>gbmCaretTuned</span>
+<span id="cb399-16"><a href="improving-model-performance.html#cb399-16" tabindex="-1"></a></span>
+<span id="cb399-17"><a href="improving-model-performance.html#cb399-17" tabindex="-1"></a>pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(gbmCaretTuned,testingFish)</span>
+<span id="cb399-18"><a href="improving-model-performance.html#cb399-18" tabindex="-1"></a>gbmCaretTunedCM <span class="ot">&lt;-</span> <span class="fu">confusionMatrix</span>(<span class="at">data =</span> pred, <span class="at">reference =</span> obs)</span>
+<span id="cb399-19"><a href="improving-model-performance.html#cb399-19" tabindex="-1"></a>gbmCaretTunedCM</span></code></pre></div>
+</div>
+</div>
+</div>
+<div id="stacking-briefly" class="section level2 hasAnchor" number="10.9">
+<h2><span class="header-section-number">10.9</span> Stacking (briefly)<a href="improving-model-performance.html#stacking-briefly" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Bagging, random forests, and boosting combine many versions of the same kind of model (trees) in different ways.</p>
+<p>Stacking is different: it combines different model types.</p>
+<p>The idea:</p>
+<ol style="list-style-type: decimal">
+<li>Train several base models (for example: a random forest, a boosted tree model, and a k-nearest neighbors model).</li>
+<li>Use cross-validation to generate out-of-sample predictions from each base model.</li>
+<li>Train a meta-model that learns how to combine those predictions into a final prediction.</li>
+</ol>
+<p>So the meta-model is not learning from the original predictors directly. It is learning from the predictions of other models.</p>
+<p>Two important cautions:</p>
+<ul>
+<li>Stacking only makes sense if the base models make different kinds of mistakes. If they all fail on the same observations, stacking won’t help.</li>
+<li>You have to generate meta-model training data using out-of-sample predictions (typically from cross-validation), otherwise stacking can overfit badly.</li>
+</ul>
+<p>We are not doing stacking in this module, but it is a common approach in machine learning competitions and in applied work when you want to squeeze out a bit more predictive performance.</p>
+
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="aside-animate-a-nn.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="eigen-faces.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+  "sharing": {
+    "github": false,
+    "facebook": true,
+    "twitter": true,
+    "linkedin": false,
+    "weibo": false,
+    "instapaper": false,
+    "vk": false,
+    "whatsapp": false,
+    "all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+  },
+  "fontsettings": {
+    "theme": "white",
+    "family": "sans",
+    "size": 2
+  },
+  "edit": {
+    "link": null,
+    "text": null
+  },
+  "history": {
+    "link": null,
+    "text": null
+  },
+  "view": {
+    "link": null,
+    "text": null
+  },
+  "download": null,
+  "search": {
+    "engine": "fuse",
+    "options": null
+  },
+  "toc": {
+    "collapse": "section",
+    "scroll_highlight": true
+  }
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

@@ -1,0 +1,1680 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>6 Classifying with Decision Trees | Machine Learning for Environmental Science: Notes for ESCI 506</title>
+  <meta name="description" content="Machine learning notes and exercises for ESCI 506" />
+  <meta name="generator" content="bookdown 0.46 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="6 Classifying with Decision Trees | Machine Learning for Environmental Science: Notes for ESCI 506" />
+  <meta property="og:type" content="book" />
+  
+  <meta property="og:description" content="Machine learning notes and exercises for ESCI 506" />
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="6 Classifying with Decision Trees | Machine Learning for Environmental Science: Notes for ESCI 506" />
+  
+  <meta name="twitter:description" content="Machine learning notes and exercises for ESCI 506" />
+  
+
+<meta name="author" content="Andy Bunn" />
+
+
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="classifying-with-knn.html"/>
+<link rel="next" href="continuous-prediction-with-regression-trees.html"/>
+<script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+<link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
+<link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
+<link href="libs/htmltools-fill-0.5.9/fill.css" rel="stylesheet" />
+<script src="libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+<script src="libs/plotly-binding-4.12.0/plotly.js"></script>
+<script src="libs/typedarray-0.1/typedarray.min.js"></script>
+<link href="libs/crosstalk-1.2.2/css/crosstalk.min.css" rel="stylesheet" />
+<script src="libs/crosstalk-1.2.2/js/crosstalk.min.js"></script>
+<link href="libs/plotly-htmlwidgets-css-2.25.2/plotly-htmlwidgets.css" rel="stylesheet" />
+<script src="libs/plotly-main-2.25.2/plotly-latest.min.js"></script>
+<link href="libs/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet" />
+<script src="libs/datatables-binding-0.34.0/datatables.js"></script>
+<link href="libs/dt-core-1.13.6/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="libs/dt-core-1.13.6/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="libs/dt-core-1.13.6/js/jquery.dataTables.min.js"></script>
+<link href="libs/vis-9.1.0/vis-network.min.css" rel="stylesheet" />
+<script src="libs/vis-9.1.0/vis-network.min.js"></script>
+<script src="libs/visNetwork-binding-2.1.4/visNetwork.js"></script>
+<script src="libs/FileSaver-1.1.20151003/FileSaver.min.js"></script>
+<script src="libs/Blob-1.0/Blob.js"></script>
+<script src="libs/canvas-toBlob-1.0/canvas-toBlob.js"></script>
+<script src="libs/html2canvas-0.5.0/html2canvas.js"></script>
+<script src="libs/jspdf-1.3.2/jspdf.debug.js"></script>
+<link href="libs/jquery-sparkline-2.1.2/jquery.sparkline.css" rel="stylesheet" />
+<script src="libs/jquery-sparkline-2.1.2/jquery.sparkline.js"></script>
+<script src="libs/sparkline-binding-2.0/sparkline.js"></script>
+
+<script>
+/* ========================================================================
+ * Bootstrap: transition.js v3.3.7
+ * http://getbootstrap.com/javascript/#transitions
+ * ========================================================================
+ * Copyright 2011-2016 Twitter, Inc.
+ * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+ * ======================================================================== */
+
+
++function ($) {
+  'use strict';
+
+  // CSS TRANSITION SUPPORT (Shoutout: http://www.modernizr.com/)
+  // ============================================================
+
+  function transitionEnd() {
+    var el = document.createElement('bootstrap')
+
+    var transEndEventNames = {
+      WebkitTransition : 'webkitTransitionEnd',
+      MozTransition    : 'transitionend',
+      OTransition      : 'oTransitionEnd otransitionend',
+      transition       : 'transitionend'
+    }
+
+    for (var name in transEndEventNames) {
+      if (el.style[name] !== undefined) {
+        return { end: transEndEventNames[name] }
+      }
+    }
+
+    return false // explicit for ie8 (  ._.)
+  }
+
+  // http://blog.alexmaccaw.com/css-transitions
+  $.fn.emulateTransitionEnd = function (duration) {
+    var called = false
+    var $el = this
+    $(this).one('bsTransitionEnd', function () { called = true })
+    var callback = function () { if (!called) $($el).trigger($.support.transition.end) }
+    setTimeout(callback, duration)
+    return this
+  }
+
+  $(function () {
+    $.support.transition = transitionEnd()
+
+    if (!$.support.transition) return
+
+    $.event.special.bsTransitionEnd = {
+      bindType: $.support.transition.end,
+      delegateType: $.support.transition.end,
+      handle: function (e) {
+        if ($(e.target).is(this)) return e.handleObj.handler.apply(this, arguments)
+      }
+    }
+  })
+
+}(jQuery);
+</script>
+<script>
+/* ========================================================================
+ * Bootstrap: collapse.js v3.3.7
+ * http://getbootstrap.com/javascript/#collapse
+ * ========================================================================
+ * Copyright 2011-2016 Twitter, Inc.
+ * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+ * ======================================================================== */
+
+/* jshint latedef: false */
+
++function ($) {
+  'use strict';
+
+  // COLLAPSE PUBLIC CLASS DEFINITION
+  // ================================
+
+  var Collapse = function (element, options) {
+    this.$element      = $(element)
+    this.options       = $.extend({}, Collapse.DEFAULTS, options)
+    this.$trigger      = $('[data-toggle="collapse"][href="#' + element.id + '"],' +
+                           '[data-toggle="collapse"][data-target="#' + element.id + '"]')
+    this.transitioning = null
+
+    if (this.options.parent) {
+      this.$parent = this.getParent()
+    } else {
+      this.addAriaAndCollapsedClass(this.$element, this.$trigger)
+    }
+
+    if (this.options.toggle) this.toggle()
+  }
+
+  Collapse.VERSION  = '3.3.7'
+
+  Collapse.TRANSITION_DURATION = 350
+
+  Collapse.DEFAULTS = {
+    toggle: true
+  }
+
+  Collapse.prototype.dimension = function () {
+    var hasWidth = this.$element.hasClass('width')
+    return hasWidth ? 'width' : 'height'
+  }
+
+  Collapse.prototype.show = function () {
+    if (this.transitioning || this.$element.hasClass('in')) return
+
+    var activesData
+    var actives = this.$parent && this.$parent.children('.panel').children('.in, .collapsing')
+
+    if (actives && actives.length) {
+      activesData = actives.data('bs.collapse')
+      if (activesData && activesData.transitioning) return
+    }
+
+    var startEvent = $.Event('show.bs.collapse')
+    this.$element.trigger(startEvent)
+    if (startEvent.isDefaultPrevented()) return
+
+    if (actives && actives.length) {
+      Plugin.call(actives, 'hide')
+      activesData || actives.data('bs.collapse', null)
+    }
+
+    var dimension = this.dimension()
+
+    this.$element
+      .removeClass('collapse')
+      .addClass('collapsing')[dimension](0)
+      .attr('aria-expanded', true)
+
+    this.$trigger
+      .removeClass('collapsed')
+      .attr('aria-expanded', true)
+
+    this.transitioning = 1
+
+    var complete = function () {
+      this.$element
+        .removeClass('collapsing')
+        .addClass('collapse in')[dimension]('')
+      this.transitioning = 0
+      this.$element
+        .trigger('shown.bs.collapse')
+    }
+
+    if (!$.support.transition) return complete.call(this)
+
+    var scrollSize = $.camelCase(['scroll', dimension].join('-'))
+
+    this.$element
+      .one('bsTransitionEnd', $.proxy(complete, this))
+      .emulateTransitionEnd(Collapse.TRANSITION_DURATION)[dimension](this.$element[0][scrollSize])
+  }
+
+  Collapse.prototype.hide = function () {
+    if (this.transitioning || !this.$element.hasClass('in')) return
+
+    var startEvent = $.Event('hide.bs.collapse')
+    this.$element.trigger(startEvent)
+    if (startEvent.isDefaultPrevented()) return
+
+    var dimension = this.dimension()
+
+    this.$element[dimension](this.$element[dimension]())[0].offsetHeight
+
+    this.$element
+      .addClass('collapsing')
+      .removeClass('collapse in')
+      .attr('aria-expanded', false)
+
+    this.$trigger
+      .addClass('collapsed')
+      .attr('aria-expanded', false)
+
+    this.transitioning = 1
+
+    var complete = function () {
+      this.transitioning = 0
+      this.$element
+        .removeClass('collapsing')
+        .addClass('collapse')
+        .trigger('hidden.bs.collapse')
+    }
+
+    if (!$.support.transition) return complete.call(this)
+
+    this.$element
+      [dimension](0)
+      .one('bsTransitionEnd', $.proxy(complete, this))
+      .emulateTransitionEnd(Collapse.TRANSITION_DURATION)
+  }
+
+  Collapse.prototype.toggle = function () {
+    this[this.$element.hasClass('in') ? 'hide' : 'show']()
+  }
+
+  Collapse.prototype.getParent = function () {
+    return $(this.options.parent)
+      .find('[data-toggle="collapse"][data-parent="' + this.options.parent + '"]')
+      .each($.proxy(function (i, element) {
+        var $element = $(element)
+        this.addAriaAndCollapsedClass(getTargetFromTrigger($element), $element)
+      }, this))
+      .end()
+  }
+
+  Collapse.prototype.addAriaAndCollapsedClass = function ($element, $trigger) {
+    var isOpen = $element.hasClass('in')
+
+    $element.attr('aria-expanded', isOpen)
+    $trigger
+      .toggleClass('collapsed', !isOpen)
+      .attr('aria-expanded', isOpen)
+  }
+
+  function getTargetFromTrigger($trigger) {
+    var href
+    var target = $trigger.attr('data-target')
+      || (href = $trigger.attr('href')) && href.replace(/.*(?=#[^\s]+$)/, '') // strip for ie7
+
+    return $(target)
+  }
+
+
+  // COLLAPSE PLUGIN DEFINITION
+  // ==========================
+
+  function Plugin(option) {
+    return this.each(function () {
+      var $this   = $(this)
+      var data    = $this.data('bs.collapse')
+      var options = $.extend({}, Collapse.DEFAULTS, $this.data(), typeof option == 'object' && option)
+
+      if (!data && options.toggle && /show|hide/.test(option)) options.toggle = false
+      if (!data) $this.data('bs.collapse', (data = new Collapse(this, options)))
+      if (typeof option == 'string') data[option]()
+    })
+  }
+
+  var old = $.fn.collapse
+
+  $.fn.collapse             = Plugin
+  $.fn.collapse.Constructor = Collapse
+
+
+  // COLLAPSE NO CONFLICT
+  // ====================
+
+  $.fn.collapse.noConflict = function () {
+    $.fn.collapse = old
+    return this
+  }
+
+
+  // COLLAPSE DATA-API
+  // =================
+
+  $(document).on('click.bs.collapse.data-api', '[data-toggle="collapse"]', function (e) {
+    var $this   = $(this)
+
+    if (!$this.attr('data-target')) e.preventDefault()
+
+    var $target = getTargetFromTrigger($this)
+    var data    = $target.data('bs.collapse')
+    var option  = data ? 'toggle' : $this.data()
+
+    Plugin.call($target, option)
+  })
+
+}(jQuery);
+</script>
+<script>
+window.initializeCodeFolding = function(show) {
+
+  // handlers for show-all and hide all
+  $("#rmd-show-all-code").click(function() {
+    // close the dropdown menu when an option is clicked
+    $("#allCodeButton").dropdown("toggle");
+    $('div.r-code-collapse').each(function() {
+      $(this).collapse('show');
+    });
+  });
+  $("#rmd-hide-all-code").click(function() {
+    // close the dropdown menu when an option is clicked
+    $("#allCodeButton").dropdown("toggle");
+    $('div.r-code-collapse').each(function() {
+      $(this).collapse('hide');
+    });
+  });
+
+  // index for unique code element ids
+  var currentIndex = 1;
+
+  // select all R code blocks
+  var rCodeBlocks = $('pre.sourceCode, pre.r, pre.python, pre.bash, pre.sql, pre.cpp, pre.stan');
+  rCodeBlocks.each(function() {
+
+    // if code block has been labeled with class `fold-show`, show the code on init!
+    var classList = $(this).attr('class').split(/\s+/);
+    for (var i = 0; i < classList.length; i++) {
+    if (classList[i] === 'fold-show') {
+        show = true;
+      }
+      // AGB add fold-hide
+    if (classList[i] === 'fold-hide') {
+        show = false;
+      }
+    }
+    // AGB
+    // if code block has been labeled with class `fold-hide`, hide the code on init!
+//    var classList = $(this).attr('class').split(/\s+/);
+//    for (var i = 0; i < classList.length; i++) {
+//    if (classList[i] === 'fold-hide') {
+//        show = false;
+//      }
+//    }
+
+    // create a collapsable div to wrap the code in
+    var div = $('<div class="collapse r-code-collapse"></div>');
+    if (show)
+      div.addClass('in');
+    var id = 'rcode-643E0F36' + currentIndex++;
+    div.attr('id', id);
+    $(this).before(div);
+    $(this).detach().appendTo(div);
+
+    // add a show code button right above
+    var showCodeText = $('<span>' + (show ? 'Hide' : 'Code') + '</span>');
+    var showCodeButton = $('<button type="button" class="btn btn-default btn-xs code-folding-btn pull-right"></button>');
+    showCodeButton.append(showCodeText);
+    showCodeButton
+        .attr('data-toggle', 'collapse')
+        .attr('data-target', '#' + id)
+        .attr('aria-expanded', show)
+        .attr('aria-controls', id);
+
+    var buttonRow = $('<div class="row"></div>');
+    var buttonCol = $('<div class="col-md-12"></div>');
+
+    buttonCol.append(showCodeButton);
+    buttonRow.append(buttonCol);
+
+    div.before(buttonRow);
+
+    // hack: return show to false, otherwise all next codeBlocks will be shown!
+    show = true;
+
+    // update state of button on show/hide
+    div.on('hidden.bs.collapse', function () {
+      showCodeText.text('Code');
+    });
+    div.on('show.bs.collapse', function () {
+      showCodeText.text('Hide');
+    });
+  });
+
+}
+</script>
+<script>
+/* ========================================================================
+ * Bootstrap: dropdown.js v3.3.7
+ * http://getbootstrap.com/javascript/#dropdowns
+ * ========================================================================
+ * Copyright 2011-2016 Twitter, Inc.
+ * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+ * ======================================================================== */
+
+
++function ($) {
+  'use strict';
+
+  // DROPDOWN CLASS DEFINITION
+  // =========================
+
+  var backdrop = '.dropdown-backdrop'
+  var toggle   = '[data-toggle="dropdown"]'
+  var Dropdown = function (element) {
+    $(element).on('click.bs.dropdown', this.toggle)
+  }
+
+  Dropdown.VERSION = '3.3.7'
+
+  function getParent($this) {
+    var selector = $this.attr('data-target')
+
+    if (!selector) {
+      selector = $this.attr('href')
+      selector = selector && /#[A-Za-z]/.test(selector) && selector.replace(/.*(?=#[^\s]*$)/, '') // strip for ie7
+    }
+
+    var $parent = selector && $(selector)
+
+    return $parent && $parent.length ? $parent : $this.parent()
+  }
+
+  function clearMenus(e) {
+    if (e && e.which === 3) return
+    $(backdrop).remove()
+    $(toggle).each(function () {
+      var $this         = $(this)
+      var $parent       = getParent($this)
+      var relatedTarget = { relatedTarget: this }
+
+      if (!$parent.hasClass('open')) return
+
+      if (e && e.type == 'click' && /input|textarea/i.test(e.target.tagName) && $.contains($parent[0], e.target)) return
+
+      $parent.trigger(e = $.Event('hide.bs.dropdown', relatedTarget))
+
+      if (e.isDefaultPrevented()) return
+
+      $this.attr('aria-expanded', 'false')
+      $parent.removeClass('open').trigger($.Event('hidden.bs.dropdown', relatedTarget))
+    })
+  }
+
+  Dropdown.prototype.toggle = function (e) {
+    var $this = $(this)
+
+    if ($this.is('.disabled, :disabled')) return
+
+    var $parent  = getParent($this)
+    var isActive = $parent.hasClass('open')
+
+    clearMenus()
+
+    if (!isActive) {
+      if ('ontouchstart' in document.documentElement && !$parent.closest('.navbar-nav').length) {
+        // if mobile we use a backdrop because click events don't delegate
+        $(document.createElement('div'))
+          .addClass('dropdown-backdrop')
+          .insertAfter($(this))
+          .on('click', clearMenus)
+      }
+
+      var relatedTarget = { relatedTarget: this }
+      $parent.trigger(e = $.Event('show.bs.dropdown', relatedTarget))
+
+      if (e.isDefaultPrevented()) return
+
+      $this
+        .trigger('focus')
+        .attr('aria-expanded', 'true')
+
+      $parent
+        .toggleClass('open')
+        .trigger($.Event('shown.bs.dropdown', relatedTarget))
+    }
+
+    return false
+  }
+
+  Dropdown.prototype.keydown = function (e) {
+    if (!/(38|40|27|32)/.test(e.which) || /input|textarea/i.test(e.target.tagName)) return
+
+    var $this = $(this)
+
+    e.preventDefault()
+    e.stopPropagation()
+
+    if ($this.is('.disabled, :disabled')) return
+
+    var $parent  = getParent($this)
+    var isActive = $parent.hasClass('open')
+
+    if (!isActive && e.which != 27 || isActive && e.which == 27) {
+      if (e.which == 27) $parent.find(toggle).trigger('focus')
+      return $this.trigger('click')
+    }
+
+    var desc = ' li:not(.disabled):visible a'
+    var $items = $parent.find('.dropdown-menu' + desc)
+
+    if (!$items.length) return
+
+    var index = $items.index(e.target)
+
+    if (e.which == 38 && index > 0)                 index--         // up
+    if (e.which == 40 && index < $items.length - 1) index++         // down
+    if (!~index)                                    index = 0
+
+    $items.eq(index).trigger('focus')
+  }
+
+
+  // DROPDOWN PLUGIN DEFINITION
+  // ==========================
+
+  function Plugin(option) {
+    return this.each(function () {
+      var $this = $(this)
+      var data  = $this.data('bs.dropdown')
+
+      if (!data) $this.data('bs.dropdown', (data = new Dropdown(this)))
+      if (typeof option == 'string') data[option].call($this)
+    })
+  }
+
+  var old = $.fn.dropdown
+
+  $.fn.dropdown             = Plugin
+  $.fn.dropdown.Constructor = Dropdown
+
+
+  // DROPDOWN NO CONFLICT
+  // ====================
+
+  $.fn.dropdown.noConflict = function () {
+    $.fn.dropdown = old
+    return this
+  }
+
+
+  // APPLY TO STANDARD DROPDOWN ELEMENTS
+  // ===================================
+
+  $(document)
+    .on('click.bs.dropdown.data-api', clearMenus)
+    .on('click.bs.dropdown.data-api', '.dropdown form', function (e) { e.stopPropagation() })
+    .on('click.bs.dropdown.data-api', toggle, Dropdown.prototype.toggle)
+    .on('keydown.bs.dropdown.data-api', toggle, Dropdown.prototype.keydown)
+    .on('keydown.bs.dropdown.data-api', '.dropdown-menu', Dropdown.prototype.keydown)
+
+}(jQuery);
+</script>
+<style type="text/css">
+.code-folding-btn {
+  margin-bottom: 4px;
+}
+
+.row { display: flex; }
+.collapse { display: none; }
+.in { display:block }
+.pull-right > .dropdown-menu {
+    right: 0;
+    left: auto;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1000;
+    display: none;
+    float: left;
+    min-width: 160px;
+    padding: 5px 0;
+    margin: 2px 0 0;
+    font-size: 14px;
+    text-align: left;
+    list-style: none;
+    background-color: #fff;
+    -webkit-background-clip: padding-box;
+    background-clip: padding-box;
+    border: 1px solid #ccc;
+    border: 1px solid rgba(0,0,0,.15);
+    border-radius: 4px;
+    -webkit-box-shadow: 0 6px 12px rgba(0,0,0,.175);
+    box-shadow: 0 6px 12px rgba(0,0,0,.175);
+}
+
+.open > .dropdown-menu {
+    display: block;
+    color: #ffffff;
+    background-color: #ffffff;
+    background-image: none;
+    border-color: #92897e;
+}
+
+.dropdown-menu > li > a {
+  display: block;
+  padding: 3px 20px;
+  clear: both;
+  font-weight: 400;
+  line-height: 1.42857143;
+  color: #000000;
+  white-space: nowrap;
+}
+
+.dropdown-menu > li > a:hover,
+.dropdown-menu > li > a:focus {
+  color: #ffffff;
+  text-decoration: none;
+  background-color: #e95420;
+}
+
+.dropdown-menu > .active > a,
+.dropdown-menu > .active > a:hover,
+.dropdown-menu > .active > a:focus {
+  color: #ffffff;
+  text-decoration: none;
+  background-color: #e95420;
+  outline: 0;
+}
+.dropdown-menu > .disabled > a,
+.dropdown-menu > .disabled > a:hover,
+.dropdown-menu > .disabled > a:focus {
+  color: #aea79f;
+}
+
+.dropdown-menu > .disabled > a:hover,
+.dropdown-menu > .disabled > a:focus {
+  text-decoration: none;
+  cursor: not-allowed;
+  background-color: transparent;
+  background-image: none;
+  filter: progid:DXImageTransform.Microsoft.gradient(enabled = false);
+}
+
+.btn {
+  display: inline-block;
+  margin-bottom: 1;
+  font-weight: normal;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  -ms-touch-action: manipulation;
+      touch-action: manipulation;
+  cursor: pointer;
+  background-image: none;
+  border: 1px solid transparent;
+  padding: 4px 8px;
+  font-size: 14px;
+  line-height: 1.42857143;
+  border-radius: 4px;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.btn:focus,
+.btn:active:focus,
+.btn.active:focus,
+.btn.focus,
+.btn:active.focus,
+.btn.active.focus {
+  outline: 5px auto -webkit-focus-ring-color;
+  outline-offset: -2px;
+}
+.btn:hover,
+.btn:focus,
+.btn.focus {
+  color: #ffffff;
+  text-decoration: none;
+}
+.btn:active,
+.btn.active {
+  background-image: none;
+  outline: 0;
+  box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+}
+.btn.disabled,
+.btn[disabled],
+fieldset[disabled] .btn {
+  cursor: not-allowed;
+  filter: alpha(opacity=65);
+  opacity: 0.65;
+  box-shadow: none;
+}
+a.btn.disabled,
+fieldset[disabled] a.btn {
+  pointer-events: none;
+}
+.btn-default {
+  color: #ffffff;
+  background-color: #aea79f; #important
+  border-color: #aea79f;
+}
+
+.btn-default:focus,
+.btn-default.focus {
+  color: #ffffff;
+  background-color: #978e83;
+  border-color: #6f675e;
+}
+
+.btn-default:hover {
+  color: #ffffff;
+  background-color: #978e83;
+  border-color: #92897e;
+}
+.btn-default:active,
+.btn-default.active,
+.btn-group > .btn:not(:first-child):not(:last-child):not(.dropdown-toggle) {
+  border-radius: 0;
+}
+.btn-group > .btn:first-child {
+  margin-left: 0;
+}
+.btn-group > .btn:first-child:not(:last-child):not(.dropdown-toggle) {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.btn-group > .btn:last-child:not(:first-child),
+.btn-group > .dropdown-toggle:not(:first-child) {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+.btn-group > .btn-group {
+  float: left;
+}
+.btn-group > .btn-group:not(:first-child):not(:last-child) > .btn {
+  border-radius: 0;
+}
+.btn-group > .btn-group:first-child:not(:last-child) > .btn:last-child,
+.btn-group > .btn-group:first-child:not(:last-child) > .dropdown-toggle {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.btn-group > .btn-group:last-child:not(:first-child) > .btn:first-child {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+.btn-group .dropdown-toggle:active,
+.btn-group.open .dropdown-toggle {
+  outline: 0;
+}
+.btn-group > .btn + .dropdown-toggle {
+  padding-right: 8px;
+  padding-left: 8px;
+}
+.btn-group > .btn-lg + .dropdown-toggle {
+  padding-right: 12px;
+  padding-left: 12px;
+}
+.btn-group.open .dropdown-toggle {
+  box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+}
+.btn-group.open .dropdown-toggle.btn-link {
+  box-shadow: none;
+}
+
+</style>
+<script>
+var str = '<div class="btn-group pull-right" style="position: fixed; right: 50px; top: 10px; z-index: 200"><button type="button" class="btn btn-default btn-xs dropdown-toggle" id="allCodeButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" data-_extension-text-contrast=""><span>Code</span> <span class="caret"></span></button><ul class="dropdown-menu" style="min-width: 50px;"><li><a id="rmd-show-all-code" href="#">Show All Code</a></li><li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li></ul></div>';
+document.write(str);
+</script>
+<script>
+$(document).ready(function () {
+  // AGB add fold-hide changed === to !== to default to showing code
+  window.initializeCodeFolding("show" !== "hide");
+});
+</script>
+
+
+<style type="text/css">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<style type="text/css">
+  
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+</style>
+
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Welcome</a>
+<ul>
+<li class="chapter" data-level="1.1" data-path="index.html"><a href="index.html#how-to-use-these-notes"><i class="fa fa-check"></i><b>1.1</b> How to Use These Notes</a></li>
+<li class="chapter" data-level="1.2" data-path="index.html"><a href="index.html#whats-in-these-notes"><i class="fa fa-check"></i><b>1.2</b> What’s in These Notes</a></li>
+<li class="chapter" data-level="1.3" data-path="index.html"><a href="index.html#technical-setup"><i class="fa fa-check"></i><b>1.3</b> Technical Setup</a>
+<ul>
+<li class="chapter" data-level="1.3.1" data-path="index.html"><a href="index.html#project-structure"><i class="fa fa-check"></i><b>1.3.1</b> Project Structure</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="bootstrapping.html"><a href="bootstrapping.html"><i class="fa fa-check"></i><b>2</b> Bootstrapping</a>
+<ul>
+<li class="chapter" data-level="2.1" data-path="bootstrapping.html"><a href="bootstrapping.html#big-idea"><i class="fa fa-check"></i><b>2.1</b> Big Idea</a></li>
+<li class="chapter" data-level="2.2" data-path="bootstrapping.html"><a href="bootstrapping.html#reading"><i class="fa fa-check"></i><b>2.2</b> Reading</a></li>
+<li class="chapter" data-level="2.3" data-path="bootstrapping.html"><a href="bootstrapping.html#methods-as-historical-artifacts"><i class="fa fa-check"></i><b>2.3</b> Methods as Historical Artifacts</a></li>
+<li class="chapter" data-level="2.4" data-path="bootstrapping.html"><a href="bootstrapping.html#packages"><i class="fa fa-check"></i><b>2.4</b> Packages</a></li>
+<li class="chapter" data-level="2.5" data-path="bootstrapping.html"><a href="bootstrapping.html#a-worked-example-bootstrapping-a-mean"><i class="fa fa-check"></i><b>2.5</b> A Worked Example: Bootstrapping a Mean</a>
+<ul>
+<li class="chapter" data-level="2.5.1" data-path="bootstrapping.html"><a href="bootstrapping.html#the-tiny-observed-data"><i class="fa fa-check"></i><b>2.5.1</b> The (tiny) observed data</a></li>
+<li class="chapter" data-level="2.5.2" data-path="bootstrapping.html"><a href="bootstrapping.html#resampling-with-replacement"><i class="fa fa-check"></i><b>2.5.2</b> Resampling with replacement</a></li>
+</ul></li>
+<li class="chapter" data-level="2.6" data-path="bootstrapping.html"><a href="bootstrapping.html#why-replacement-matters"><i class="fa fa-check"></i><b>2.6</b> Why replacement matters</a>
+<ul>
+<li class="chapter" data-level="2.6.1" data-path="bootstrapping.html"><a href="bootstrapping.html#what-we-are-assuming-when-we-bootstrap"><i class="fa fa-check"></i><b>2.6.1</b> What We Are Assuming When We Bootstrap</a></li>
+</ul></li>
+<li class="chapter" data-level="2.7" data-path="bootstrapping.html"><a href="bootstrapping.html#bird-diversity-data"><i class="fa fa-check"></i><b>2.7</b> Bird Diversity Data</a></li>
+<li class="chapter" data-level="2.8" data-path="bootstrapping.html"><a href="bootstrapping.html#diversity"><i class="fa fa-check"></i><b>2.8</b> Diversity</a></li>
+<li class="chapter" data-level="2.9" data-path="bootstrapping.html"><a href="bootstrapping.html#roll-your-own-bootstrap-for-one-habitat"><i class="fa fa-check"></i><b>2.9</b> Roll your own bootstrap for one habitat</a>
+<ul>
+<li class="chapter" data-level="2.9.1" data-path="bootstrapping.html"><a href="bootstrapping.html#do-it-with-boot"><i class="fa fa-check"></i><b>2.9.1</b> Do it with <code>boot</code></a></li>
+</ul></li>
+<li class="chapter" data-level="2.10" data-path="bootstrapping.html"><a href="bootstrapping.html#your-work"><i class="fa fa-check"></i><b>2.10</b> Your work</a></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="permutation.html"><a href="permutation.html"><i class="fa fa-check"></i><b>3</b> Permutation</a>
+<ul>
+<li class="chapter" data-level="3.1" data-path="permutation.html"><a href="permutation.html#big-picture"><i class="fa fa-check"></i><b>3.1</b> Big Picture</a></li>
+<li class="chapter" data-level="3.2" data-path="permutation.html"><a href="permutation.html#reading-1"><i class="fa fa-check"></i><b>3.2</b> Reading</a></li>
+<li class="chapter" data-level="3.3" data-path="permutation.html"><a href="permutation.html#methods-as-historical-artifacts-1"><i class="fa fa-check"></i><b>3.3</b> Methods as Historical Artifacts</a></li>
+<li class="chapter" data-level="3.4" data-path="permutation.html"><a href="permutation.html#packages-1"><i class="fa fa-check"></i><b>3.4</b> Packages</a></li>
+<li class="chapter" data-level="3.5" data-path="permutation.html"><a href="permutation.html#alpaca-sim"><i class="fa fa-check"></i><b>3.5</b> Alpaca sim</a>
+<ul>
+<li class="chapter" data-level="3.5.1" data-path="permutation.html"><a href="permutation.html#data"><i class="fa fa-check"></i><b>3.5.1</b> Data</a></li>
+<li class="chapter" data-level="3.5.2" data-path="permutation.html"><a href="permutation.html#test-statistic"><i class="fa fa-check"></i><b>3.5.2</b> Test statistic</a></li>
+<li class="chapter" data-level="3.5.3" data-path="permutation.html"><a href="permutation.html#randomize-group-membership"><i class="fa fa-check"></i><b>3.5.3</b> Randomize group membership</a></li>
+<li class="chapter" data-level="3.5.4" data-path="permutation.html"><a href="permutation.html#run-many-random-permutations"><i class="fa fa-check"></i><b>3.5.4</b> Run many random permutations</a></li>
+<li class="chapter" data-level="3.5.5" data-path="permutation.html"><a href="permutation.html#assess-the-results"><i class="fa fa-check"></i><b>3.5.5</b> Assess the results</a></li>
+</ul></li>
+<li class="chapter" data-level="3.6" data-path="permutation.html"><a href="permutation.html#your-work-1"><i class="fa fa-check"></i><b>3.6</b> Your work</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html"><i class="fa fa-check"></i><b>4</b> Always Be Cross Validating (ABCv)</a>
+<ul>
+<li class="chapter" data-level="4.1" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#big-idea-1"><i class="fa fa-check"></i><b>4.1</b> Big Idea</a></li>
+<li class="chapter" data-level="4.2" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#packages-2"><i class="fa fa-check"></i><b>4.2</b> Packages</a></li>
+<li class="chapter" data-level="4.3" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#reading-2"><i class="fa fa-check"></i><b>4.3</b> Reading</a></li>
+<li class="chapter" data-level="4.4" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#overfitting-and-underfitting"><i class="fa fa-check"></i><b>4.4</b> Overfitting and Underfitting</a></li>
+<li class="chapter" data-level="4.5" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#a-worked-example"><i class="fa fa-check"></i><b>4.5</b> A worked example</a></li>
+<li class="chapter" data-level="4.6" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#holdouts-divide-and-conquer-train-and-test"><i class="fa fa-check"></i><b>4.6</b> Holdouts, divide and conquer, train and test</a></li>
+<li class="chapter" data-level="4.7" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#doing-k-fold-cross-validation"><i class="fa fa-check"></i><b>4.7</b> Doing k-fold cross validation</a>
+<ul>
+<li class="chapter" data-level="4.7.1" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#aside-is-this-the-same-as-bootstrapping-or-permutation"><i class="fa fa-check"></i><b>4.7.1</b> Aside: Is this the same as bootstrapping? Or permutation?</a></li>
+</ul></li>
+<li class="chapter" data-level="4.8" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#doing-loocv"><i class="fa fa-check"></i><b>4.8</b> Doing LOOCV?</a></li>
+<li class="chapter" data-level="4.9" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#what-about-repeating-k-fold"><i class="fa fa-check"></i><b>4.9</b> What about repeating k-fold?</a></li>
+<li class="chapter" data-level="4.10" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#caret-classification-and-regression-training"><i class="fa fa-check"></i><b>4.10</b> <code>caret</code>: Classification And REgression Training</a></li>
+<li class="chapter" data-level="4.11" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#final-thoughts-abcv"><i class="fa fa-check"></i><b>4.11</b> Final thoughts: ABCv</a></li>
+<li class="chapter" data-level="4.12" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#your-work-2"><i class="fa fa-check"></i><b>4.12</b> Your Work</a></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html"><i class="fa fa-check"></i><b>5</b> Classifying with kNN</a>
+<ul>
+<li class="chapter" data-level="5.1" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#big-idea-2"><i class="fa fa-check"></i><b>5.1</b> Big Idea</a></li>
+<li class="chapter" data-level="5.2" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#packages-3"><i class="fa fa-check"></i><b>5.2</b> Packages</a></li>
+<li class="chapter" data-level="5.3" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#reading-3"><i class="fa fa-check"></i><b>5.3</b> Reading</a></li>
+<li class="chapter" data-level="5.4" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#classification-voting-by-distance"><i class="fa fa-check"></i><b>5.4</b> Classification Voting by Distance</a></li>
+<li class="chapter" data-level="5.5" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#high-dimensional-space"><i class="fa fa-check"></i><b>5.5</b> High Dimensional Space</a>
+<ul>
+<li class="chapter" data-level="5.5.1" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#euclidean-distance"><i class="fa fa-check"></i><b>5.5.1</b> Euclidean Distance</a></li>
+<li class="chapter" data-level="5.5.2" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#space-in-knn"><i class="fa fa-check"></i><b>5.5.2</b> Space in kNN</a></li>
+</ul></li>
+<li class="chapter" data-level="5.6" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#the-knn-algorithm"><i class="fa fa-check"></i><b>5.6</b> The kNN Algorithm</a>
+<ul>
+<li class="chapter" data-level="5.6.1" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#eat-your-fruits-and-veggies"><i class="fa fa-check"></i><b>5.6.1</b> Eat Your Fruits and Veggies</a></li>
+</ul></li>
+<li class="chapter" data-level="5.7" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#other-tidbits"><i class="fa fa-check"></i><b>5.7</b> Other Tidbits</a>
+<ul>
+<li class="chapter" data-level="5.7.1" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#rescaling"><i class="fa fa-check"></i><b>5.7.1</b> Rescaling</a></li>
+<li class="chapter" data-level="5.7.2" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#categorical-predictors"><i class="fa fa-check"></i><b>5.7.2</b> Categorical Predictors</a></li>
+</ul></li>
+<li class="chapter" data-level="5.8" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#worked-example"><i class="fa fa-check"></i><b>5.8</b> Worked Example</a>
+<ul>
+<li class="chapter" data-level="5.8.1" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#diagnostic-wisconsin-breast-cancer-database"><i class="fa fa-check"></i><b>5.8.1</b> Diagnostic Wisconsin Breast Cancer Database</a></li>
+<li class="chapter" data-level="5.8.2" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#traintest"><i class="fa fa-check"></i><b>5.8.2</b> Train/Test</a></li>
+<li class="chapter" data-level="5.8.3" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#run-knn"><i class="fa fa-check"></i><b>5.8.3</b> Run kNN</a></li>
+<li class="chapter" data-level="5.8.4" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#the-confusion-matrix"><i class="fa fa-check"></i><b>5.8.4</b> The Confusion Matrix</a></li>
+<li class="chapter" data-level="5.8.5" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#some-interp"><i class="fa fa-check"></i><b>5.8.5</b> Some Interp</a></li>
+</ul></li>
+<li class="chapter" data-level="5.9" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#your-work-3"><i class="fa fa-check"></i><b>5.9</b> Your Work</a></li>
+</ul></li>
+<li class="chapter" data-level="6" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html"><i class="fa fa-check"></i><b>6</b> Classifying with Decision Trees</a>
+<ul>
+<li class="chapter" data-level="6.1" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#big-idea-3"><i class="fa fa-check"></i><b>6.1</b> Big Idea</a></li>
+<li class="chapter" data-level="6.2" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#packages-4"><i class="fa fa-check"></i><b>6.2</b> Packages</a></li>
+<li class="chapter" data-level="6.3" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#reading-4"><i class="fa fa-check"></i><b>6.3</b> Reading</a></li>
+<li class="chapter" data-level="6.4" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#growing-and-pruning"><i class="fa fa-check"></i><b>6.4</b> Growing and Pruning</a></li>
+<li class="chapter" data-level="6.5" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#entropy-and-information-gain"><i class="fa fa-check"></i><b>6.5</b> Entropy and Information Gain</a></li>
+<li class="chapter" data-level="6.6" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#toy-example"><i class="fa fa-check"></i><b>6.6</b> Toy Example</a>
+<ul>
+<li class="chapter" data-level="6.6.1" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#entropy"><i class="fa fa-check"></i><b>6.6.1</b> Entropy</a></li>
+<li class="chapter" data-level="6.6.2" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#getting-to-information-gain"><i class="fa fa-check"></i><b>6.6.2</b> Getting to Information Gain</a></li>
+<li class="chapter" data-level="6.6.3" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#deciding-on-a-split"><i class="fa fa-check"></i><b>6.6.3</b> Deciding on a Split</a></li>
+<li class="chapter" data-level="6.6.4" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#information-gain-splits-on-continuous-data"><i class="fa fa-check"></i><b>6.6.4</b> Information Gain Splits on Continuous Data</a></li>
+</ul></li>
+<li class="chapter" data-level="6.7" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#a-real-example"><i class="fa fa-check"></i><b>6.7</b> A Real Example</a>
+<ul>
+<li class="chapter" data-level="6.7.1" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#go-fish"><i class="fa fa-check"></i><b>6.7.1</b> Go Fish</a></li>
+<li class="chapter" data-level="6.7.2" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#fish-finder"><i class="fa fa-check"></i><b>6.7.2</b> Fish Finder</a></li>
+<li class="chapter" data-level="6.7.3" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#visualizing-the-tree"><i class="fa fa-check"></i><b>6.7.3</b> Visualizing the Tree</a></li>
+<li class="chapter" data-level="6.7.4" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#train-and-test"><i class="fa fa-check"></i><b>6.7.4</b> Train and Test</a></li>
+</ul></li>
+<li class="chapter" data-level="6.8" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#your-work-4"><i class="fa fa-check"></i><b>6.8</b> Your Work</a></li>
+</ul></li>
+<li class="chapter" data-level="7" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html"><i class="fa fa-check"></i><b>7</b> Continuous Prediction with Regression Trees</a>
+<ul>
+<li class="chapter" data-level="7.1" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#big-idea-4"><i class="fa fa-check"></i><b>7.1</b> Big Idea</a></li>
+<li class="chapter" data-level="7.2" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#packages-5"><i class="fa fa-check"></i><b>7.2</b> Packages</a></li>
+<li class="chapter" data-level="7.3" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#reading-5"><i class="fa fa-check"></i><b>7.3</b> Reading</a></li>
+<li class="chapter" data-level="7.4" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#growing-and-pruning-1"><i class="fa fa-check"></i><b>7.4</b> Growing and Pruning</a></li>
+<li class="chapter" data-level="7.5" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#weird-tree-terms-model-trees-use-regression-but-regression-trees-dont"><i class="fa fa-check"></i><b>7.5</b> Weird Tree Terms: Model Trees Use Regression but Regression Trees Don’t</a></li>
+<li class="chapter" data-level="7.6" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#toy-example-splitting-continuous-variables"><i class="fa fa-check"></i><b>7.6</b> Toy Example: Splitting Continuous Variables</a>
+<ul>
+<li class="chapter" data-level="7.6.1" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#iteration-1"><i class="fa fa-check"></i><b>7.6.1</b> Iteration 1</a></li>
+<li class="chapter" data-level="7.6.2" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#iteration-2"><i class="fa fa-check"></i><b>7.6.2</b> Iteration 2</a></li>
+<li class="chapter" data-level="7.6.3" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#iteration-3"><i class="fa fa-check"></i><b>7.6.3</b> Iteration 3</a></li>
+<li class="chapter" data-level="7.6.4" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#loop-it"><i class="fa fa-check"></i><b>7.6.4</b> Loop It</a></li>
+<li class="chapter" data-level="7.6.5" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#describing-the-first-split"><i class="fa fa-check"></i><b>7.6.5</b> Describing the First Split</a></li>
+<li class="chapter" data-level="7.6.6" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#another-split"><i class="fa fa-check"></i><b>7.6.6</b> Another Split?</a></li>
+<li class="chapter" data-level="7.6.7" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#are-we-done-now"><i class="fa fa-check"></i><b>7.6.7</b> Are We Done Now?</a></li>
+</ul></li>
+<li class="chapter" data-level="7.7" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#regression-tree-example-lead-levels-in-st-louis"><i class="fa fa-check"></i><b>7.7</b> Regression Tree Example: Lead Levels in St Louis</a></li>
+<li class="chapter" data-level="7.8" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#model-tree-example-lead-levels-in-st-louis"><i class="fa fa-check"></i><b>7.8</b> Model Tree Example: Lead Levels in St Louis</a></li>
+<li class="chapter" data-level="7.9" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#your-work-5"><i class="fa fa-check"></i><b>7.9</b> Your Work</a></li>
+</ul></li>
+<li class="chapter" data-level="8" data-path="neural-nets.html"><a href="neural-nets.html"><i class="fa fa-check"></i><b>8</b> Neural Nets</a>
+<ul>
+<li class="chapter" data-level="8.1" data-path="neural-nets.html"><a href="neural-nets.html#big-idea-5"><i class="fa fa-check"></i><b>8.1</b> Big Idea</a></li>
+<li class="chapter" data-level="8.2" data-path="neural-nets.html"><a href="neural-nets.html#packages-6"><i class="fa fa-check"></i><b>8.2</b> Packages</a></li>
+<li class="chapter" data-level="8.3" data-path="neural-nets.html"><a href="neural-nets.html#reading-6"><i class="fa fa-check"></i><b>8.3</b> Reading</a></li>
+<li class="chapter" data-level="8.4" data-path="neural-nets.html"><a href="neural-nets.html#punting"><i class="fa fa-check"></i><b>8.4</b> Punting</a></li>
+<li class="chapter" data-level="8.5" data-path="neural-nets.html"><a href="neural-nets.html#example-here-comes-the-sun"><i class="fa fa-check"></i><b>8.5</b> Example: Here Comes the Sun</a></li>
+<li class="chapter" data-level="8.6" data-path="neural-nets.html"><a href="neural-nets.html#train-and-test-1"><i class="fa fa-check"></i><b>8.6</b> Train and Test</a></li>
+<li class="chapter" data-level="8.7" data-path="neural-nets.html"><a href="neural-nets.html#regression-tree"><i class="fa fa-check"></i><b>8.7</b> Regression Tree</a></li>
+<li class="chapter" data-level="8.8" data-path="neural-nets.html"><a href="neural-nets.html#big-fancy-squiggle-fitting-machine-aka-neural-network"><i class="fa fa-check"></i><b>8.8</b> Big Fancy Squiggle Fitting Machine aka Neural Network</a></li>
+<li class="chapter" data-level="8.9" data-path="neural-nets.html"><a href="neural-nets.html#your-work-6"><i class="fa fa-check"></i><b>8.9</b> Your Work</a></li>
+</ul></li>
+<li class="chapter" data-level="9" data-path="aside-animate-a-nn.html"><a href="aside-animate-a-nn.html"><i class="fa fa-check"></i><b>9</b> Aside: Animate a NN</a>
+<ul>
+<li class="chapter" data-level="9.1" data-path="aside-animate-a-nn.html"><a href="aside-animate-a-nn.html#libraries"><i class="fa fa-check"></i><b>9.1</b> Libraries</a></li>
+<li class="chapter" data-level="9.2" data-path="aside-animate-a-nn.html"><a href="aside-animate-a-nn.html#the-data"><i class="fa fa-check"></i><b>9.2</b> The Data</a></li>
+<li class="chapter" data-level="9.3" data-path="aside-animate-a-nn.html"><a href="aside-animate-a-nn.html#predicting"><i class="fa fa-check"></i><b>9.3</b> Predicting</a></li>
+<li class="chapter" data-level="9.4" data-path="aside-animate-a-nn.html"><a href="aside-animate-a-nn.html#animate"><i class="fa fa-check"></i><b>9.4</b> Animate</a></li>
+</ul></li>
+<li class="chapter" data-level="10" data-path="improving-model-performance.html"><a href="improving-model-performance.html"><i class="fa fa-check"></i><b>10</b> Improving Model Performance</a>
+<ul>
+<li class="chapter" data-level="10.1" data-path="improving-model-performance.html"><a href="improving-model-performance.html#big-idea-many-models-beat-one-model"><i class="fa fa-check"></i><b>10.1</b> Big Idea: Many Models Beat One Model</a>
+<ul>
+<li class="chapter" data-level="10.1.1" data-path="improving-model-performance.html"><a href="improving-model-performance.html#why-bagging-works-well-for-trees"><i class="fa fa-check"></i><b>10.1.1</b> Why Bagging Works Well for Trees</a></li>
+</ul></li>
+<li class="chapter" data-level="10.2" data-path="improving-model-performance.html"><a href="improving-model-performance.html#packages-7"><i class="fa fa-check"></i><b>10.2</b> Packages</a></li>
+<li class="chapter" data-level="10.3" data-path="improving-model-performance.html"><a href="improving-model-performance.html#reading-7"><i class="fa fa-check"></i><b>10.3</b> Reading</a></li>
+<li class="chapter" data-level="10.4" data-path="improving-model-performance.html"><a href="improving-model-performance.html#decision-tree-to-bagging-to-tuning"><i class="fa fa-check"></i><b>10.4</b> Decision Tree to Bagging to Tuning</a>
+<ul>
+<li class="chapter" data-level="10.4.1" data-path="improving-model-performance.html"><a href="improving-model-performance.html#the-modeling-ladder"><i class="fa fa-check"></i><b>10.4.1</b> The Modeling Ladder</a></li>
+<li class="chapter" data-level="10.4.2" data-path="improving-model-performance.html"><a href="improving-model-performance.html#fish-your-wish"><i class="fa fa-check"></i><b>10.4.2</b> Fish Your Wish</a></li>
+<li class="chapter" data-level="10.4.3" data-path="improving-model-performance.html"><a href="improving-model-performance.html#train-and-test-2"><i class="fa fa-check"></i><b>10.4.3</b> Train and Test</a></li>
+<li class="chapter" data-level="10.4.4" data-path="improving-model-performance.html"><a href="improving-model-performance.html#straight-decision-tree"><i class="fa fa-check"></i><b>10.4.4</b> Straight Decision Tree</a></li>
+<li class="chapter" data-level="10.4.5" data-path="improving-model-performance.html"><a href="improving-model-performance.html#bagging"><i class="fa fa-check"></i><b>10.4.5</b> Bagging</a></li>
+<li class="chapter" data-level="10.4.6" data-path="improving-model-performance.html"><a href="improving-model-performance.html#random-forest-aka-randomforest-aka-rf"><i class="fa fa-check"></i><b>10.4.6</b> Random Forest (aka randomForest, aka rF)</a></li>
+<li class="chapter" data-level="10.4.7" data-path="improving-model-performance.html"><a href="improving-model-performance.html#a-tuned-random-forest"><i class="fa fa-check"></i><b>10.4.7</b> A Tuned Random Forest</a></li>
+<li class="chapter" data-level="10.4.8" data-path="improving-model-performance.html"><a href="improving-model-performance.html#skill"><i class="fa fa-check"></i><b>10.4.8</b> Skill</a></li>
+</ul></li>
+<li class="chapter" data-level="10.5" data-path="improving-model-performance.html"><a href="improving-model-performance.html#takeaway"><i class="fa fa-check"></i><b>10.5</b> Takeaway</a></li>
+<li class="chapter" data-level="10.6" data-path="improving-model-performance.html"><a href="improving-model-performance.html#but-where-is-the-tree"><i class="fa fa-check"></i><b>10.6</b> But where is the tree?</a>
+<ul>
+<li class="chapter" data-level="10.6.1" data-path="improving-model-performance.html"><a href="improving-model-performance.html#how-can-they-predict-new-data"><i class="fa fa-check"></i><b>10.6.1</b> How can they predict new data?</a></li>
+<li class="chapter" data-level="10.6.2" data-path="improving-model-performance.html"><a href="improving-model-performance.html#which-trees-are-used"><i class="fa fa-check"></i><b>10.6.2</b> Which trees are used?</a></li>
+</ul></li>
+<li class="chapter" data-level="10.7" data-path="improving-model-performance.html"><a href="improving-model-performance.html#your-work-7"><i class="fa fa-check"></i><b>10.7</b> Your Work</a></li>
+<li class="chapter" data-level="10.8" data-path="improving-model-performance.html"><a href="improving-model-performance.html#postscript-boosting-and-stacking"><i class="fa fa-check"></i><b>10.8</b> Postscript: Boosting and Stacking</a>
+<ul>
+<li class="chapter" data-level="10.8.1" data-path="improving-model-performance.html"><a href="improving-model-performance.html#boosting"><i class="fa fa-check"></i><b>10.8.1</b> Boosting</a></li>
+</ul></li>
+<li class="chapter" data-level="10.9" data-path="improving-model-performance.html"><a href="improving-model-performance.html#stacking-briefly"><i class="fa fa-check"></i><b>10.9</b> Stacking (briefly)</a></li>
+</ul></li>
+<li class="chapter" data-level="11" data-path="eigen-faces.html"><a href="eigen-faces.html"><i class="fa fa-check"></i><b>11</b> Eigen Faces</a>
+<ul>
+<li class="chapter" data-level="11.1" data-path="eigen-faces.html"><a href="eigen-faces.html#big-idea-6"><i class="fa fa-check"></i><b>11.1</b> Big Idea</a></li>
+<li class="chapter" data-level="11.2" data-path="eigen-faces.html"><a href="eigen-faces.html#packages-8"><i class="fa fa-check"></i><b>11.2</b> Packages</a></li>
+<li class="chapter" data-level="11.3" data-path="eigen-faces.html"><a href="eigen-faces.html#reading-8"><i class="fa fa-check"></i><b>11.3</b> Reading</a></li>
+<li class="chapter" data-level="11.4" data-path="eigen-faces.html"><a href="eigen-faces.html#a-bunch-of-mostly-white-guys"><i class="fa fa-check"></i><b>11.4</b> A bunch of mostly white guys</a></li>
+<li class="chapter" data-level="11.5" data-path="eigen-faces.html"><a href="eigen-faces.html#average-face"><i class="fa fa-check"></i><b>11.5</b> Average face</a></li>
+<li class="chapter" data-level="11.6" data-path="eigen-faces.html"><a href="eigen-faces.html#principal-component-analysis"><i class="fa fa-check"></i><b>11.6</b> Principal Component Analysis</a></li>
+<li class="chapter" data-level="11.7" data-path="eigen-faces.html"><a href="eigen-faces.html#mapping-individuals"><i class="fa fa-check"></i><b>11.7</b> Mapping individuals</a></li>
+<li class="chapter" data-level="11.8" data-path="eigen-faces.html"><a href="eigen-faces.html#facial-recognition"><i class="fa fa-check"></i><b>11.8</b> Facial recognition</a>
+<ul>
+<li class="chapter" data-level="11.8.1" data-path="eigen-faces.html"><a href="eigen-faces.html#traintest-1"><i class="fa fa-check"></i><b>11.8.1</b> Train/Test</a></li>
+<li class="chapter" data-level="11.8.2" data-path="eigen-faces.html"><a href="eigen-faces.html#pca-on-training"><i class="fa fa-check"></i><b>11.8.2</b> PCA on training</a></li>
+<li class="chapter" data-level="11.8.3" data-path="eigen-faces.html"><a href="eigen-faces.html#project-the-test-photos"><i class="fa fa-check"></i><b>11.8.3</b> Project the test photos</a></li>
+<li class="chapter" data-level="11.8.4" data-path="eigen-faces.html"><a href="eigen-faces.html#distance"><i class="fa fa-check"></i><b>11.8.4</b> Distance</a></li>
+<li class="chapter" data-level="11.8.5" data-path="eigen-faces.html"><a href="eigen-faces.html#classify"><i class="fa fa-check"></i><b>11.8.5</b> Classify</a></li>
+</ul></li>
+<li class="chapter" data-level="11.9" data-path="eigen-faces.html"><a href="eigen-faces.html#environmental-applications"><i class="fa fa-check"></i><b>11.9</b> Environmental applications</a></li>
+<li class="chapter" data-level="11.10" data-path="eigen-faces.html"><a href="eigen-faces.html#your-work-8"><i class="fa fa-check"></i><b>11.10</b> Your work</a></li>
+</ul></li>
+<li class="chapter" data-level="12" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i><b>12</b> References</a></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Machine Learning for Environmental Science: Notes for ESCI 506</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="classifying-with-decision-trees" class="section level1 hasAnchor" number="6">
+<h1><span class="header-section-number">6</span> Classifying with Decision Trees<a href="classifying-with-decision-trees.html#classifying-with-decision-trees" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<div id="big-idea-3" class="section level2 hasAnchor" number="6.1">
+<h2><span class="header-section-number">6.1</span> Big Idea<a href="classifying-with-decision-trees.html#big-idea-3" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Predicting categorical class membership is one of two big areas of machine learning (the other being predicting a continuous response – e.g., regression). Decision trees make rules that isolate each class in the data. These rules come from partitioning the data over and over to get the purest splits possible. It’s a computationally intensive method but its very effective and very appealing and intuitive. And unlike kNN the tree that is produced can help shed light on processes or mechanisms that create the patterns. kNN predicts without producing a model you can inspect. Trees give you an explicit, inspectable model.</p>
+</div>
+<div id="packages-4" class="section level2 hasAnchor" number="6.2">
+<h2><span class="header-section-number">6.2</span> Packages<a href="classifying-with-decision-trees.html#packages-4" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div class="sourceCode" id="cb180"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb180-1"><a href="classifying-with-decision-trees.html#cb180-1" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code></pre></div>
+<pre><code>## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+## ✔ dplyr     1.1.4     ✔ readr     2.1.6
+## ✔ forcats   1.0.1     ✔ stringr   1.6.0
+## ✔ ggplot2   4.0.1     ✔ tibble    3.3.1
+## ✔ lubridate 1.9.4     ✔ tidyr     1.3.2
+## ✔ purrr     1.2.1     
+## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+## ✖ dplyr::filter() masks stats::filter()
+## ✖ dplyr::lag()    masks stats::lag()
+## ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
+<div class="sourceCode" id="cb182"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb182-1"><a href="classifying-with-decision-trees.html#cb182-1" tabindex="-1"></a><span class="fu">library</span>(C50)</span>
+<span id="cb182-2"><a href="classifying-with-decision-trees.html#cb182-2" tabindex="-1"></a><span class="fu">library</span>(caret)</span></code></pre></div>
+<pre><code>## Loading required package: lattice
+## 
+## Attaching package: &#39;caret&#39;
+## 
+## The following object is masked from &#39;package:purrr&#39;:
+## 
+##     lift</code></pre>
+</div>
+<div id="reading-4" class="section level2 hasAnchor" number="6.3">
+<h2><span class="header-section-number">6.3</span> Reading<a href="classifying-with-decision-trees.html#reading-4" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Chapter 5: Divide and Conquer – Classification Using Decision Trees and Rules in Machine Learning with R: Expert techniques for predictive modeling, 3rd Edition.</p>
+<p>For this reading focus on pages 125-135. We are going to cover the C5.0 algorithm in this module. You might want to skim the rest but learning this algorithm is good for our purposes here. There are roughly a zillion ways to make decision trees and I want you to get the idea of how they are applied. We will look under the hood at the C5.0 algorithm but not wade through the gory details of the others.</p>
+<p>Chapter 10: Decision Trees!!! in The StatQuest Illustrated Guide to Machine Learning!!! Focus on part one.</p>
+</div>
+<div id="growing-and-pruning" class="section level2 hasAnchor" number="6.4">
+<h2><span class="header-section-number">6.4</span> Growing and Pruning<a href="classifying-with-decision-trees.html#growing-and-pruning" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>You have the idea from the reading that there are two jobs that take place when making a decision tree. First, you grow the tree by partitioning the data according to some splitting algorithm. That’s what we will focus on here. The “problem” with these algorithms is that they are very effective at partitioning data and prone to overfitting. That is, they can accurately classify a training data set but make so many fine splits that the data aren’t generalizable to testing data. So the trees have to be pruned by some set of rules to make them more generally applicable. Just like a garden or an orchard, you cultivate growth and then have to weed and prune to get what you want.</p>
+<p>We will focus mostly on the growing of the trees in this module.</p>
+</div>
+<div id="entropy-and-information-gain" class="section level2 hasAnchor" number="6.5">
+<h2><span class="header-section-number">6.5</span> Entropy and Information Gain<a href="classifying-with-decision-trees.html#entropy-and-information-gain" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>The reading is a blend of nitty gritty details about classification and big picture concepts on how and why trees are useful. There is a lot of ink spent on the ideas of entropy and information gain. For our decision tree splits we are going to make splits on variables that create an orderly partitioning of the data based on entropy and information gain.</p>
+<p>I’ll be frank here. If you want to hum the details of the splitting and skip to the example at the bottom go ahead. I think working through this is valuable but sometimes you have to know when it’s OK to skim and this is one of those times. You can use decision trees and not fully understand the entropy splitting. But it’s cool and pretty simple!</p>
+<p>With that said…</p>
+<p>Entropy is something you’ve mostly encountered before in terms of the second law of thermodynamics where you might have been taught to think about it as disorder. That’s a good metaphor. In terms of information theory, entropy quantifies the amount of knowledge we have about a given set of things. Higher entropy means less certainty about class membership. So for a classification problem like classifying a species of a fish, “knowledge” means how certain we are of what species we would draw at random from the set. Entropy is inversely related to knowledge: the more knowledge we have, the lower the entropy. When we have an equal chance of choosing one species over another (pike vs bream) entropy is high. If we were pretty sure we’d choose pike and not smelt, entropy would be low. With regards to classification, entropy is a measure of purity. <a href="https://www.youtube.com/watch?v=9r7FIXEAGvs&amp;feature=emb_logo&amp;ab_channel=LuisSerrano">This is a nice YouTube video</a> that walks through the derivation and application of entropy in information theory.</p>
+<p>We will use entropy in order to make decisions about which partitions of the data will give us a good classification. Information gain can determine which variable to split on by measuring how much information a feature (variable) gives us about a class (target). The idea is to reduce the entropy of our original data pool by segmenting it into smaller pools. If we have several variables to choose from, we pick the one that reduces entropy the most and segment (or split) on that one.</p>
+<p>We will walk through these with an example.</p>
+</div>
+<div id="toy-example" class="section level2 hasAnchor" number="6.6">
+<h2><span class="header-section-number">6.6</span> Toy Example<a href="classifying-with-decision-trees.html#toy-example" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>For an example I’ll show you some data that looks at whether a wildfire warning was issued based on the sky condition (sunny, overcast, rain) the temperature (hot, mild, cool), the humidity (high, low, normal) and the wind conditions (strong, weak, etc). We are going to try to classify what conditions lead to a fire warning being issued.</p>
+<div class="datatables html-widget html-fill-item" id="htmlwidget-86e1fa590078c9cc24ce" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-86e1fa590078c9cc24ce">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14"],["D01","D02","D03","D04","D05","D06","D07","D08","D09","D10","D11","D12","D13","D14"],["Yes","Yes","Yes","No","Yes","No","Yes","Yes","Yes","No","No","No","No","Yes"],["Sun","Sun","Overcast","Rain","Overcast","Rain","Overcast","Sun","Sun","Rain","Sun","Overcast","Overcast","Overcast"],["Hot","Hot","Hot","Mild","Mild","Cool","Cool","Hot","Hot","Mild","Mild","Mild","Hot","Mild"],["High","Low","Low","High","Low","Normal","Normal","Low","Low","Normal","Low","High","Normal","Low"],["Strong","Strong","Strong","Weak","Strong","Strong","Strong","Strong","Weak","Weak","Strong","Weak","Weak","Strong"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Day<\/th>\n      <th>FireWarning<\/th>\n      <th>SkyCondition<\/th>\n      <th>Temp<\/th>\n      <th>Humidity<\/th>\n      <th>Wind<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":14,"columnDefs":[{"orderable":false,"targets":0},{"name":" ","targets":0},{"name":"Day","targets":1},{"name":"FireWarning","targets":2},{"name":"SkyCondition","targets":3},{"name":"Temp","targets":4},{"name":"Humidity","targets":5},{"name":"Wind","targets":6}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[10,14,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<p>Do some sorting on various columns and start to build a decision tree in your head. Which variables are the most important do you think?</p>
+<div id="entropy" class="section level3 hasAnchor" number="6.6.1">
+<h3><span class="header-section-number">6.6.1</span> Entropy<a href="classifying-with-decision-trees.html#entropy" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Let’s calculate entropy (<span class="math inline">\(S\)</span>) with following the formula:</p>
+<p><span class="math display">\[ S = \sum_{i=1}^{c}-p_i \times \log_2(p_i)\]</span>
+where <span class="math inline">\(c\)</span> is the number of classes and <span class="math inline">\(p\)</span> is the proportion of cases in class <span class="math inline">\(i\)</span> (e.g., <code>FireWarning</code> has two classes: “Yes” and “No”).</p>
+<p>Looking at the <code>FireWarning</code> column we can see that there are 8 instances of “Yes” and 6 instances of “No”. Or about 57% “Yes” and 43% “No”. This is pretty balanced, so we know going in that the entropy level is high (it’ll be near one, right? See Figure 5.6 in the reading).</p>
+<p><span class="math display">\[ S = -p_{Yes} \times \log_2(p_{Yes}) - p_{No} \times log_2(p_{No})\]</span>
+<span class="math display">\[ S = -\frac{8}{14} \times \log_2(\frac{8}{14}) - \frac{6}{14} \times \log_2(\frac{6}{14})\]</span>
+Here is how can calculate it “by hand” in R.</p>
+<div class="sourceCode" id="cb184"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb184-1"><a href="classifying-with-decision-trees.html#cb184-1" tabindex="-1"></a>pYes <span class="ot">&lt;-</span> <span class="dv">8</span><span class="sc">/</span><span class="dv">14</span></span>
+<span id="cb184-2"><a href="classifying-with-decision-trees.html#cb184-2" tabindex="-1"></a>pNo <span class="ot">&lt;-</span> <span class="dv">6</span><span class="sc">/</span><span class="dv">14</span></span>
+<span id="cb184-3"><a href="classifying-with-decision-trees.html#cb184-3" tabindex="-1"></a><span class="sc">-</span><span class="dv">1</span> <span class="sc">*</span> pYes <span class="sc">*</span> <span class="fu">log2</span>(pYes) <span class="sc">-</span> pNo <span class="sc">*</span> <span class="fu">log2</span>(pNo)</span></code></pre></div>
+<pre><code>## [1] 0.9852281</code></pre>
+<p>Slightly more elegantly with a few variables.</p>
+<div class="sourceCode" id="cb186"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb186-1"><a href="classifying-with-decision-trees.html#cb186-1" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="fu">length</span>(dat<span class="sc">$</span>FireWarning)</span>
+<span id="cb186-2"><a href="classifying-with-decision-trees.html#cb186-2" tabindex="-1"></a>pYes <span class="ot">&lt;-</span> <span class="fu">sum</span>(dat<span class="sc">$</span>FireWarning<span class="sc">==</span><span class="st">&quot;Yes&quot;</span>) <span class="sc">/</span> n</span>
+<span id="cb186-3"><a href="classifying-with-decision-trees.html#cb186-3" tabindex="-1"></a>pNo <span class="ot">&lt;-</span> <span class="fu">sum</span>(dat<span class="sc">$</span>FireWarning<span class="sc">==</span><span class="st">&quot;No&quot;</span>) <span class="sc">/</span> n</span>
+<span id="cb186-4"><a href="classifying-with-decision-trees.html#cb186-4" tabindex="-1"></a><span class="sc">-</span><span class="dv">1</span> <span class="sc">*</span> pYes <span class="sc">*</span> <span class="fu">log2</span>(pYes) <span class="sc">-</span> pNo <span class="sc">*</span> <span class="fu">log2</span>(pNo)</span></code></pre></div>
+<pre><code>## [1] 0.9852281</code></pre>
+<p>And here is how we can implement it using tidy syntax for any factor.</p>
+<div class="sourceCode" id="cb188"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb188-1"><a href="classifying-with-decision-trees.html#cb188-1" tabindex="-1"></a>dat <span class="sc">%&gt;%</span> <span class="fu">count</span>(FireWarning) <span class="sc">%&gt;%</span> </span>
+<span id="cb188-2"><a href="classifying-with-decision-trees.html#cb188-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">prop =</span> n <span class="sc">/</span> <span class="fu">sum</span>(n)) <span class="sc">%&gt;%</span></span>
+<span id="cb188-3"><a href="classifying-with-decision-trees.html#cb188-3" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">S =</span> <span class="fu">sum</span>(<span class="sc">-</span><span class="dv">1</span> <span class="sc">*</span> prop <span class="sc">*</span> <span class="fu">log2</span>(prop))) <span class="sc">%&gt;%</span> <span class="fu">pull</span>(S)</span></code></pre></div>
+<pre><code>## [1] 0.9852281</code></pre>
+<p>We are going to be calculating entropy many times with different subsets of the data, so let’s make the calculation into a function and still use tidy syntax.</p>
+<div class="sourceCode" id="cb190"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb190-1"><a href="classifying-with-decision-trees.html#cb190-1" tabindex="-1"></a>entropy <span class="ot">&lt;-</span> <span class="cf">function</span>(data, target) {</span>
+<span id="cb190-2"><a href="classifying-with-decision-trees.html#cb190-2" tabindex="-1"></a>  data <span class="sc">%&gt;%</span> <span class="fu">count</span>( {{target}} ) <span class="sc">%&gt;%</span> </span>
+<span id="cb190-3"><a href="classifying-with-decision-trees.html#cb190-3" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">prop =</span> n <span class="sc">/</span> <span class="fu">sum</span>(n)) <span class="sc">%&gt;%</span></span>
+<span id="cb190-4"><a href="classifying-with-decision-trees.html#cb190-4" tabindex="-1"></a>    <span class="fu">summarise</span>(<span class="at">S =</span> <span class="fu">sum</span>(<span class="sc">-</span><span class="dv">1</span> <span class="sc">*</span> prop <span class="sc">*</span> <span class="fu">log2</span>(prop))) <span class="sc">%&gt;%</span>  </span>
+<span id="cb190-5"><a href="classifying-with-decision-trees.html#cb190-5" tabindex="-1"></a>    <span class="fu">pull</span>(S)</span>
+<span id="cb190-6"><a href="classifying-with-decision-trees.html#cb190-6" tabindex="-1"></a>}</span></code></pre></div>
+<p>Let’s use the function.</p>
+<div class="sourceCode" id="cb191"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb191-1"><a href="classifying-with-decision-trees.html#cb191-1" tabindex="-1"></a>dat <span class="sc">%&gt;%</span> <span class="fu">entropy</span>(FireWarning)</span></code></pre></div>
+<pre><code>## [1] 0.9852281</code></pre>
+<div class="sourceCode" id="cb193"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb193-1"><a href="classifying-with-decision-trees.html#cb193-1" tabindex="-1"></a>dat <span class="sc">%&gt;%</span> <span class="fu">entropy</span>(SkyCondition)</span></code></pre></div>
+<pre><code>## [1] 1.530619</code></pre>
+</div>
+<div id="getting-to-information-gain" class="section level3 hasAnchor" number="6.6.2">
+<h3><span class="header-section-number">6.6.2</span> Getting to Information Gain<a href="classifying-with-decision-trees.html#getting-to-information-gain" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Let’s go from entropy to information gain (IG).</p>
+<p>Here is the information gain when we look at the change in homogeneity if we split <code>FireWarning</code> by the sky condition (<code>SkyCondition</code>). This is the change of the original entropy we calculated above for <code>FireWarning</code> (0.985) subtracted from the entropy resulting from splitting on <code>SkyCondition</code>. The only wrinkle is that we have to weight the entropy by the proportion of the records falling into that position.</p>
+<div class="sourceCode" id="cb195"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb195-1"><a href="classifying-with-decision-trees.html#cb195-1" tabindex="-1"></a>S1 <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span> <span class="fu">entropy</span>(FireWarning)</span>
+<span id="cb195-2"><a href="classifying-with-decision-trees.html#cb195-2" tabindex="-1"></a>S_by_SkyCondition <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(SkyCondition) <span class="sc">%&gt;%</span> </span>
+<span id="cb195-3"><a href="classifying-with-decision-trees.html#cb195-3" tabindex="-1"></a>  <span class="fu">entropy</span>(FireWarning)</span>
+<span id="cb195-4"><a href="classifying-with-decision-trees.html#cb195-4" tabindex="-1"></a><span class="co"># get weights as proportions</span></span>
+<span id="cb195-5"><a href="classifying-with-decision-trees.html#cb195-5" tabindex="-1"></a>n_SkyCondition <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span> <span class="fu">count</span>(<span class="fu">across</span>(SkyCondition))  <span class="sc">%&gt;%</span> <span class="fu">pull</span>(n)</span>
+<span id="cb195-6"><a href="classifying-with-decision-trees.html#cb195-6" tabindex="-1"></a>prop_SkyCondition <span class="ot">&lt;-</span> n_SkyCondition <span class="sc">/</span> <span class="fu">sum</span>(n_SkyCondition)</span>
+<span id="cb195-7"><a href="classifying-with-decision-trees.html#cb195-7" tabindex="-1"></a>S2 <span class="ot">&lt;-</span> <span class="fu">sum</span>(prop_SkyCondition<span class="sc">*</span>S_by_SkyCondition) </span>
+<span id="cb195-8"><a href="classifying-with-decision-trees.html#cb195-8" tabindex="-1"></a><span class="co">#compute IG</span></span>
+<span id="cb195-9"><a href="classifying-with-decision-trees.html#cb195-9" tabindex="-1"></a>S1<span class="sc">-</span>S2</span></code></pre></div>
+<pre><code>## [1] 0.3338413</code></pre>
+<p>Let’s walk through how that is calculated. First we have <code>S1</code>. That is the same entropy we calculated above for <code>FireWarning</code>.</p>
+<p><span class="math display">\[ S_1 = -\frac{8}{14} \times \log_2(\frac{8}{14}) - \frac{6}{14} \times \log_2(\frac{6}{14}) = 0.985\]</span>
+Now to get <code>S2</code> we will use the same entropy formula but multiply by some weights when we are done. First, let’s look at how <code>FireWarning</code> breaks down by <code>SkyCondition</code>. Go back up to the table above and sort first by <code>FireWarning</code> and then by <code>SkyCondition</code>. For overcast conditions there are six days and four have fire warnings. So we would get the entropy for this subset of the data as:</p>
+<p><span class="math display">\[ S_{Overcast} = -\frac{4}{6} \times \log_2(\frac{4}{6}) - \frac{2}{6} \times \log_2(\frac{2}{6}) = 0.918\]</span></p>
+<p>Rainy days are even easier. There are no fire warnings on the three rainy days so we know that the entropy is zero (look at the formula if you need reassurance!)</p>
+<p><span class="math display">\[ S_{Rain} = -\frac{0}{3} \times \log_2(\frac{0}{3}) - \frac{3}{3} \times \log_2(\frac{3}{3}) = 0\]</span>
+And for sunny days? There are five and four of them have fire warnings.</p>
+<p><span class="math display">\[ S_{Sun} = -\frac{4}{5} \times \log_2(\frac{4}{5}) - \frac{1}{5} \times \log_2(\frac{1}{5}) = 0.722\]</span>
+Take a look at the object <code>S_by_SkyCondition</code> that we calculated above and we will see those numbers.</p>
+<div class="sourceCode" id="cb197"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb197-1"><a href="classifying-with-decision-trees.html#cb197-1" tabindex="-1"></a>S_by_SkyCondition</span></code></pre></div>
+<pre><code>## [1] 0.7219281 0.9182958 0.0000000</code></pre>
+<p>Because the denominator in each of those equations differs by the number of observations we have to weight each of those entropy values before we sum them. The weight is the proportion that each one contributes to the whole. There are 14 days and six of them are sunny? The entropy value for sunny days will be weighted by <span class="math inline">\(6/14=0.423\)</span>. These weights are in <code>prop_SkyCondition</code>.</p>
+<div class="sourceCode" id="cb199"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb199-1"><a href="classifying-with-decision-trees.html#cb199-1" tabindex="-1"></a>prop_SkyCondition</span></code></pre></div>
+<pre><code>## [1] 0.3571429 0.4285714 0.2142857</code></pre>
+<p>The final entropy then for this case is</p>
+<div class="sourceCode" id="cb201"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb201-1"><a href="classifying-with-decision-trees.html#cb201-1" tabindex="-1"></a><span class="fu">sum</span>(prop_SkyCondition <span class="sc">*</span> S_by_SkyCondition)</span></code></pre></div>
+<pre><code>## [1] 0.6513868</code></pre>
+<p>and the information gain is the reduction in entropy as <span class="math inline">\(S_1 - S_2\)</span>.</p>
+<div class="sourceCode" id="cb203"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb203-1"><a href="classifying-with-decision-trees.html#cb203-1" tabindex="-1"></a>S1<span class="sc">-</span>S2</span></code></pre></div>
+<pre><code>## [1] 0.3338413</code></pre>
+</div>
+<div id="deciding-on-a-split" class="section level3 hasAnchor" number="6.6.3">
+<h3><span class="header-section-number">6.6.3</span> Deciding on a Split<a href="classifying-with-decision-trees.html#deciding-on-a-split" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>The feature (variable) used for the first split is going to be whichever one maximizes the information gain. Because we are going to have to do this a lot, here is a function to get information gain.</p>
+<div class="sourceCode" id="cb205"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb205-1"><a href="classifying-with-decision-trees.html#cb205-1" tabindex="-1"></a>IG <span class="ot">&lt;-</span> <span class="cf">function</span>(data,target,feature){</span>
+<span id="cb205-2"><a href="classifying-with-decision-trees.html#cb205-2" tabindex="-1"></a>  <span class="co"># parent (target) entropy aka s1</span></span>
+<span id="cb205-3"><a href="classifying-with-decision-trees.html#cb205-3" tabindex="-1"></a>  s1 <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span> <span class="fu">entropy</span>( {{target}})</span>
+<span id="cb205-4"><a href="classifying-with-decision-trees.html#cb205-4" tabindex="-1"></a>  <span class="co"># feature entropy (target entropy by each feature )</span></span>
+<span id="cb205-5"><a href="classifying-with-decision-trees.html#cb205-5" tabindex="-1"></a>  sTmp <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span> <span class="fu">group_by</span>( {{feature}} ) <span class="sc">%&gt;%</span> <span class="fu">entropy</span>( {{target}} )</span>
+<span id="cb205-6"><a href="classifying-with-decision-trees.html#cb205-6" tabindex="-1"></a>  <span class="co"># number in each feature</span></span>
+<span id="cb205-7"><a href="classifying-with-decision-trees.html#cb205-7" tabindex="-1"></a>  n_feature <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span> <span class="fu">count</span>(<span class="fu">across</span>( {{feature}} ))  <span class="sc">%&gt;%</span> <span class="fu">pull</span>(n)</span>
+<span id="cb205-8"><a href="classifying-with-decision-trees.html#cb205-8" tabindex="-1"></a>  <span class="co"># proportion (frequency) in each feature for weights</span></span>
+<span id="cb205-9"><a href="classifying-with-decision-trees.html#cb205-9" tabindex="-1"></a>  p_feature <span class="ot">&lt;-</span> n_feature <span class="sc">/</span> <span class="fu">sum</span>(n_feature)</span>
+<span id="cb205-10"><a href="classifying-with-decision-trees.html#cb205-10" tabindex="-1"></a>  s2 <span class="ot">&lt;-</span> <span class="fu">sum</span>(p_feature<span class="sc">*</span>sTmp)</span>
+<span id="cb205-11"><a href="classifying-with-decision-trees.html#cb205-11" tabindex="-1"></a>  <span class="co">#compute IG</span></span>
+<span id="cb205-12"><a href="classifying-with-decision-trees.html#cb205-12" tabindex="-1"></a>  s1<span class="sc">-</span>s2</span>
+<span id="cb205-13"><a href="classifying-with-decision-trees.html#cb205-13" tabindex="-1"></a>}</span></code></pre></div>
+<p>We can use it for each feature.</p>
+<div class="sourceCode" id="cb206"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb206-1"><a href="classifying-with-decision-trees.html#cb206-1" tabindex="-1"></a>dat <span class="sc">%&gt;%</span> <span class="fu">IG</span>(<span class="at">target =</span> FireWarning, <span class="at">feature =</span> SkyCondition)</span></code></pre></div>
+<pre><code>## [1] 0.3338413</code></pre>
+<div class="sourceCode" id="cb208"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb208-1"><a href="classifying-with-decision-trees.html#cb208-1" tabindex="-1"></a>dat <span class="sc">%&gt;%</span> <span class="fu">IG</span>(<span class="at">target =</span> FireWarning, <span class="at">feature =</span> Temp)</span></code></pre></div>
+<pre><code>## [1] 0.1702346</code></pre>
+<div class="sourceCode" id="cb210"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb210-1"><a href="classifying-with-decision-trees.html#cb210-1" tabindex="-1"></a>dat <span class="sc">%&gt;%</span> <span class="fu">IG</span>(<span class="at">target =</span> FireWarning, <span class="at">feature =</span> Humidity)</span></code></pre></div>
+<pre><code>## [1] 0.2608203</code></pre>
+<div class="sourceCode" id="cb212"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb212-1"><a href="classifying-with-decision-trees.html#cb212-1" tabindex="-1"></a>dat <span class="sc">%&gt;%</span> <span class="fu">IG</span>(<span class="at">target =</span> FireWarning, <span class="at">feature =</span> Wind)</span></code></pre></div>
+<pre><code>## [1] 0.2361223</code></pre>
+<p>Given this we have our first split on <code>SkyCondition</code>. Here is the state of the classification at this point.</p>
+<div class="sourceCode" id="cb214"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb214-1"><a href="classifying-with-decision-trees.html#cb214-1" tabindex="-1"></a>dat <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(SkyCondition) <span class="sc">%&gt;%</span> </span>
+<span id="cb214-2"><a href="classifying-with-decision-trees.html#cb214-2" tabindex="-1"></a>  <span class="fu">count</span>(FireWarning)</span></code></pre></div>
+<pre><code>## # A tibble: 5 × 3
+## # Groups:   SkyCondition [3]
+##   SkyCondition FireWarning     n
+##   &lt;fct&gt;        &lt;fct&gt;       &lt;int&gt;
+## 1 Sun          Yes             4
+## 2 Sun          No              1
+## 3 Overcast     Yes             4
+## 4 Overcast     No              2
+## 5 Rain         No              3</code></pre>
+<p>And a plot.</p>
+<p><img src="05SoManyChoices_files/figure-html/unnamed-chunk-20-1.png" alt="" width="288" /></p>
+<p>Note that rain is a pure node. There is no need to keep going down that path. So let’s look at how we can split the <code>Sun</code> node.</p>
+<div class="sourceCode" id="cb216"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb216-1"><a href="classifying-with-decision-trees.html#cb216-1" tabindex="-1"></a>dat <span class="sc">%&gt;%</span> <span class="fu">filter</span>(SkyCondition <span class="sc">==</span> <span class="st">&quot;Sun&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb216-2"><a href="classifying-with-decision-trees.html#cb216-2" tabindex="-1"></a>  <span class="fu">IG</span>(<span class="at">target =</span> FireWarning, <span class="at">feature =</span> Temp)</span></code></pre></div>
+<pre><code>## [1] 0.7219281</code></pre>
+<div class="sourceCode" id="cb218"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb218-1"><a href="classifying-with-decision-trees.html#cb218-1" tabindex="-1"></a>dat <span class="sc">%&gt;%</span> <span class="fu">filter</span>(SkyCondition <span class="sc">==</span> <span class="st">&quot;Sun&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb218-2"><a href="classifying-with-decision-trees.html#cb218-2" tabindex="-1"></a>  <span class="fu">IG</span>(<span class="at">target =</span> FireWarning, <span class="at">feature =</span> Humidity)</span></code></pre></div>
+<pre><code>## [1] 0.0729056</code></pre>
+<div class="sourceCode" id="cb220"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb220-1"><a href="classifying-with-decision-trees.html#cb220-1" tabindex="-1"></a>dat <span class="sc">%&gt;%</span> <span class="fu">filter</span>(SkyCondition <span class="sc">==</span> <span class="st">&quot;Sun&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb220-2"><a href="classifying-with-decision-trees.html#cb220-2" tabindex="-1"></a>  <span class="fu">IG</span>(<span class="at">target =</span> FireWarning, <span class="at">feature =</span> Wind)</span></code></pre></div>
+<pre><code>## [1] 0.0729056</code></pre>
+<p>For the next split, <code>Temp</code> has the highest gain.</p>
+<div class="sourceCode" id="cb222"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb222-1"><a href="classifying-with-decision-trees.html#cb222-1" tabindex="-1"></a>dat <span class="sc">%&gt;%</span> <span class="fu">filter</span>(SkyCondition <span class="sc">==</span> <span class="st">&quot;Sun&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(Temp) <span class="sc">%&gt;%</span> </span>
+<span id="cb222-2"><a href="classifying-with-decision-trees.html#cb222-2" tabindex="-1"></a>  <span class="fu">count</span>(FireWarning)</span></code></pre></div>
+<pre><code>## # A tibble: 2 × 3
+## # Groups:   Temp [2]
+##   Temp  FireWarning     n
+##   &lt;fct&gt; &lt;fct&gt;       &lt;int&gt;
+## 1 Hot   Yes             4
+## 2 Mild  No              1</code></pre>
+<p><img src="05SoManyChoices_files/figure-html/unnamed-chunk-23-1.png" alt="" width="288" /></p>
+<p>For the next split, we’d go to overcast skies.</p>
+<div class="sourceCode" id="cb224"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb224-1"><a href="classifying-with-decision-trees.html#cb224-1" tabindex="-1"></a>dat <span class="sc">%&gt;%</span> <span class="fu">filter</span>(SkyCondition <span class="sc">==</span> <span class="st">&quot;Overcast&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb224-2"><a href="classifying-with-decision-trees.html#cb224-2" tabindex="-1"></a>  <span class="fu">IG</span>(<span class="at">target =</span> FireWarning, <span class="at">feature =</span> Temp)</span></code></pre></div>
+<pre><code>## [1] 0.1258146</code></pre>
+<div class="sourceCode" id="cb226"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb226-1"><a href="classifying-with-decision-trees.html#cb226-1" tabindex="-1"></a>dat <span class="sc">%&gt;%</span> <span class="fu">filter</span>(SkyCondition <span class="sc">==</span> <span class="st">&quot;Overcast&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb226-2"><a href="classifying-with-decision-trees.html#cb226-2" tabindex="-1"></a>  <span class="fu">IG</span>(<span class="at">target =</span> FireWarning, <span class="at">feature =</span> Humidity)</span></code></pre></div>
+<pre><code>## [1] 0.5849625</code></pre>
+<div class="sourceCode" id="cb228"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb228-1"><a href="classifying-with-decision-trees.html#cb228-1" tabindex="-1"></a>dat <span class="sc">%&gt;%</span> <span class="fu">filter</span>(SkyCondition <span class="sc">==</span> <span class="st">&quot;Overcast&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb228-2"><a href="classifying-with-decision-trees.html#cb228-2" tabindex="-1"></a>  <span class="fu">IG</span>(<span class="at">target =</span> FireWarning, <span class="at">feature =</span> Wind)</span></code></pre></div>
+<pre><code>## [1] 0.9182958</code></pre>
+<p>Based on the information gain, for overcast skies we’d split on <code>Wind</code> next.</p>
+<div class="sourceCode" id="cb230"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb230-1"><a href="classifying-with-decision-trees.html#cb230-1" tabindex="-1"></a>dat <span class="sc">%&gt;%</span> <span class="fu">filter</span>(SkyCondition <span class="sc">==</span> <span class="st">&quot;Overcast&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(Wind) <span class="sc">%&gt;%</span> </span>
+<span id="cb230-2"><a href="classifying-with-decision-trees.html#cb230-2" tabindex="-1"></a>  <span class="fu">count</span>(FireWarning)</span></code></pre></div>
+<pre><code>## # A tibble: 2 × 3
+## # Groups:   Wind [2]
+##   Wind   FireWarning     n
+##   &lt;fct&gt;  &lt;fct&gt;       &lt;int&gt;
+## 1 Strong Yes             4
+## 2 Weak   No              2</code></pre>
+<p><img src="05SoManyChoices_files/figure-html/unnamed-chunk-26-1.png" alt="" width="288" /></p>
+<p>And we are done! We now have a perfect classifier. Fire warnings are issued on sunny, hot days and overcast, windy days. That classified our <code>Yes</code> data perfectly and the <code>No</code> data came out perfectly too. No fire warnings issues on rainy days or overcast days with weak wind. Good job information gain!</p>
+<p>This classifier is pretty clearly a way oversimplified example, right? It’s perfect and simple and just unambiguous. This never happens with real-world data. There is no need to prune this tree, or think about stopping rules, etc. But what we did above is just what the C5.0 algorithm does when assigning splits.</p>
+</div>
+<div id="information-gain-splits-on-continuous-data" class="section level3 hasAnchor" number="6.6.4">
+<h3><span class="header-section-number">6.6.4</span> Information Gain Splits on Continuous Data<a href="classifying-with-decision-trees.html#information-gain-splits-on-continuous-data" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>The data above are all categorical. But we can use information gain for continuous data too. In kind of a sneaky way. The algorithm just bins the continuous data (e.g., using <code>cut</code>) to make it categorical and goes from there. It kind of seems like cheating I know! But like we’ve said before, ML is often clever rather than smart.</p>
+</div>
+</div>
+<div id="a-real-example" class="section level2 hasAnchor" number="6.7">
+<h2><span class="header-section-number">6.7</span> A Real Example<a href="classifying-with-decision-trees.html#a-real-example" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div id="go-fish" class="section level3 hasAnchor" number="6.7.1">
+<h3><span class="header-section-number">6.7.1</span> Go Fish<a href="classifying-with-decision-trees.html#go-fish" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>We classified the fish data from last week. Remember? Let’s imagine a world where there was a good reason to classify the species based on variables you could extract from images – e.g., length, width, height. This is a classic kind of machine learning and big data scenario. Can the machine find patterns in a data cloud that we couldn’t determine <em>a priori</em>? Can the machine do this in a way that is generalizable to a test data set?</p>
+<div class="sourceCode" id="cb232"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb232-1"><a href="classifying-with-decision-trees.html#cb232-1" tabindex="-1"></a>fish <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;data/fishcatch.csv&quot;</span>)</span></code></pre></div>
+<pre><code>## Rows: 159 Columns: 11
+## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## chr (3): std_name, common_name, sex
+## dbl (8): weight_g, length_nose2tail_base_cm, length_nose2tail_notch_cm, leng...
+## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<div class="sourceCode" id="cb234"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb234-1"><a href="classifying-with-decision-trees.html#cb234-1" tabindex="-1"></a>fishFiltered <span class="ot">&lt;-</span> fish <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="sc">-</span>std_name, <span class="sc">-</span>weight_g, <span class="sc">-</span>sex) <span class="sc">%&gt;%</span></span>
+<span id="cb234-2"><a href="classifying-with-decision-trees.html#cb234-2" tabindex="-1"></a>  <span class="fu">drop_na</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb234-3"><a href="classifying-with-decision-trees.html#cb234-3" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">common_name =</span> <span class="fu">factor</span>(common_name))</span>
+<span id="cb234-4"><a href="classifying-with-decision-trees.html#cb234-4" tabindex="-1"></a><span class="fu">head</span>(fishFiltered)</span></code></pre></div>
+<pre><code>## # A tibble: 6 × 8
+##   common_name length_nose2tail_base_cm length_nose2tail_notch_cm
+##   &lt;fct&gt;                          &lt;dbl&gt;                     &lt;dbl&gt;
+## 1 bream                           23.2                      25.4
+## 2 bream                           24                        26.3
+## 3 bream                           23.9                      26.5
+## 4 bream                           26.3                      29  
+## 5 bream                           26.5                      29  
+## 6 bream                           26.8                      29.7
+## # ℹ 5 more variables: length_nose2tail_end_cm &lt;dbl&gt;, height_cm &lt;dbl&gt;,
+## #   width_cm &lt;dbl&gt;, height2length_pct &lt;dbl&gt;, width2length_pct &lt;dbl&gt;</code></pre>
+<p>Before classifying, I’d encourage you to open this up in Rstudio by clicking on it and spend some time sorting and looking at the data. Can you see a way to classifying by species? The last time we fussed with these data we just tried to classify the three most common species. Can you figure out the pattern for all of them?</p>
+<div class="sourceCode" id="cb236"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb236-1"><a href="classifying-with-decision-trees.html#cb236-1" tabindex="-1"></a><span class="fu">library</span>(plotly)</span>
+<span id="cb236-2"><a href="classifying-with-decision-trees.html#cb236-2" tabindex="-1"></a><span class="fu">plot_ly</span>(fishFiltered, </span>
+<span id="cb236-3"><a href="classifying-with-decision-trees.html#cb236-3" tabindex="-1"></a>        <span class="at">x =</span> <span class="sc">~</span>length_nose2tail_end_cm,</span>
+<span id="cb236-4"><a href="classifying-with-decision-trees.html#cb236-4" tabindex="-1"></a>        <span class="at">y =</span> <span class="sc">~</span>height_cm,</span>
+<span id="cb236-5"><a href="classifying-with-decision-trees.html#cb236-5" tabindex="-1"></a>        <span class="at">z =</span> <span class="sc">~</span>width_cm, </span>
+<span id="cb236-6"><a href="classifying-with-decision-trees.html#cb236-6" tabindex="-1"></a>        <span class="at">color =</span> <span class="sc">~</span>common_name) <span class="sc">%&gt;%</span></span>
+<span id="cb236-7"><a href="classifying-with-decision-trees.html#cb236-7" tabindex="-1"></a>  <span class="fu">add_markers</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb236-8"><a href="classifying-with-decision-trees.html#cb236-8" tabindex="-1"></a>  <span class="fu">layout</span>(<span class="at">scene =</span> <span class="fu">list</span>(<span class="at">xaxis =</span> <span class="fu">list</span>(<span class="at">title =</span> <span class="st">&#39;Length&#39;</span>),</span>
+<span id="cb236-9"><a href="classifying-with-decision-trees.html#cb236-9" tabindex="-1"></a>                      <span class="at">yaxis =</span> <span class="fu">list</span>(<span class="at">title =</span> <span class="st">&#39;Height&#39;</span>),</span>
+<span id="cb236-10"><a href="classifying-with-decision-trees.html#cb236-10" tabindex="-1"></a>                      <span class="at">zaxis =</span> <span class="fu">list</span>(<span class="at">title =</span> <span class="st">&#39;Width&#39;</span>))) <span class="sc">%&gt;%</span></span>
+<span id="cb236-11"><a href="classifying-with-decision-trees.html#cb236-11" tabindex="-1"></a>  <span class="fu">layout</span>(<span class="at">showlegend =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
+<div class="plotly html-widget html-fill-item" id="htmlwidget-87ddf903237f1e2c18bb" style="width:672px;height:480px;"></div>
+<script type="application/json" data-for="htmlwidget-87ddf903237f1e2c18bb">{"x":{"visdat":{"a89b45016121":["function () ","plotlyVisDat"]},"cur_data":"a89b45016121","attrs":{"a89b45016121":{"x":{},"y":{},"z":{},"color":{},"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"scatter3d","mode":"markers","inherit":true}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"scene":{"xaxis":{"title":"Length"},"yaxis":{"title":"Height"},"zaxis":{"title":"Width"}},"showlegend":false,"hovermode":"closest"},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"data":[{"x":[30,31.199999999999999,31.100000000000001,33.5,34,34.700000000000003,34.5,35,35.100000000000001,36.200000000000003,36.200000000000003,36.200000000000003,36.399999999999999,37.299999999999997,37.200000000000003,37.200000000000003,38.299999999999997,38.5,38.600000000000001,38.700000000000003,39.5,39.200000000000003,39.700000000000003,40.600000000000001,40.5,40.899999999999999,40.600000000000001,41.5,41.600000000000001,42.600000000000001,44.100000000000001,44,45.299999999999997,45.899999999999999,46.5],"y":[11.5,12.5,12.4,12.699999999999999,12.4,13.6,14.199999999999999,12.699999999999999,14,14.199999999999999,14.300000000000001,14.4,13.800000000000001,13.9,15,15.4,14.9,14.9,15.6,14.5,15.1,16,15.5,15.5,16.199999999999999,16.399999999999999,16.399999999999999,16.5,16.899999999999999,19,18,18.100000000000001,18.800000000000001,18.600000000000001,17.600000000000001],"z":[4,4.2999999999999998,4.7000000000000002,4.5,5.0999999999999996,4.9000000000000004,5.2999999999999998,4.7000000000000002,4.7999999999999998,5,5.0999999999999996,4.7999999999999998,4.4000000000000004,5.0999999999999996,5.2000000000000002,5.5999999999999996,5.2999999999999998,5.2000000000000002,5.0999999999999996,5.7000000000000002,5.5999999999999996,5.4000000000000004,5.2999999999999998,6.0999999999999996,5.5999999999999996,6.0999999999999996,6.0999999999999996,5.9000000000000004,6.2000000000000002,6.5999999999999996,6.2999999999999998,6.2999999999999998,6.7000000000000002,6.7000000000000002,6.4000000000000004],"type":"scatter3d","mode":"markers","name":"bream","marker":{"color":"rgba(102,194,165,1)","line":{"color":"rgba(102,194,165,1)"}},"textfont":{"color":"rgba(102,194,165,1)"},"error_y":{"color":"rgba(102,194,165,1)"},"error_x":{"color":"rgba(102,194,165,1)"},"line":{"color":"rgba(102,194,165,1)"},"frame":null},{"x":[28.699999999999999,29.300000000000001,30.800000000000001,34,39.600000000000001,43.5],"y":[8.4000000000000004,8.0999999999999996,8.8000000000000007,10.699999999999999,11.800000000000001,12.4],"z":[4.2000000000000002,4.2000000000000002,4.7000000000000002,6.5999999999999996,6.5999999999999996,6.5],"type":"scatter3d","mode":"markers","name":"ide","marker":{"color":"rgba(252,141,98,1)","line":{"color":"rgba(252,141,98,1)"}},"textfont":{"color":"rgba(252,141,98,1)"},"error_y":{"color":"rgba(252,141,98,1)"},"error_x":{"color":"rgba(252,141,98,1)"},"line":{"color":"rgba(252,141,98,1)"},"frame":null},{"x":[8.8000000000000007,14.699999999999999,16,17.199999999999999,18.5,19.199999999999999,19.399999999999999,20.199999999999999,20.800000000000001,21,22.5,22.5,22.5,22.800000000000001,23.5,23.5,23.5,23.5,23.5,24,24,24.199999999999999,24.5,25,25.5,25.5,26.199999999999999,26.5,27,28,28.699999999999999,28.899999999999999,28.899999999999999,28.899999999999999,29.399999999999999,30.100000000000001,31.600000000000001,34,36.5,37.299999999999997,39,38.299999999999997,39.399999999999999,39.299999999999997,41.399999999999999,41.399999999999999,41.299999999999997,42.299999999999997,42.5,42.399999999999999,42.5,44.600000000000001,45.200000000000003,45.5,46,46.600000000000001],"y":[2.1000000000000001,3.5,3.7999999999999998,4.5999999999999996,4.5999999999999996,5.2000000000000002,5.2000000000000002,5.5999999999999996,5.0999999999999996,5.0999999999999996,5.7000000000000002,5.9000000000000004,5.7000000000000002,6.4000000000000004,6.0999999999999996,5.5999999999999996,6.0999999999999996,5.9000000000000004,5.5,5.9000000000000004,6.7999999999999998,6,5.2000000000000002,6.2999999999999998,7.2999999999999998,6.4000000000000004,6.7000000000000002,6.4000000000000004,6.5999999999999996,7.2000000000000002,8.3000000000000007,7.2000000000000002,7.0999999999999996,7.2999999999999998,7.7999999999999998,7.5999999999999996,7.5999999999999996,10,10.300000000000001,11.5,10.9,10.6,10.800000000000001,10.6,11.1,11.1,12.4,11.9,11.699999999999999,12.4,11.1,12.800000000000001,11.9,12.5,12.6,12.5],"z":[1.3999999999999999,2,2.3999999999999999,2.6000000000000001,2.8999999999999999,3.2999999999999998,3.1000000000000001,3.1000000000000001,3,2.7999999999999998,3.6000000000000001,3.2999999999999998,3.7000000000000002,3.5,3.3999999999999999,3.5,3.5,3.5,4,3.6000000000000001,3.6000000000000001,3.6000000000000001,3.6000000000000001,3.7000000000000002,3.7000000000000002,3.7999999999999998,4.2000000000000002,3.7000000000000002,4.2000000000000002,4.0999999999999996,5.0999999999999996,4.2999999999999998,4.2999999999999998,4.5999999999999996,4.2000000000000002,4.5999999999999996,4.7999999999999998,6,6.4000000000000004,7.7999999999999998,6.9000000000000004,6.7000000000000002,6.2999999999999998,6.4000000000000004,7.5,6,7.4000000000000004,7.0999999999999996,7.2000000000000002,7.5,6.5999999999999996,6.9000000000000004,7.2999999999999998,7.4000000000000004,8.0999999999999996,7.5999999999999996],"type":"scatter3d","mode":"markers","name":"perch","marker":{"color":"rgba(141,160,203,1)","line":{"color":"rgba(141,160,203,1)"}},"textfont":{"color":"rgba(141,160,203,1)"},"error_y":{"color":"rgba(141,160,203,1)"},"error_x":{"color":"rgba(141,160,203,1)"},"line":{"color":"rgba(141,160,203,1)"},"frame":null},{"x":[34.799999999999997,37.799999999999997,38.799999999999997,39.799999999999997,40.5,41,45.5,45.5,45.799999999999997,48,48.700000000000003,51.200000000000003,55.100000000000001,59.700000000000003,64,64,68],"y":[5.5999999999999996,5.7000000000000002,5.9000000000000004,6.2999999999999998,7.2999999999999998,6.4000000000000004,7.2999999999999998,6.7999999999999998,7.7999999999999998,7,7.7999999999999998,7.7000000000000002,8.9000000000000004,10.699999999999999,9.5999999999999996,9.5999999999999996,10.800000000000001],"z":[3.3999999999999999,4.2000000000000002,4.4000000000000004,4,4.5999999999999996,4,4.2999999999999998,4.5,5.0999999999999996,4.9000000000000004,4.9000000000000004,5.4000000000000004,6.2000000000000002,7,6.0999999999999996,6.0999999999999996,7.5],"type":"scatter3d","mode":"markers","name":"pike","marker":{"color":"rgba(231,138,195,1)","line":{"color":"rgba(231,138,195,1)"}},"textfont":{"color":"rgba(231,138,195,1)"},"error_y":{"color":"rgba(231,138,195,1)"},"error_x":{"color":"rgba(231,138,195,1)"},"line":{"color":"rgba(231,138,195,1)"},"frame":null},{"x":[16.199999999999999,20.300000000000001,21.199999999999999,22.199999999999999,22.199999999999999,22.800000000000001,23.100000000000001,23.699999999999999,24.699999999999999,24.300000000000001,25.300000000000001,25,25,27.199999999999999,26.699999999999999,26.800000000000001,27.899999999999999,29.199999999999999,30.600000000000001,35],"y":[4.0999999999999996,5.2999999999999998,5.5999999999999996,5.5999999999999996,6.2000000000000002,6.5,6.2000000000000002,6.0999999999999996,5.7999999999999998,6.5999999999999996,7,6.5999999999999996,6.4000000000000004,7.5,6.9000000000000004,7.4000000000000004,7.0999999999999996,8.9000000000000004,8.5999999999999996,9.5],"z":[2.2999999999999998,2.7999999999999998,2.8999999999999999,3.2000000000000002,3.6000000000000001,3.3999999999999999,3.3999999999999999,3.2999999999999998,3.7999999999999998,3.5,3.7999999999999998,3.2999999999999998,3.7999999999999998,3.7999999999999998,3.6000000000000001,4.0999999999999996,3.8999999999999999,4.5,4.7999999999999998,5.4000000000000004],"type":"scatter3d","mode":"markers","name":"roach","marker":{"color":"rgba(166,216,84,1)","line":{"color":"rgba(166,216,84,1)"}},"textfont":{"color":"rgba(166,216,84,1)"},"error_y":{"color":"rgba(166,216,84,1)"},"error_x":{"color":"rgba(166,216,84,1)"},"line":{"color":"rgba(166,216,84,1)"},"frame":null},{"x":[16.5,17.399999999999999,19.800000000000001,21.300000000000001,22.399999999999999,23.199999999999999,23.199999999999999,24.100000000000001,25.800000000000001,28,29],"y":[6.7999999999999998,6.5999999999999996,7.4000000000000004,8.4000000000000004,8.9000000000000004,8.5,9.4000000000000004,9.6999999999999993,10.300000000000001,11.1,11.4],"z":[2.2999999999999998,2.2999999999999998,2.7000000000000002,2.8999999999999999,3.2999999999999998,3.2999999999999998,3.3999999999999999,3.2000000000000002,3.7000000000000002,4.0999999999999996,4.2000000000000002],"type":"scatter3d","mode":"markers","name":"silver_bream","marker":{"color":"rgba(255,217,47,1)","line":{"color":"rgba(255,217,47,1)"}},"textfont":{"color":"rgba(255,217,47,1)"},"error_y":{"color":"rgba(255,217,47,1)"},"error_x":{"color":"rgba(255,217,47,1)"},"line":{"color":"rgba(255,217,47,1)"},"frame":null},{"x":[10.800000000000001,11.6,11.6,12,12.4,12.6,13.1,13.1,13.199999999999999,13.4,13.5,13.800000000000001,15.199999999999999,16.199999999999999],"y":[1.7,2,1.7,2.2000000000000002,2.1000000000000001,2,2.2000000000000002,2.2000000000000002,2.2000000000000002,2.1000000000000001,2.3999999999999999,2.2999999999999998,2.8999999999999999,2.8999999999999999],"z":[1,1.2,1.1000000000000001,1.3999999999999999,1.3,1.3,1.3,1.2,1.1000000000000001,1.3999999999999999,1.3,1.3,2.1000000000000001,1.8999999999999999],"type":"scatter3d","mode":"markers","name":"smelt","marker":{"color":"rgba(229,196,148,1)","line":{"color":"rgba(229,196,148,1)"}},"textfont":{"color":"rgba(229,196,148,1)"},"error_y":{"color":"rgba(229,196,148,1)"},"error_x":{"color":"rgba(229,196,148,1)"},"line":{"color":"rgba(229,196,148,1)"},"frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="fish-finder" class="section level3 hasAnchor" number="6.7.2">
+<h3><span class="header-section-number">6.7.2</span> Fish Finder<a href="classifying-with-decision-trees.html#fish-finder" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>In `fishFiltered’ we have seven species to predict and seven variables that we can measure non-invasively. Can we predict the species from these (often highly correlated) variables?</p>
+<p>Note that the predictor variables are continuous, so the algorithm will have to bin them all in a clever way.</p>
+<div class="sourceCode" id="cb237"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb237-1"><a href="classifying-with-decision-trees.html#cb237-1" tabindex="-1"></a>treeModel <span class="ot">&lt;-</span> <span class="fu">C5.0</span>(common_name<span class="sc">~</span>., <span class="at">data=</span>fishFiltered)</span>
+<span id="cb237-2"><a href="classifying-with-decision-trees.html#cb237-2" tabindex="-1"></a><span class="fu">summary</span>(treeModel) </span></code></pre></div>
+<pre><code>## 
+## Call:
+## C5.0.formula(formula = common_name ~ ., data = fishFiltered)
+## 
+## 
+## C5.0 [Release 2.07 GPL Edition]      Thu Mar  5 16:29:19 2026
+## -------------------------------
+## 
+## Class specified by attribute `outcome&#39;
+## 
+## Read 159 cases (8 attributes) from undefined.data
+## 
+## Decision tree:
+## 
+## height2length_pct &gt; 31.6:
+## :...length_nose2tail_end_cm &lt;= 29.4: silver_bream (11)
+## :   length_nose2tail_end_cm &gt; 29.4: bream (35)
+## height2length_pct &lt;= 31.6:
+## :...height2length_pct &lt;= 18.9:
+##     :...length_nose2tail_base_cm &lt;= 21.5: smelt (14)
+##     :   length_nose2tail_base_cm &gt; 21.5: pike (17)
+##     height2length_pct &gt; 18.9:
+##     :...width_cm &gt; 4.1:
+##         :...height2length_pct &lt;= 27.7: perch (20/1)
+##         :   height2length_pct &gt; 27.7:
+##         :   :...width_cm &lt;= 4.9:
+##         :       :...width2length_pct &lt;= 15.2: ide (3)
+##         :       :   width2length_pct &gt; 15.2: roach (2)
+##         :       width_cm &gt; 4.9:
+##         :       :...width_cm &gt; 6.7: perch (6)
+##         :           width_cm &lt;= 6.7:
+##         :           :...height_cm &lt;= 10.3: perch (3)
+##         :               height_cm &gt; 10.3: ide (3)
+##         width_cm &lt;= 4.1:
+##         :...height2length_pct &lt;= 25.2: perch (16/1)
+##             height2length_pct &gt; 25.2:
+##             :...width2length_pct &lt;= 14.3: roach (9)
+##                 width2length_pct &gt; 14.3:
+##                 :...height_cm &lt;= 6.1: perch (9)
+##                     height_cm &gt; 6.1:
+##                     :...length_nose2tail_notch_cm &gt; 23.5: perch (2)
+##                         length_nose2tail_notch_cm &lt;= 23.5:
+##                         :...height2length_pct &lt;= 27.9: roach (5)
+##                             height2length_pct &gt; 27.9:
+##                             :...length_nose2tail_base_cm &lt;= 19.1: roach (2)
+##                                 length_nose2tail_base_cm &gt; 19.1: perch (2)
+## 
+## 
+## Evaluation on training data (159 cases):
+## 
+##      Decision Tree   
+##    ----------------  
+##    Size      Errors  
+## 
+##      17    2( 1.3%)   &lt;&lt;
+## 
+## 
+##     (a)   (b)   (c)   (d)   (e)   (f)   (g)    &lt;-classified as
+##    ----  ----  ----  ----  ----  ----  ----
+##      35                                        (a): class bream
+##             6                                  (b): class ide
+##                  56                            (c): class perch
+##                        17                      (d): class pike
+##                   2          18                (e): class roach
+##                                    11          (f): class silver_bream
+##                                          14    (g): class smelt
+## 
+## 
+##  Attribute usage:
+## 
+##  100.00% height2length_pct
+##   51.57% width_cm
+##   28.93% length_nose2tail_end_cm
+##   22.01% length_nose2tail_base_cm
+##   21.38% width2length_pct
+##   16.35% height_cm
+##    6.92% length_nose2tail_notch_cm
+## 
+## 
+## Time: 0.0 secs</code></pre>
+<p>Wow. The algorithm did a fantastic job. The accuracy is very good, as is the confusion matrix. Note how the tree split off the two bream species right away using the height to length ratio (bream are pretty tall relative to their length I guess) and then separated the silver bream from the common bream by the total length variable. Let’s visualize this first and second split in the tree.</p>
+<p>Also, this is important, unlike kNN we see which variables are useful here which gives us understanding of the system. It’s not a blind classifier.</p>
+<div class="sourceCode" id="cb239"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb239-1"><a href="classifying-with-decision-trees.html#cb239-1" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb239-2"><a href="classifying-with-decision-trees.html#cb239-2" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data=</span>fishFiltered,</span>
+<span id="cb239-3"><a href="classifying-with-decision-trees.html#cb239-3" tabindex="-1"></a>             <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x=</span>height2length_pct,</span>
+<span id="cb239-4"><a href="classifying-with-decision-trees.html#cb239-4" tabindex="-1"></a>                           <span class="at">y=</span>length_nose2tail_end_cm,</span>
+<span id="cb239-5"><a href="classifying-with-decision-trees.html#cb239-5" tabindex="-1"></a>                           <span class="at">color=</span>common_name)) <span class="sc">+</span></span>
+<span id="cb239-6"><a href="classifying-with-decision-trees.html#cb239-6" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept=</span><span class="fl">31.6</span>) <span class="sc">+</span> <span class="fu">geom_hline</span>(<span class="at">yintercept=</span><span class="fl">29.4</span>) <span class="sc">+</span> </span>
+<span id="cb239-7"><a href="classifying-with-decision-trees.html#cb239-7" tabindex="-1"></a>  <span class="fu">annotate</span>(<span class="st">&quot;rect&quot;</span>, <span class="at">xmin =</span> <span class="sc">-</span><span class="cn">Inf</span>, <span class="at">xmax =</span> <span class="fl">31.6</span>, <span class="at">ymin =</span> <span class="sc">-</span><span class="cn">Inf</span>, <span class="at">ymax =</span> <span class="cn">Inf</span>,</span>
+<span id="cb239-8"><a href="classifying-with-decision-trees.html#cb239-8" tabindex="-1"></a>           <span class="at">alpha =</span> <span class="fl">0.5</span>,<span class="at">fill =</span> <span class="st">&quot;grey&quot;</span>) <span class="sc">+</span></span>
+<span id="cb239-9"><a href="classifying-with-decision-trees.html#cb239-9" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x=</span><span class="st">&quot;Height to Length (%)&quot;</span>,<span class="at">y=</span><span class="st">&quot;Nose to Tail Length (cm)&quot;</span>)</span></code></pre></div>
+<p><img src="05SoManyChoices_files/figure-html/unnamed-chunk-31-1.png" alt="" width="672" /></p>
+<p>That does an admirable job of pulling out the two bream species. The next split continues along these lines deftly separating smelt from pike.</p>
+<div class="sourceCode" id="cb240"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb240-1"><a href="classifying-with-decision-trees.html#cb240-1" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb240-2"><a href="classifying-with-decision-trees.html#cb240-2" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data=</span>fishFiltered,</span>
+<span id="cb240-3"><a href="classifying-with-decision-trees.html#cb240-3" tabindex="-1"></a>             <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x=</span>height2length_pct,</span>
+<span id="cb240-4"><a href="classifying-with-decision-trees.html#cb240-4" tabindex="-1"></a>                           <span class="at">y=</span>length_nose2tail_end_cm,</span>
+<span id="cb240-5"><a href="classifying-with-decision-trees.html#cb240-5" tabindex="-1"></a>                           <span class="at">color=</span>common_name)) <span class="sc">+</span></span>
+<span id="cb240-6"><a href="classifying-with-decision-trees.html#cb240-6" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept=</span><span class="fl">18.9</span>) <span class="sc">+</span> <span class="fu">geom_hline</span>(<span class="at">yintercept=</span><span class="fl">21.5</span>) <span class="sc">+</span> </span>
+<span id="cb240-7"><a href="classifying-with-decision-trees.html#cb240-7" tabindex="-1"></a>  <span class="fu">annotate</span>(<span class="st">&quot;rect&quot;</span>, <span class="at">xmin =</span> <span class="fl">18.9</span>, <span class="at">xmax =</span> <span class="cn">Inf</span>, <span class="at">ymin =</span> <span class="sc">-</span><span class="cn">Inf</span>, <span class="at">ymax =</span> <span class="cn">Inf</span>,</span>
+<span id="cb240-8"><a href="classifying-with-decision-trees.html#cb240-8" tabindex="-1"></a>           <span class="at">alpha =</span> <span class="fl">0.5</span>,<span class="at">fill =</span> <span class="st">&quot;grey&quot;</span>) <span class="sc">+</span></span>
+<span id="cb240-9"><a href="classifying-with-decision-trees.html#cb240-9" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x=</span><span class="st">&quot;Height to Length (%)&quot;</span>,<span class="at">y=</span><span class="st">&quot;Nose to Tail Length (cm)&quot;</span>)</span></code></pre></div>
+<p><img src="05SoManyChoices_files/figure-html/unnamed-chunk-32-1.png" alt="" width="672" />
+After that? The mess in the middle requires a different approach trying to pull apart species with a <code>height2length_pct</code> more than 18.9 and less than 31.6. The tree gets pretty deep. Is it overfit?</p>
+</div>
+<div id="visualizing-the-tree" class="section level3 hasAnchor" number="6.7.3">
+<h3><span class="header-section-number">6.7.3</span> Visualizing the Tree<a href="classifying-with-decision-trees.html#visualizing-the-tree" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>The plotting support for <code>C5.0</code> is not great. You can use the default plot option but it’s a little clunky. The code is below for the whole tree and then a subtree but I’m not including them here because they are too big and ugly. Run them if you like.</p>
+<div class="sourceCode" id="cb241"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb241-1"><a href="classifying-with-decision-trees.html#cb241-1" tabindex="-1"></a><span class="do">## Not shown</span></span>
+<span id="cb241-2"><a href="classifying-with-decision-trees.html#cb241-2" tabindex="-1"></a><span class="fu">plot</span>(treeModel)</span>
+<span id="cb241-3"><a href="classifying-with-decision-trees.html#cb241-3" tabindex="-1"></a><span class="fu">plot</span>(treeModel,<span class="at">subtree =</span> <span class="dv">2</span>)</span></code></pre></div>
+<p>There are some amazing visualizations out there for decision trees. E.g., <a href="https://datastorm-open.github.io/visNetwork/">visNetwork</a> and <a href="https://adeelk93.github.io/collapsibleTree/">collapsibleTree</a> but none of those packages use the <code>C5.0</code> objects natively. I could figure out how to coerce it all if I spent some time on it but I haven’t gotten around to it yet. When we start using <code>rpart</code> in the next module I’ll show you some cool visualizations.</p>
+</div>
+<div id="train-and-test" class="section level3 hasAnchor" number="6.7.4">
+<h3><span class="header-section-number">6.7.4</span> Train and Test<a href="classifying-with-decision-trees.html#train-and-test" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Let’s apply a training and testing data set to see how well the model works on an independent data set.</p>
+<div class="sourceCode" id="cb242"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb242-1"><a href="classifying-with-decision-trees.html#cb242-1" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(fishFiltered)</span>
+<span id="cb242-2"><a href="classifying-with-decision-trees.html#cb242-2" tabindex="-1"></a>rows2test <span class="ot">&lt;-</span> <span class="fu">sample</span>(n,<span class="fl">0.3</span><span class="sc">*</span>n)</span>
+<span id="cb242-3"><a href="classifying-with-decision-trees.html#cb242-3" tabindex="-1"></a>testing <span class="ot">&lt;-</span> fishFiltered[rows2test,]</span>
+<span id="cb242-4"><a href="classifying-with-decision-trees.html#cb242-4" tabindex="-1"></a>training <span class="ot">&lt;-</span> fishFiltered[<span class="sc">-</span>rows2test,]</span>
+<span id="cb242-5"><a href="classifying-with-decision-trees.html#cb242-5" tabindex="-1"></a></span>
+<span id="cb242-6"><a href="classifying-with-decision-trees.html#cb242-6" tabindex="-1"></a>treeModel <span class="ot">&lt;-</span> <span class="fu">C5.0</span>(common_name<span class="sc">~</span>.,<span class="at">data=</span>training)</span>
+<span id="cb242-7"><a href="classifying-with-decision-trees.html#cb242-7" tabindex="-1"></a></span>
+<span id="cb242-8"><a href="classifying-with-decision-trees.html#cb242-8" tabindex="-1"></a>fits <span class="ot">&lt;-</span> <span class="fu">predict</span>(treeModel,testing)</span>
+<span id="cb242-9"><a href="classifying-with-decision-trees.html#cb242-9" tabindex="-1"></a><span class="fu">confusionMatrix</span>(fits,testing<span class="sc">$</span>common_name)</span></code></pre></div>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##               Reference
+## Prediction     bream ide perch pike roach silver_bream smelt
+##   bream           11   0     0    0     0            0     0
+##   ide              0   0     0    0     0            0     0
+##   perch            0   2    12    0     4            0     0
+##   pike             0   0     0    6     0            0     0
+##   roach            0   1     2    0     3            0     0
+##   silver_bream     1   0     0    0     0            1     0
+##   smelt            0   0     0    0     0            0     4
+## 
+## Overall Statistics
+##                                          
+##                Accuracy : 0.7872         
+##                  95% CI : (0.6434, 0.893)
+##     No Information Rate : 0.2979         
+##     P-Value [Acc &gt; NIR] : 5.862e-12      
+##                                          
+##                   Kappa : 0.7282         
+##                                          
+##  Mcnemar&#39;s Test P-Value : NA             
+## 
+## Statistics by Class:
+## 
+##                      Class: bream Class: ide Class: perch Class: pike
+## Sensitivity                0.9167    0.00000       0.8571      1.0000
+## Specificity                1.0000    1.00000       0.8182      1.0000
+## Pos Pred Value             1.0000        NaN       0.6667      1.0000
+## Neg Pred Value             0.9722    0.93617       0.9310      1.0000
+## Prevalence                 0.2553    0.06383       0.2979      0.1277
+## Detection Rate             0.2340    0.00000       0.2553      0.1277
+## Detection Prevalence       0.2340    0.00000       0.3830      0.1277
+## Balanced Accuracy          0.9583    0.50000       0.8377      1.0000
+##                      Class: roach Class: silver_bream Class: smelt
+## Sensitivity               0.42857             1.00000      1.00000
+## Specificity               0.92500             0.97826      1.00000
+## Pos Pred Value            0.50000             0.50000      1.00000
+## Neg Pred Value            0.90244             1.00000      1.00000
+## Prevalence                0.14894             0.02128      0.08511
+## Detection Rate            0.06383             0.02128      0.08511
+## Detection Prevalence      0.12766             0.04255      0.08511
+## Balanced Accuracy         0.67679             0.98913      1.00000</code></pre>
+<p>How did this algorithm do with a testing sample? There are a few more wrinkles but quite well overall. Let’s look at it.</p>
+<p>In this confusion matrix, the overall accuracy is about 79%, which is far higher than the No Information Rate (NIR) of roughly 30%, indicating that the model is doing substantially better than always predicting the most common species (perch). The Kappa value (~0.73) supports this, showing strong agreement beyond chance despite class imbalance. However, class-level performance varies widely. Some species, such as pike and smelt, are classified perfectly in this test set, while others show clear problems. In particular, the model never predicts ide at all, giving a sensitivity of 0 for that class despite nonzero prevalence, and roach also has low sensitivity with many misclassified as perch or ide. Specificity is high for nearly all classes, meaning the model is generally good at ruling out species, but this comes at the cost of missing certain classes entirely. It is also important to remember that this matrix comes from a single train/test split; a truly cross-validated model would provide a more reliable picture of performance and class-specific uncertainty across many resampled splits.</p>
+</div>
+</div>
+<div id="your-work-4" class="section level2 hasAnchor" number="6.8">
+<h2><span class="header-section-number">6.8</span> Your Work<a href="classifying-with-decision-trees.html#your-work-4" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Let’s get some new data. This is a subset of the mushroom data found at the <a href="https://archive.ics.uci.edu/ml/datasets/mushroom">UCI Machine Learning Repository</a>. I’ve cleaned it up and made the labels more readable. Go ahead and read it in and look at it a bit.</p>
+<div class="sourceCode" id="cb244"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb244-1"><a href="classifying-with-decision-trees.html#cb244-1" tabindex="-1"></a>mushrooms <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;data/mushroomsClean.csv&quot;</span>)</span>
+<span id="cb244-2"><a href="classifying-with-decision-trees.html#cb244-2" tabindex="-1"></a>mushrooms <span class="ot">&lt;-</span> mushrooms <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">where</span>(is_character),as_factor))</span>
+<span id="cb244-3"><a href="classifying-with-decision-trees.html#cb244-3" tabindex="-1"></a><span class="fu">head</span>(mushrooms)</span></code></pre></div>
+<pre><code>## # A tibble: 6 × 21
+##   toxicity cap_shape cap_surface cap_color bruises gill_attach gill_spacing
+##   &lt;fct&gt;    &lt;fct&gt;     &lt;fct&gt;       &lt;fct&gt;     &lt;fct&gt;   &lt;fct&gt;       &lt;fct&gt;       
+## 1 poison   convex    smooth      brown     yes     free        close       
+## 2 edible   convex    smooth      yellow    yes     free        close       
+## 3 edible   sunken    smooth      white     yes     free        close       
+## 4 poison   convex    scaly       white     yes     free        close       
+## 5 edible   convex    smooth      gray      no      free        crowded     
+## 6 edible   convex    scaly       yellow    yes     free        close       
+## # ℹ 14 more variables: gill_size &lt;fct&gt;, gill_color &lt;fct&gt;, stalk_shape &lt;fct&gt;,
+## #   stalk_root &lt;fct&gt;, stalk_surface_above &lt;fct&gt;, stalk_surface_below &lt;fct&gt;,
+## #   stalk_color_above &lt;fct&gt;, stalk_color_below &lt;fct&gt;, veil_color &lt;fct&gt;,
+## #   ring_number &lt;fct&gt;, ring_type &lt;fct&gt;, spore_print_color &lt;fct&gt;,
+## #   population &lt;fct&gt;, habitat &lt;fct&gt;</code></pre>
+<p>Can you predict whether or not a mushroom is edible using the C5.0 algorithm? You can throw the kitchen sink at it with something like <code>toxicity~.</code> or build a model with variables you think would be best. Importantly, would you eat a mushroom it classifies as edible? The cost of confusing a smelt for a pike seems small. How can you judge the cost of making a mistake here? You can try to fuss with the <code>costs</code> argument if you want.</p>
+<p>In the example above with the fish, we saw how we can understand the system a bit. E.g., we can get an idea about how different fish have different shapes that relate to ways of making a living. But the mushroom covariates are all pretty opaque to me. What does gill spacing or the number of rings “mean”? In ML problems are often solved without understanding mechanism. That’s unsatisfying but if it works, does it matter?</p>
+<p>Make sure you do some testing and training. You can go full cross validation with <code>caret</code> of course but that is up to you. I’m going to save the discussion around boosting and the growing of “random forests” for the second to last module on meta learning. We will get there, don’t you worry.</p>
+
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="classifying-with-knn.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="continuous-prediction-with-regression-trees.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+  "sharing": {
+    "github": false,
+    "facebook": true,
+    "twitter": true,
+    "linkedin": false,
+    "weibo": false,
+    "instapaper": false,
+    "vk": false,
+    "whatsapp": false,
+    "all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+  },
+  "fontsettings": {
+    "theme": "white",
+    "family": "sans",
+    "size": 2
+  },
+  "edit": {
+    "link": null,
+    "text": null
+  },
+  "history": {
+    "link": null,
+    "text": null
+  },
+  "view": {
+    "link": null,
+    "text": null
+  },
+  "download": null,
+  "search": {
+    "engine": "fuse",
+    "options": null
+  },
+  "toc": {
+    "collapse": "section",
+    "scroll_highlight": true
+  }
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

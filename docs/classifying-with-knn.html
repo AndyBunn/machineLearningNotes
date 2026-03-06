@@ -1,0 +1,1572 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>5 Classifying with kNN | Machine Learning for Environmental Science: Notes for ESCI 506</title>
+  <meta name="description" content="Machine learning notes and exercises for ESCI 506" />
+  <meta name="generator" content="bookdown 0.46 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="5 Classifying with kNN | Machine Learning for Environmental Science: Notes for ESCI 506" />
+  <meta property="og:type" content="book" />
+  
+  <meta property="og:description" content="Machine learning notes and exercises for ESCI 506" />
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="5 Classifying with kNN | Machine Learning for Environmental Science: Notes for ESCI 506" />
+  
+  <meta name="twitter:description" content="Machine learning notes and exercises for ESCI 506" />
+  
+
+<meta name="author" content="Andy Bunn" />
+
+
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="always-be-cross-validating-abcv.html"/>
+<link rel="next" href="classifying-with-decision-trees.html"/>
+<script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+<link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
+<link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
+<link href="libs/htmltools-fill-0.5.9/fill.css" rel="stylesheet" />
+<script src="libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+<script src="libs/plotly-binding-4.12.0/plotly.js"></script>
+<script src="libs/typedarray-0.1/typedarray.min.js"></script>
+<link href="libs/crosstalk-1.2.2/css/crosstalk.min.css" rel="stylesheet" />
+<script src="libs/crosstalk-1.2.2/js/crosstalk.min.js"></script>
+<link href="libs/plotly-htmlwidgets-css-2.25.2/plotly-htmlwidgets.css" rel="stylesheet" />
+<script src="libs/plotly-main-2.25.2/plotly-latest.min.js"></script>
+<link href="libs/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet" />
+<script src="libs/datatables-binding-0.34.0/datatables.js"></script>
+<link href="libs/dt-core-1.13.6/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="libs/dt-core-1.13.6/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="libs/dt-core-1.13.6/js/jquery.dataTables.min.js"></script>
+<link href="libs/vis-9.1.0/vis-network.min.css" rel="stylesheet" />
+<script src="libs/vis-9.1.0/vis-network.min.js"></script>
+<script src="libs/visNetwork-binding-2.1.4/visNetwork.js"></script>
+<script src="libs/FileSaver-1.1.20151003/FileSaver.min.js"></script>
+<script src="libs/Blob-1.0/Blob.js"></script>
+<script src="libs/canvas-toBlob-1.0/canvas-toBlob.js"></script>
+<script src="libs/html2canvas-0.5.0/html2canvas.js"></script>
+<script src="libs/jspdf-1.3.2/jspdf.debug.js"></script>
+<link href="libs/jquery-sparkline-2.1.2/jquery.sparkline.css" rel="stylesheet" />
+<script src="libs/jquery-sparkline-2.1.2/jquery.sparkline.js"></script>
+<script src="libs/sparkline-binding-2.0/sparkline.js"></script>
+
+<script>
+/* ========================================================================
+ * Bootstrap: transition.js v3.3.7
+ * http://getbootstrap.com/javascript/#transitions
+ * ========================================================================
+ * Copyright 2011-2016 Twitter, Inc.
+ * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+ * ======================================================================== */
+
+
++function ($) {
+  'use strict';
+
+  // CSS TRANSITION SUPPORT (Shoutout: http://www.modernizr.com/)
+  // ============================================================
+
+  function transitionEnd() {
+    var el = document.createElement('bootstrap')
+
+    var transEndEventNames = {
+      WebkitTransition : 'webkitTransitionEnd',
+      MozTransition    : 'transitionend',
+      OTransition      : 'oTransitionEnd otransitionend',
+      transition       : 'transitionend'
+    }
+
+    for (var name in transEndEventNames) {
+      if (el.style[name] !== undefined) {
+        return { end: transEndEventNames[name] }
+      }
+    }
+
+    return false // explicit for ie8 (  ._.)
+  }
+
+  // http://blog.alexmaccaw.com/css-transitions
+  $.fn.emulateTransitionEnd = function (duration) {
+    var called = false
+    var $el = this
+    $(this).one('bsTransitionEnd', function () { called = true })
+    var callback = function () { if (!called) $($el).trigger($.support.transition.end) }
+    setTimeout(callback, duration)
+    return this
+  }
+
+  $(function () {
+    $.support.transition = transitionEnd()
+
+    if (!$.support.transition) return
+
+    $.event.special.bsTransitionEnd = {
+      bindType: $.support.transition.end,
+      delegateType: $.support.transition.end,
+      handle: function (e) {
+        if ($(e.target).is(this)) return e.handleObj.handler.apply(this, arguments)
+      }
+    }
+  })
+
+}(jQuery);
+</script>
+<script>
+/* ========================================================================
+ * Bootstrap: collapse.js v3.3.7
+ * http://getbootstrap.com/javascript/#collapse
+ * ========================================================================
+ * Copyright 2011-2016 Twitter, Inc.
+ * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+ * ======================================================================== */
+
+/* jshint latedef: false */
+
++function ($) {
+  'use strict';
+
+  // COLLAPSE PUBLIC CLASS DEFINITION
+  // ================================
+
+  var Collapse = function (element, options) {
+    this.$element      = $(element)
+    this.options       = $.extend({}, Collapse.DEFAULTS, options)
+    this.$trigger      = $('[data-toggle="collapse"][href="#' + element.id + '"],' +
+                           '[data-toggle="collapse"][data-target="#' + element.id + '"]')
+    this.transitioning = null
+
+    if (this.options.parent) {
+      this.$parent = this.getParent()
+    } else {
+      this.addAriaAndCollapsedClass(this.$element, this.$trigger)
+    }
+
+    if (this.options.toggle) this.toggle()
+  }
+
+  Collapse.VERSION  = '3.3.7'
+
+  Collapse.TRANSITION_DURATION = 350
+
+  Collapse.DEFAULTS = {
+    toggle: true
+  }
+
+  Collapse.prototype.dimension = function () {
+    var hasWidth = this.$element.hasClass('width')
+    return hasWidth ? 'width' : 'height'
+  }
+
+  Collapse.prototype.show = function () {
+    if (this.transitioning || this.$element.hasClass('in')) return
+
+    var activesData
+    var actives = this.$parent && this.$parent.children('.panel').children('.in, .collapsing')
+
+    if (actives && actives.length) {
+      activesData = actives.data('bs.collapse')
+      if (activesData && activesData.transitioning) return
+    }
+
+    var startEvent = $.Event('show.bs.collapse')
+    this.$element.trigger(startEvent)
+    if (startEvent.isDefaultPrevented()) return
+
+    if (actives && actives.length) {
+      Plugin.call(actives, 'hide')
+      activesData || actives.data('bs.collapse', null)
+    }
+
+    var dimension = this.dimension()
+
+    this.$element
+      .removeClass('collapse')
+      .addClass('collapsing')[dimension](0)
+      .attr('aria-expanded', true)
+
+    this.$trigger
+      .removeClass('collapsed')
+      .attr('aria-expanded', true)
+
+    this.transitioning = 1
+
+    var complete = function () {
+      this.$element
+        .removeClass('collapsing')
+        .addClass('collapse in')[dimension]('')
+      this.transitioning = 0
+      this.$element
+        .trigger('shown.bs.collapse')
+    }
+
+    if (!$.support.transition) return complete.call(this)
+
+    var scrollSize = $.camelCase(['scroll', dimension].join('-'))
+
+    this.$element
+      .one('bsTransitionEnd', $.proxy(complete, this))
+      .emulateTransitionEnd(Collapse.TRANSITION_DURATION)[dimension](this.$element[0][scrollSize])
+  }
+
+  Collapse.prototype.hide = function () {
+    if (this.transitioning || !this.$element.hasClass('in')) return
+
+    var startEvent = $.Event('hide.bs.collapse')
+    this.$element.trigger(startEvent)
+    if (startEvent.isDefaultPrevented()) return
+
+    var dimension = this.dimension()
+
+    this.$element[dimension](this.$element[dimension]())[0].offsetHeight
+
+    this.$element
+      .addClass('collapsing')
+      .removeClass('collapse in')
+      .attr('aria-expanded', false)
+
+    this.$trigger
+      .addClass('collapsed')
+      .attr('aria-expanded', false)
+
+    this.transitioning = 1
+
+    var complete = function () {
+      this.transitioning = 0
+      this.$element
+        .removeClass('collapsing')
+        .addClass('collapse')
+        .trigger('hidden.bs.collapse')
+    }
+
+    if (!$.support.transition) return complete.call(this)
+
+    this.$element
+      [dimension](0)
+      .one('bsTransitionEnd', $.proxy(complete, this))
+      .emulateTransitionEnd(Collapse.TRANSITION_DURATION)
+  }
+
+  Collapse.prototype.toggle = function () {
+    this[this.$element.hasClass('in') ? 'hide' : 'show']()
+  }
+
+  Collapse.prototype.getParent = function () {
+    return $(this.options.parent)
+      .find('[data-toggle="collapse"][data-parent="' + this.options.parent + '"]')
+      .each($.proxy(function (i, element) {
+        var $element = $(element)
+        this.addAriaAndCollapsedClass(getTargetFromTrigger($element), $element)
+      }, this))
+      .end()
+  }
+
+  Collapse.prototype.addAriaAndCollapsedClass = function ($element, $trigger) {
+    var isOpen = $element.hasClass('in')
+
+    $element.attr('aria-expanded', isOpen)
+    $trigger
+      .toggleClass('collapsed', !isOpen)
+      .attr('aria-expanded', isOpen)
+  }
+
+  function getTargetFromTrigger($trigger) {
+    var href
+    var target = $trigger.attr('data-target')
+      || (href = $trigger.attr('href')) && href.replace(/.*(?=#[^\s]+$)/, '') // strip for ie7
+
+    return $(target)
+  }
+
+
+  // COLLAPSE PLUGIN DEFINITION
+  // ==========================
+
+  function Plugin(option) {
+    return this.each(function () {
+      var $this   = $(this)
+      var data    = $this.data('bs.collapse')
+      var options = $.extend({}, Collapse.DEFAULTS, $this.data(), typeof option == 'object' && option)
+
+      if (!data && options.toggle && /show|hide/.test(option)) options.toggle = false
+      if (!data) $this.data('bs.collapse', (data = new Collapse(this, options)))
+      if (typeof option == 'string') data[option]()
+    })
+  }
+
+  var old = $.fn.collapse
+
+  $.fn.collapse             = Plugin
+  $.fn.collapse.Constructor = Collapse
+
+
+  // COLLAPSE NO CONFLICT
+  // ====================
+
+  $.fn.collapse.noConflict = function () {
+    $.fn.collapse = old
+    return this
+  }
+
+
+  // COLLAPSE DATA-API
+  // =================
+
+  $(document).on('click.bs.collapse.data-api', '[data-toggle="collapse"]', function (e) {
+    var $this   = $(this)
+
+    if (!$this.attr('data-target')) e.preventDefault()
+
+    var $target = getTargetFromTrigger($this)
+    var data    = $target.data('bs.collapse')
+    var option  = data ? 'toggle' : $this.data()
+
+    Plugin.call($target, option)
+  })
+
+}(jQuery);
+</script>
+<script>
+window.initializeCodeFolding = function(show) {
+
+  // handlers for show-all and hide all
+  $("#rmd-show-all-code").click(function() {
+    // close the dropdown menu when an option is clicked
+    $("#allCodeButton").dropdown("toggle");
+    $('div.r-code-collapse').each(function() {
+      $(this).collapse('show');
+    });
+  });
+  $("#rmd-hide-all-code").click(function() {
+    // close the dropdown menu when an option is clicked
+    $("#allCodeButton").dropdown("toggle");
+    $('div.r-code-collapse').each(function() {
+      $(this).collapse('hide');
+    });
+  });
+
+  // index for unique code element ids
+  var currentIndex = 1;
+
+  // select all R code blocks
+  var rCodeBlocks = $('pre.sourceCode, pre.r, pre.python, pre.bash, pre.sql, pre.cpp, pre.stan');
+  rCodeBlocks.each(function() {
+
+    // if code block has been labeled with class `fold-show`, show the code on init!
+    var classList = $(this).attr('class').split(/\s+/);
+    for (var i = 0; i < classList.length; i++) {
+    if (classList[i] === 'fold-show') {
+        show = true;
+      }
+      // AGB add fold-hide
+    if (classList[i] === 'fold-hide') {
+        show = false;
+      }
+    }
+    // AGB
+    // if code block has been labeled with class `fold-hide`, hide the code on init!
+//    var classList = $(this).attr('class').split(/\s+/);
+//    for (var i = 0; i < classList.length; i++) {
+//    if (classList[i] === 'fold-hide') {
+//        show = false;
+//      }
+//    }
+
+    // create a collapsable div to wrap the code in
+    var div = $('<div class="collapse r-code-collapse"></div>');
+    if (show)
+      div.addClass('in');
+    var id = 'rcode-643E0F36' + currentIndex++;
+    div.attr('id', id);
+    $(this).before(div);
+    $(this).detach().appendTo(div);
+
+    // add a show code button right above
+    var showCodeText = $('<span>' + (show ? 'Hide' : 'Code') + '</span>');
+    var showCodeButton = $('<button type="button" class="btn btn-default btn-xs code-folding-btn pull-right"></button>');
+    showCodeButton.append(showCodeText);
+    showCodeButton
+        .attr('data-toggle', 'collapse')
+        .attr('data-target', '#' + id)
+        .attr('aria-expanded', show)
+        .attr('aria-controls', id);
+
+    var buttonRow = $('<div class="row"></div>');
+    var buttonCol = $('<div class="col-md-12"></div>');
+
+    buttonCol.append(showCodeButton);
+    buttonRow.append(buttonCol);
+
+    div.before(buttonRow);
+
+    // hack: return show to false, otherwise all next codeBlocks will be shown!
+    show = true;
+
+    // update state of button on show/hide
+    div.on('hidden.bs.collapse', function () {
+      showCodeText.text('Code');
+    });
+    div.on('show.bs.collapse', function () {
+      showCodeText.text('Hide');
+    });
+  });
+
+}
+</script>
+<script>
+/* ========================================================================
+ * Bootstrap: dropdown.js v3.3.7
+ * http://getbootstrap.com/javascript/#dropdowns
+ * ========================================================================
+ * Copyright 2011-2016 Twitter, Inc.
+ * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+ * ======================================================================== */
+
+
++function ($) {
+  'use strict';
+
+  // DROPDOWN CLASS DEFINITION
+  // =========================
+
+  var backdrop = '.dropdown-backdrop'
+  var toggle   = '[data-toggle="dropdown"]'
+  var Dropdown = function (element) {
+    $(element).on('click.bs.dropdown', this.toggle)
+  }
+
+  Dropdown.VERSION = '3.3.7'
+
+  function getParent($this) {
+    var selector = $this.attr('data-target')
+
+    if (!selector) {
+      selector = $this.attr('href')
+      selector = selector && /#[A-Za-z]/.test(selector) && selector.replace(/.*(?=#[^\s]*$)/, '') // strip for ie7
+    }
+
+    var $parent = selector && $(selector)
+
+    return $parent && $parent.length ? $parent : $this.parent()
+  }
+
+  function clearMenus(e) {
+    if (e && e.which === 3) return
+    $(backdrop).remove()
+    $(toggle).each(function () {
+      var $this         = $(this)
+      var $parent       = getParent($this)
+      var relatedTarget = { relatedTarget: this }
+
+      if (!$parent.hasClass('open')) return
+
+      if (e && e.type == 'click' && /input|textarea/i.test(e.target.tagName) && $.contains($parent[0], e.target)) return
+
+      $parent.trigger(e = $.Event('hide.bs.dropdown', relatedTarget))
+
+      if (e.isDefaultPrevented()) return
+
+      $this.attr('aria-expanded', 'false')
+      $parent.removeClass('open').trigger($.Event('hidden.bs.dropdown', relatedTarget))
+    })
+  }
+
+  Dropdown.prototype.toggle = function (e) {
+    var $this = $(this)
+
+    if ($this.is('.disabled, :disabled')) return
+
+    var $parent  = getParent($this)
+    var isActive = $parent.hasClass('open')
+
+    clearMenus()
+
+    if (!isActive) {
+      if ('ontouchstart' in document.documentElement && !$parent.closest('.navbar-nav').length) {
+        // if mobile we use a backdrop because click events don't delegate
+        $(document.createElement('div'))
+          .addClass('dropdown-backdrop')
+          .insertAfter($(this))
+          .on('click', clearMenus)
+      }
+
+      var relatedTarget = { relatedTarget: this }
+      $parent.trigger(e = $.Event('show.bs.dropdown', relatedTarget))
+
+      if (e.isDefaultPrevented()) return
+
+      $this
+        .trigger('focus')
+        .attr('aria-expanded', 'true')
+
+      $parent
+        .toggleClass('open')
+        .trigger($.Event('shown.bs.dropdown', relatedTarget))
+    }
+
+    return false
+  }
+
+  Dropdown.prototype.keydown = function (e) {
+    if (!/(38|40|27|32)/.test(e.which) || /input|textarea/i.test(e.target.tagName)) return
+
+    var $this = $(this)
+
+    e.preventDefault()
+    e.stopPropagation()
+
+    if ($this.is('.disabled, :disabled')) return
+
+    var $parent  = getParent($this)
+    var isActive = $parent.hasClass('open')
+
+    if (!isActive && e.which != 27 || isActive && e.which == 27) {
+      if (e.which == 27) $parent.find(toggle).trigger('focus')
+      return $this.trigger('click')
+    }
+
+    var desc = ' li:not(.disabled):visible a'
+    var $items = $parent.find('.dropdown-menu' + desc)
+
+    if (!$items.length) return
+
+    var index = $items.index(e.target)
+
+    if (e.which == 38 && index > 0)                 index--         // up
+    if (e.which == 40 && index < $items.length - 1) index++         // down
+    if (!~index)                                    index = 0
+
+    $items.eq(index).trigger('focus')
+  }
+
+
+  // DROPDOWN PLUGIN DEFINITION
+  // ==========================
+
+  function Plugin(option) {
+    return this.each(function () {
+      var $this = $(this)
+      var data  = $this.data('bs.dropdown')
+
+      if (!data) $this.data('bs.dropdown', (data = new Dropdown(this)))
+      if (typeof option == 'string') data[option].call($this)
+    })
+  }
+
+  var old = $.fn.dropdown
+
+  $.fn.dropdown             = Plugin
+  $.fn.dropdown.Constructor = Dropdown
+
+
+  // DROPDOWN NO CONFLICT
+  // ====================
+
+  $.fn.dropdown.noConflict = function () {
+    $.fn.dropdown = old
+    return this
+  }
+
+
+  // APPLY TO STANDARD DROPDOWN ELEMENTS
+  // ===================================
+
+  $(document)
+    .on('click.bs.dropdown.data-api', clearMenus)
+    .on('click.bs.dropdown.data-api', '.dropdown form', function (e) { e.stopPropagation() })
+    .on('click.bs.dropdown.data-api', toggle, Dropdown.prototype.toggle)
+    .on('keydown.bs.dropdown.data-api', toggle, Dropdown.prototype.keydown)
+    .on('keydown.bs.dropdown.data-api', '.dropdown-menu', Dropdown.prototype.keydown)
+
+}(jQuery);
+</script>
+<style type="text/css">
+.code-folding-btn {
+  margin-bottom: 4px;
+}
+
+.row { display: flex; }
+.collapse { display: none; }
+.in { display:block }
+.pull-right > .dropdown-menu {
+    right: 0;
+    left: auto;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1000;
+    display: none;
+    float: left;
+    min-width: 160px;
+    padding: 5px 0;
+    margin: 2px 0 0;
+    font-size: 14px;
+    text-align: left;
+    list-style: none;
+    background-color: #fff;
+    -webkit-background-clip: padding-box;
+    background-clip: padding-box;
+    border: 1px solid #ccc;
+    border: 1px solid rgba(0,0,0,.15);
+    border-radius: 4px;
+    -webkit-box-shadow: 0 6px 12px rgba(0,0,0,.175);
+    box-shadow: 0 6px 12px rgba(0,0,0,.175);
+}
+
+.open > .dropdown-menu {
+    display: block;
+    color: #ffffff;
+    background-color: #ffffff;
+    background-image: none;
+    border-color: #92897e;
+}
+
+.dropdown-menu > li > a {
+  display: block;
+  padding: 3px 20px;
+  clear: both;
+  font-weight: 400;
+  line-height: 1.42857143;
+  color: #000000;
+  white-space: nowrap;
+}
+
+.dropdown-menu > li > a:hover,
+.dropdown-menu > li > a:focus {
+  color: #ffffff;
+  text-decoration: none;
+  background-color: #e95420;
+}
+
+.dropdown-menu > .active > a,
+.dropdown-menu > .active > a:hover,
+.dropdown-menu > .active > a:focus {
+  color: #ffffff;
+  text-decoration: none;
+  background-color: #e95420;
+  outline: 0;
+}
+.dropdown-menu > .disabled > a,
+.dropdown-menu > .disabled > a:hover,
+.dropdown-menu > .disabled > a:focus {
+  color: #aea79f;
+}
+
+.dropdown-menu > .disabled > a:hover,
+.dropdown-menu > .disabled > a:focus {
+  text-decoration: none;
+  cursor: not-allowed;
+  background-color: transparent;
+  background-image: none;
+  filter: progid:DXImageTransform.Microsoft.gradient(enabled = false);
+}
+
+.btn {
+  display: inline-block;
+  margin-bottom: 1;
+  font-weight: normal;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  -ms-touch-action: manipulation;
+      touch-action: manipulation;
+  cursor: pointer;
+  background-image: none;
+  border: 1px solid transparent;
+  padding: 4px 8px;
+  font-size: 14px;
+  line-height: 1.42857143;
+  border-radius: 4px;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.btn:focus,
+.btn:active:focus,
+.btn.active:focus,
+.btn.focus,
+.btn:active.focus,
+.btn.active.focus {
+  outline: 5px auto -webkit-focus-ring-color;
+  outline-offset: -2px;
+}
+.btn:hover,
+.btn:focus,
+.btn.focus {
+  color: #ffffff;
+  text-decoration: none;
+}
+.btn:active,
+.btn.active {
+  background-image: none;
+  outline: 0;
+  box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+}
+.btn.disabled,
+.btn[disabled],
+fieldset[disabled] .btn {
+  cursor: not-allowed;
+  filter: alpha(opacity=65);
+  opacity: 0.65;
+  box-shadow: none;
+}
+a.btn.disabled,
+fieldset[disabled] a.btn {
+  pointer-events: none;
+}
+.btn-default {
+  color: #ffffff;
+  background-color: #aea79f; #important
+  border-color: #aea79f;
+}
+
+.btn-default:focus,
+.btn-default.focus {
+  color: #ffffff;
+  background-color: #978e83;
+  border-color: #6f675e;
+}
+
+.btn-default:hover {
+  color: #ffffff;
+  background-color: #978e83;
+  border-color: #92897e;
+}
+.btn-default:active,
+.btn-default.active,
+.btn-group > .btn:not(:first-child):not(:last-child):not(.dropdown-toggle) {
+  border-radius: 0;
+}
+.btn-group > .btn:first-child {
+  margin-left: 0;
+}
+.btn-group > .btn:first-child:not(:last-child):not(.dropdown-toggle) {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.btn-group > .btn:last-child:not(:first-child),
+.btn-group > .dropdown-toggle:not(:first-child) {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+.btn-group > .btn-group {
+  float: left;
+}
+.btn-group > .btn-group:not(:first-child):not(:last-child) > .btn {
+  border-radius: 0;
+}
+.btn-group > .btn-group:first-child:not(:last-child) > .btn:last-child,
+.btn-group > .btn-group:first-child:not(:last-child) > .dropdown-toggle {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.btn-group > .btn-group:last-child:not(:first-child) > .btn:first-child {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+.btn-group .dropdown-toggle:active,
+.btn-group.open .dropdown-toggle {
+  outline: 0;
+}
+.btn-group > .btn + .dropdown-toggle {
+  padding-right: 8px;
+  padding-left: 8px;
+}
+.btn-group > .btn-lg + .dropdown-toggle {
+  padding-right: 12px;
+  padding-left: 12px;
+}
+.btn-group.open .dropdown-toggle {
+  box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+}
+.btn-group.open .dropdown-toggle.btn-link {
+  box-shadow: none;
+}
+
+</style>
+<script>
+var str = '<div class="btn-group pull-right" style="position: fixed; right: 50px; top: 10px; z-index: 200"><button type="button" class="btn btn-default btn-xs dropdown-toggle" id="allCodeButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" data-_extension-text-contrast=""><span>Code</span> <span class="caret"></span></button><ul class="dropdown-menu" style="min-width: 50px;"><li><a id="rmd-show-all-code" href="#">Show All Code</a></li><li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li></ul></div>';
+document.write(str);
+</script>
+<script>
+$(document).ready(function () {
+  // AGB add fold-hide changed === to !== to default to showing code
+  window.initializeCodeFolding("show" !== "hide");
+});
+</script>
+
+
+<style type="text/css">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<style type="text/css">
+  
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+</style>
+
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Welcome</a>
+<ul>
+<li class="chapter" data-level="1.1" data-path="index.html"><a href="index.html#how-to-use-these-notes"><i class="fa fa-check"></i><b>1.1</b> How to Use These Notes</a></li>
+<li class="chapter" data-level="1.2" data-path="index.html"><a href="index.html#whats-in-these-notes"><i class="fa fa-check"></i><b>1.2</b> What’s in These Notes</a></li>
+<li class="chapter" data-level="1.3" data-path="index.html"><a href="index.html#technical-setup"><i class="fa fa-check"></i><b>1.3</b> Technical Setup</a>
+<ul>
+<li class="chapter" data-level="1.3.1" data-path="index.html"><a href="index.html#project-structure"><i class="fa fa-check"></i><b>1.3.1</b> Project Structure</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="bootstrapping.html"><a href="bootstrapping.html"><i class="fa fa-check"></i><b>2</b> Bootstrapping</a>
+<ul>
+<li class="chapter" data-level="2.1" data-path="bootstrapping.html"><a href="bootstrapping.html#big-idea"><i class="fa fa-check"></i><b>2.1</b> Big Idea</a></li>
+<li class="chapter" data-level="2.2" data-path="bootstrapping.html"><a href="bootstrapping.html#reading"><i class="fa fa-check"></i><b>2.2</b> Reading</a></li>
+<li class="chapter" data-level="2.3" data-path="bootstrapping.html"><a href="bootstrapping.html#methods-as-historical-artifacts"><i class="fa fa-check"></i><b>2.3</b> Methods as Historical Artifacts</a></li>
+<li class="chapter" data-level="2.4" data-path="bootstrapping.html"><a href="bootstrapping.html#packages"><i class="fa fa-check"></i><b>2.4</b> Packages</a></li>
+<li class="chapter" data-level="2.5" data-path="bootstrapping.html"><a href="bootstrapping.html#a-worked-example-bootstrapping-a-mean"><i class="fa fa-check"></i><b>2.5</b> A Worked Example: Bootstrapping a Mean</a>
+<ul>
+<li class="chapter" data-level="2.5.1" data-path="bootstrapping.html"><a href="bootstrapping.html#the-tiny-observed-data"><i class="fa fa-check"></i><b>2.5.1</b> The (tiny) observed data</a></li>
+<li class="chapter" data-level="2.5.2" data-path="bootstrapping.html"><a href="bootstrapping.html#resampling-with-replacement"><i class="fa fa-check"></i><b>2.5.2</b> Resampling with replacement</a></li>
+</ul></li>
+<li class="chapter" data-level="2.6" data-path="bootstrapping.html"><a href="bootstrapping.html#why-replacement-matters"><i class="fa fa-check"></i><b>2.6</b> Why replacement matters</a>
+<ul>
+<li class="chapter" data-level="2.6.1" data-path="bootstrapping.html"><a href="bootstrapping.html#what-we-are-assuming-when-we-bootstrap"><i class="fa fa-check"></i><b>2.6.1</b> What We Are Assuming When We Bootstrap</a></li>
+</ul></li>
+<li class="chapter" data-level="2.7" data-path="bootstrapping.html"><a href="bootstrapping.html#bird-diversity-data"><i class="fa fa-check"></i><b>2.7</b> Bird Diversity Data</a></li>
+<li class="chapter" data-level="2.8" data-path="bootstrapping.html"><a href="bootstrapping.html#diversity"><i class="fa fa-check"></i><b>2.8</b> Diversity</a></li>
+<li class="chapter" data-level="2.9" data-path="bootstrapping.html"><a href="bootstrapping.html#roll-your-own-bootstrap-for-one-habitat"><i class="fa fa-check"></i><b>2.9</b> Roll your own bootstrap for one habitat</a>
+<ul>
+<li class="chapter" data-level="2.9.1" data-path="bootstrapping.html"><a href="bootstrapping.html#do-it-with-boot"><i class="fa fa-check"></i><b>2.9.1</b> Do it with <code>boot</code></a></li>
+</ul></li>
+<li class="chapter" data-level="2.10" data-path="bootstrapping.html"><a href="bootstrapping.html#your-work"><i class="fa fa-check"></i><b>2.10</b> Your work</a></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="permutation.html"><a href="permutation.html"><i class="fa fa-check"></i><b>3</b> Permutation</a>
+<ul>
+<li class="chapter" data-level="3.1" data-path="permutation.html"><a href="permutation.html#big-picture"><i class="fa fa-check"></i><b>3.1</b> Big Picture</a></li>
+<li class="chapter" data-level="3.2" data-path="permutation.html"><a href="permutation.html#reading-1"><i class="fa fa-check"></i><b>3.2</b> Reading</a></li>
+<li class="chapter" data-level="3.3" data-path="permutation.html"><a href="permutation.html#methods-as-historical-artifacts-1"><i class="fa fa-check"></i><b>3.3</b> Methods as Historical Artifacts</a></li>
+<li class="chapter" data-level="3.4" data-path="permutation.html"><a href="permutation.html#packages-1"><i class="fa fa-check"></i><b>3.4</b> Packages</a></li>
+<li class="chapter" data-level="3.5" data-path="permutation.html"><a href="permutation.html#alpaca-sim"><i class="fa fa-check"></i><b>3.5</b> Alpaca sim</a>
+<ul>
+<li class="chapter" data-level="3.5.1" data-path="permutation.html"><a href="permutation.html#data"><i class="fa fa-check"></i><b>3.5.1</b> Data</a></li>
+<li class="chapter" data-level="3.5.2" data-path="permutation.html"><a href="permutation.html#test-statistic"><i class="fa fa-check"></i><b>3.5.2</b> Test statistic</a></li>
+<li class="chapter" data-level="3.5.3" data-path="permutation.html"><a href="permutation.html#randomize-group-membership"><i class="fa fa-check"></i><b>3.5.3</b> Randomize group membership</a></li>
+<li class="chapter" data-level="3.5.4" data-path="permutation.html"><a href="permutation.html#run-many-random-permutations"><i class="fa fa-check"></i><b>3.5.4</b> Run many random permutations</a></li>
+<li class="chapter" data-level="3.5.5" data-path="permutation.html"><a href="permutation.html#assess-the-results"><i class="fa fa-check"></i><b>3.5.5</b> Assess the results</a></li>
+</ul></li>
+<li class="chapter" data-level="3.6" data-path="permutation.html"><a href="permutation.html#your-work-1"><i class="fa fa-check"></i><b>3.6</b> Your work</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html"><i class="fa fa-check"></i><b>4</b> Always Be Cross Validating (ABCv)</a>
+<ul>
+<li class="chapter" data-level="4.1" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#big-idea-1"><i class="fa fa-check"></i><b>4.1</b> Big Idea</a></li>
+<li class="chapter" data-level="4.2" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#packages-2"><i class="fa fa-check"></i><b>4.2</b> Packages</a></li>
+<li class="chapter" data-level="4.3" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#reading-2"><i class="fa fa-check"></i><b>4.3</b> Reading</a></li>
+<li class="chapter" data-level="4.4" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#overfitting-and-underfitting"><i class="fa fa-check"></i><b>4.4</b> Overfitting and Underfitting</a></li>
+<li class="chapter" data-level="4.5" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#a-worked-example"><i class="fa fa-check"></i><b>4.5</b> A worked example</a></li>
+<li class="chapter" data-level="4.6" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#holdouts-divide-and-conquer-train-and-test"><i class="fa fa-check"></i><b>4.6</b> Holdouts, divide and conquer, train and test</a></li>
+<li class="chapter" data-level="4.7" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#doing-k-fold-cross-validation"><i class="fa fa-check"></i><b>4.7</b> Doing k-fold cross validation</a>
+<ul>
+<li class="chapter" data-level="4.7.1" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#aside-is-this-the-same-as-bootstrapping-or-permutation"><i class="fa fa-check"></i><b>4.7.1</b> Aside: Is this the same as bootstrapping? Or permutation?</a></li>
+</ul></li>
+<li class="chapter" data-level="4.8" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#doing-loocv"><i class="fa fa-check"></i><b>4.8</b> Doing LOOCV?</a></li>
+<li class="chapter" data-level="4.9" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#what-about-repeating-k-fold"><i class="fa fa-check"></i><b>4.9</b> What about repeating k-fold?</a></li>
+<li class="chapter" data-level="4.10" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#caret-classification-and-regression-training"><i class="fa fa-check"></i><b>4.10</b> <code>caret</code>: Classification And REgression Training</a></li>
+<li class="chapter" data-level="4.11" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#final-thoughts-abcv"><i class="fa fa-check"></i><b>4.11</b> Final thoughts: ABCv</a></li>
+<li class="chapter" data-level="4.12" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#your-work-2"><i class="fa fa-check"></i><b>4.12</b> Your Work</a></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html"><i class="fa fa-check"></i><b>5</b> Classifying with kNN</a>
+<ul>
+<li class="chapter" data-level="5.1" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#big-idea-2"><i class="fa fa-check"></i><b>5.1</b> Big Idea</a></li>
+<li class="chapter" data-level="5.2" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#packages-3"><i class="fa fa-check"></i><b>5.2</b> Packages</a></li>
+<li class="chapter" data-level="5.3" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#reading-3"><i class="fa fa-check"></i><b>5.3</b> Reading</a></li>
+<li class="chapter" data-level="5.4" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#classification-voting-by-distance"><i class="fa fa-check"></i><b>5.4</b> Classification Voting by Distance</a></li>
+<li class="chapter" data-level="5.5" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#high-dimensional-space"><i class="fa fa-check"></i><b>5.5</b> High Dimensional Space</a>
+<ul>
+<li class="chapter" data-level="5.5.1" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#euclidean-distance"><i class="fa fa-check"></i><b>5.5.1</b> Euclidean Distance</a></li>
+<li class="chapter" data-level="5.5.2" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#space-in-knn"><i class="fa fa-check"></i><b>5.5.2</b> Space in kNN</a></li>
+</ul></li>
+<li class="chapter" data-level="5.6" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#the-knn-algorithm"><i class="fa fa-check"></i><b>5.6</b> The kNN Algorithm</a>
+<ul>
+<li class="chapter" data-level="5.6.1" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#eat-your-fruits-and-veggies"><i class="fa fa-check"></i><b>5.6.1</b> Eat Your Fruits and Veggies</a></li>
+</ul></li>
+<li class="chapter" data-level="5.7" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#other-tidbits"><i class="fa fa-check"></i><b>5.7</b> Other Tidbits</a>
+<ul>
+<li class="chapter" data-level="5.7.1" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#rescaling"><i class="fa fa-check"></i><b>5.7.1</b> Rescaling</a></li>
+<li class="chapter" data-level="5.7.2" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#categorical-predictors"><i class="fa fa-check"></i><b>5.7.2</b> Categorical Predictors</a></li>
+</ul></li>
+<li class="chapter" data-level="5.8" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#worked-example"><i class="fa fa-check"></i><b>5.8</b> Worked Example</a>
+<ul>
+<li class="chapter" data-level="5.8.1" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#diagnostic-wisconsin-breast-cancer-database"><i class="fa fa-check"></i><b>5.8.1</b> Diagnostic Wisconsin Breast Cancer Database</a></li>
+<li class="chapter" data-level="5.8.2" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#traintest"><i class="fa fa-check"></i><b>5.8.2</b> Train/Test</a></li>
+<li class="chapter" data-level="5.8.3" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#run-knn"><i class="fa fa-check"></i><b>5.8.3</b> Run kNN</a></li>
+<li class="chapter" data-level="5.8.4" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#the-confusion-matrix"><i class="fa fa-check"></i><b>5.8.4</b> The Confusion Matrix</a></li>
+<li class="chapter" data-level="5.8.5" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#some-interp"><i class="fa fa-check"></i><b>5.8.5</b> Some Interp</a></li>
+</ul></li>
+<li class="chapter" data-level="5.9" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#your-work-3"><i class="fa fa-check"></i><b>5.9</b> Your Work</a></li>
+</ul></li>
+<li class="chapter" data-level="6" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html"><i class="fa fa-check"></i><b>6</b> Classifying with Decision Trees</a>
+<ul>
+<li class="chapter" data-level="6.1" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#big-idea-3"><i class="fa fa-check"></i><b>6.1</b> Big Idea</a></li>
+<li class="chapter" data-level="6.2" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#packages-4"><i class="fa fa-check"></i><b>6.2</b> Packages</a></li>
+<li class="chapter" data-level="6.3" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#reading-4"><i class="fa fa-check"></i><b>6.3</b> Reading</a></li>
+<li class="chapter" data-level="6.4" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#growing-and-pruning"><i class="fa fa-check"></i><b>6.4</b> Growing and Pruning</a></li>
+<li class="chapter" data-level="6.5" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#entropy-and-information-gain"><i class="fa fa-check"></i><b>6.5</b> Entropy and Information Gain</a></li>
+<li class="chapter" data-level="6.6" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#toy-example"><i class="fa fa-check"></i><b>6.6</b> Toy Example</a>
+<ul>
+<li class="chapter" data-level="6.6.1" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#entropy"><i class="fa fa-check"></i><b>6.6.1</b> Entropy</a></li>
+<li class="chapter" data-level="6.6.2" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#getting-to-information-gain"><i class="fa fa-check"></i><b>6.6.2</b> Getting to Information Gain</a></li>
+<li class="chapter" data-level="6.6.3" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#deciding-on-a-split"><i class="fa fa-check"></i><b>6.6.3</b> Deciding on a Split</a></li>
+<li class="chapter" data-level="6.6.4" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#information-gain-splits-on-continuous-data"><i class="fa fa-check"></i><b>6.6.4</b> Information Gain Splits on Continuous Data</a></li>
+</ul></li>
+<li class="chapter" data-level="6.7" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#a-real-example"><i class="fa fa-check"></i><b>6.7</b> A Real Example</a>
+<ul>
+<li class="chapter" data-level="6.7.1" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#go-fish"><i class="fa fa-check"></i><b>6.7.1</b> Go Fish</a></li>
+<li class="chapter" data-level="6.7.2" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#fish-finder"><i class="fa fa-check"></i><b>6.7.2</b> Fish Finder</a></li>
+<li class="chapter" data-level="6.7.3" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#visualizing-the-tree"><i class="fa fa-check"></i><b>6.7.3</b> Visualizing the Tree</a></li>
+<li class="chapter" data-level="6.7.4" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#train-and-test"><i class="fa fa-check"></i><b>6.7.4</b> Train and Test</a></li>
+</ul></li>
+<li class="chapter" data-level="6.8" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#your-work-4"><i class="fa fa-check"></i><b>6.8</b> Your Work</a></li>
+</ul></li>
+<li class="chapter" data-level="7" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html"><i class="fa fa-check"></i><b>7</b> Continuous Prediction with Regression Trees</a>
+<ul>
+<li class="chapter" data-level="7.1" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#big-idea-4"><i class="fa fa-check"></i><b>7.1</b> Big Idea</a></li>
+<li class="chapter" data-level="7.2" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#packages-5"><i class="fa fa-check"></i><b>7.2</b> Packages</a></li>
+<li class="chapter" data-level="7.3" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#reading-5"><i class="fa fa-check"></i><b>7.3</b> Reading</a></li>
+<li class="chapter" data-level="7.4" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#growing-and-pruning-1"><i class="fa fa-check"></i><b>7.4</b> Growing and Pruning</a></li>
+<li class="chapter" data-level="7.5" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#weird-tree-terms-model-trees-use-regression-but-regression-trees-dont"><i class="fa fa-check"></i><b>7.5</b> Weird Tree Terms: Model Trees Use Regression but Regression Trees Don’t</a></li>
+<li class="chapter" data-level="7.6" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#toy-example-splitting-continuous-variables"><i class="fa fa-check"></i><b>7.6</b> Toy Example: Splitting Continuous Variables</a>
+<ul>
+<li class="chapter" data-level="7.6.1" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#iteration-1"><i class="fa fa-check"></i><b>7.6.1</b> Iteration 1</a></li>
+<li class="chapter" data-level="7.6.2" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#iteration-2"><i class="fa fa-check"></i><b>7.6.2</b> Iteration 2</a></li>
+<li class="chapter" data-level="7.6.3" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#iteration-3"><i class="fa fa-check"></i><b>7.6.3</b> Iteration 3</a></li>
+<li class="chapter" data-level="7.6.4" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#loop-it"><i class="fa fa-check"></i><b>7.6.4</b> Loop It</a></li>
+<li class="chapter" data-level="7.6.5" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#describing-the-first-split"><i class="fa fa-check"></i><b>7.6.5</b> Describing the First Split</a></li>
+<li class="chapter" data-level="7.6.6" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#another-split"><i class="fa fa-check"></i><b>7.6.6</b> Another Split?</a></li>
+<li class="chapter" data-level="7.6.7" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#are-we-done-now"><i class="fa fa-check"></i><b>7.6.7</b> Are We Done Now?</a></li>
+</ul></li>
+<li class="chapter" data-level="7.7" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#regression-tree-example-lead-levels-in-st-louis"><i class="fa fa-check"></i><b>7.7</b> Regression Tree Example: Lead Levels in St Louis</a></li>
+<li class="chapter" data-level="7.8" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#model-tree-example-lead-levels-in-st-louis"><i class="fa fa-check"></i><b>7.8</b> Model Tree Example: Lead Levels in St Louis</a></li>
+<li class="chapter" data-level="7.9" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#your-work-5"><i class="fa fa-check"></i><b>7.9</b> Your Work</a></li>
+</ul></li>
+<li class="chapter" data-level="8" data-path="neural-nets.html"><a href="neural-nets.html"><i class="fa fa-check"></i><b>8</b> Neural Nets</a>
+<ul>
+<li class="chapter" data-level="8.1" data-path="neural-nets.html"><a href="neural-nets.html#big-idea-5"><i class="fa fa-check"></i><b>8.1</b> Big Idea</a></li>
+<li class="chapter" data-level="8.2" data-path="neural-nets.html"><a href="neural-nets.html#packages-6"><i class="fa fa-check"></i><b>8.2</b> Packages</a></li>
+<li class="chapter" data-level="8.3" data-path="neural-nets.html"><a href="neural-nets.html#reading-6"><i class="fa fa-check"></i><b>8.3</b> Reading</a></li>
+<li class="chapter" data-level="8.4" data-path="neural-nets.html"><a href="neural-nets.html#punting"><i class="fa fa-check"></i><b>8.4</b> Punting</a></li>
+<li class="chapter" data-level="8.5" data-path="neural-nets.html"><a href="neural-nets.html#example-here-comes-the-sun"><i class="fa fa-check"></i><b>8.5</b> Example: Here Comes the Sun</a></li>
+<li class="chapter" data-level="8.6" data-path="neural-nets.html"><a href="neural-nets.html#train-and-test-1"><i class="fa fa-check"></i><b>8.6</b> Train and Test</a></li>
+<li class="chapter" data-level="8.7" data-path="neural-nets.html"><a href="neural-nets.html#regression-tree"><i class="fa fa-check"></i><b>8.7</b> Regression Tree</a></li>
+<li class="chapter" data-level="8.8" data-path="neural-nets.html"><a href="neural-nets.html#big-fancy-squiggle-fitting-machine-aka-neural-network"><i class="fa fa-check"></i><b>8.8</b> Big Fancy Squiggle Fitting Machine aka Neural Network</a></li>
+<li class="chapter" data-level="8.9" data-path="neural-nets.html"><a href="neural-nets.html#your-work-6"><i class="fa fa-check"></i><b>8.9</b> Your Work</a></li>
+</ul></li>
+<li class="chapter" data-level="9" data-path="aside-animate-a-nn.html"><a href="aside-animate-a-nn.html"><i class="fa fa-check"></i><b>9</b> Aside: Animate a NN</a>
+<ul>
+<li class="chapter" data-level="9.1" data-path="aside-animate-a-nn.html"><a href="aside-animate-a-nn.html#libraries"><i class="fa fa-check"></i><b>9.1</b> Libraries</a></li>
+<li class="chapter" data-level="9.2" data-path="aside-animate-a-nn.html"><a href="aside-animate-a-nn.html#the-data"><i class="fa fa-check"></i><b>9.2</b> The Data</a></li>
+<li class="chapter" data-level="9.3" data-path="aside-animate-a-nn.html"><a href="aside-animate-a-nn.html#predicting"><i class="fa fa-check"></i><b>9.3</b> Predicting</a></li>
+<li class="chapter" data-level="9.4" data-path="aside-animate-a-nn.html"><a href="aside-animate-a-nn.html#animate"><i class="fa fa-check"></i><b>9.4</b> Animate</a></li>
+</ul></li>
+<li class="chapter" data-level="10" data-path="improving-model-performance.html"><a href="improving-model-performance.html"><i class="fa fa-check"></i><b>10</b> Improving Model Performance</a>
+<ul>
+<li class="chapter" data-level="10.1" data-path="improving-model-performance.html"><a href="improving-model-performance.html#big-idea-many-models-beat-one-model"><i class="fa fa-check"></i><b>10.1</b> Big Idea: Many Models Beat One Model</a>
+<ul>
+<li class="chapter" data-level="10.1.1" data-path="improving-model-performance.html"><a href="improving-model-performance.html#why-bagging-works-well-for-trees"><i class="fa fa-check"></i><b>10.1.1</b> Why Bagging Works Well for Trees</a></li>
+</ul></li>
+<li class="chapter" data-level="10.2" data-path="improving-model-performance.html"><a href="improving-model-performance.html#packages-7"><i class="fa fa-check"></i><b>10.2</b> Packages</a></li>
+<li class="chapter" data-level="10.3" data-path="improving-model-performance.html"><a href="improving-model-performance.html#reading-7"><i class="fa fa-check"></i><b>10.3</b> Reading</a></li>
+<li class="chapter" data-level="10.4" data-path="improving-model-performance.html"><a href="improving-model-performance.html#decision-tree-to-bagging-to-tuning"><i class="fa fa-check"></i><b>10.4</b> Decision Tree to Bagging to Tuning</a>
+<ul>
+<li class="chapter" data-level="10.4.1" data-path="improving-model-performance.html"><a href="improving-model-performance.html#the-modeling-ladder"><i class="fa fa-check"></i><b>10.4.1</b> The Modeling Ladder</a></li>
+<li class="chapter" data-level="10.4.2" data-path="improving-model-performance.html"><a href="improving-model-performance.html#fish-your-wish"><i class="fa fa-check"></i><b>10.4.2</b> Fish Your Wish</a></li>
+<li class="chapter" data-level="10.4.3" data-path="improving-model-performance.html"><a href="improving-model-performance.html#train-and-test-2"><i class="fa fa-check"></i><b>10.4.3</b> Train and Test</a></li>
+<li class="chapter" data-level="10.4.4" data-path="improving-model-performance.html"><a href="improving-model-performance.html#straight-decision-tree"><i class="fa fa-check"></i><b>10.4.4</b> Straight Decision Tree</a></li>
+<li class="chapter" data-level="10.4.5" data-path="improving-model-performance.html"><a href="improving-model-performance.html#bagging"><i class="fa fa-check"></i><b>10.4.5</b> Bagging</a></li>
+<li class="chapter" data-level="10.4.6" data-path="improving-model-performance.html"><a href="improving-model-performance.html#random-forest-aka-randomforest-aka-rf"><i class="fa fa-check"></i><b>10.4.6</b> Random Forest (aka randomForest, aka rF)</a></li>
+<li class="chapter" data-level="10.4.7" data-path="improving-model-performance.html"><a href="improving-model-performance.html#a-tuned-random-forest"><i class="fa fa-check"></i><b>10.4.7</b> A Tuned Random Forest</a></li>
+<li class="chapter" data-level="10.4.8" data-path="improving-model-performance.html"><a href="improving-model-performance.html#skill"><i class="fa fa-check"></i><b>10.4.8</b> Skill</a></li>
+</ul></li>
+<li class="chapter" data-level="10.5" data-path="improving-model-performance.html"><a href="improving-model-performance.html#takeaway"><i class="fa fa-check"></i><b>10.5</b> Takeaway</a></li>
+<li class="chapter" data-level="10.6" data-path="improving-model-performance.html"><a href="improving-model-performance.html#but-where-is-the-tree"><i class="fa fa-check"></i><b>10.6</b> But where is the tree?</a>
+<ul>
+<li class="chapter" data-level="10.6.1" data-path="improving-model-performance.html"><a href="improving-model-performance.html#how-can-they-predict-new-data"><i class="fa fa-check"></i><b>10.6.1</b> How can they predict new data?</a></li>
+<li class="chapter" data-level="10.6.2" data-path="improving-model-performance.html"><a href="improving-model-performance.html#which-trees-are-used"><i class="fa fa-check"></i><b>10.6.2</b> Which trees are used?</a></li>
+</ul></li>
+<li class="chapter" data-level="10.7" data-path="improving-model-performance.html"><a href="improving-model-performance.html#your-work-7"><i class="fa fa-check"></i><b>10.7</b> Your Work</a></li>
+<li class="chapter" data-level="10.8" data-path="improving-model-performance.html"><a href="improving-model-performance.html#postscript-boosting-and-stacking"><i class="fa fa-check"></i><b>10.8</b> Postscript: Boosting and Stacking</a>
+<ul>
+<li class="chapter" data-level="10.8.1" data-path="improving-model-performance.html"><a href="improving-model-performance.html#boosting"><i class="fa fa-check"></i><b>10.8.1</b> Boosting</a></li>
+</ul></li>
+<li class="chapter" data-level="10.9" data-path="improving-model-performance.html"><a href="improving-model-performance.html#stacking-briefly"><i class="fa fa-check"></i><b>10.9</b> Stacking (briefly)</a></li>
+</ul></li>
+<li class="chapter" data-level="11" data-path="eigen-faces.html"><a href="eigen-faces.html"><i class="fa fa-check"></i><b>11</b> Eigen Faces</a>
+<ul>
+<li class="chapter" data-level="11.1" data-path="eigen-faces.html"><a href="eigen-faces.html#big-idea-6"><i class="fa fa-check"></i><b>11.1</b> Big Idea</a></li>
+<li class="chapter" data-level="11.2" data-path="eigen-faces.html"><a href="eigen-faces.html#packages-8"><i class="fa fa-check"></i><b>11.2</b> Packages</a></li>
+<li class="chapter" data-level="11.3" data-path="eigen-faces.html"><a href="eigen-faces.html#reading-8"><i class="fa fa-check"></i><b>11.3</b> Reading</a></li>
+<li class="chapter" data-level="11.4" data-path="eigen-faces.html"><a href="eigen-faces.html#a-bunch-of-mostly-white-guys"><i class="fa fa-check"></i><b>11.4</b> A bunch of mostly white guys</a></li>
+<li class="chapter" data-level="11.5" data-path="eigen-faces.html"><a href="eigen-faces.html#average-face"><i class="fa fa-check"></i><b>11.5</b> Average face</a></li>
+<li class="chapter" data-level="11.6" data-path="eigen-faces.html"><a href="eigen-faces.html#principal-component-analysis"><i class="fa fa-check"></i><b>11.6</b> Principal Component Analysis</a></li>
+<li class="chapter" data-level="11.7" data-path="eigen-faces.html"><a href="eigen-faces.html#mapping-individuals"><i class="fa fa-check"></i><b>11.7</b> Mapping individuals</a></li>
+<li class="chapter" data-level="11.8" data-path="eigen-faces.html"><a href="eigen-faces.html#facial-recognition"><i class="fa fa-check"></i><b>11.8</b> Facial recognition</a>
+<ul>
+<li class="chapter" data-level="11.8.1" data-path="eigen-faces.html"><a href="eigen-faces.html#traintest-1"><i class="fa fa-check"></i><b>11.8.1</b> Train/Test</a></li>
+<li class="chapter" data-level="11.8.2" data-path="eigen-faces.html"><a href="eigen-faces.html#pca-on-training"><i class="fa fa-check"></i><b>11.8.2</b> PCA on training</a></li>
+<li class="chapter" data-level="11.8.3" data-path="eigen-faces.html"><a href="eigen-faces.html#project-the-test-photos"><i class="fa fa-check"></i><b>11.8.3</b> Project the test photos</a></li>
+<li class="chapter" data-level="11.8.4" data-path="eigen-faces.html"><a href="eigen-faces.html#distance"><i class="fa fa-check"></i><b>11.8.4</b> Distance</a></li>
+<li class="chapter" data-level="11.8.5" data-path="eigen-faces.html"><a href="eigen-faces.html#classify"><i class="fa fa-check"></i><b>11.8.5</b> Classify</a></li>
+</ul></li>
+<li class="chapter" data-level="11.9" data-path="eigen-faces.html"><a href="eigen-faces.html#environmental-applications"><i class="fa fa-check"></i><b>11.9</b> Environmental applications</a></li>
+<li class="chapter" data-level="11.10" data-path="eigen-faces.html"><a href="eigen-faces.html#your-work-8"><i class="fa fa-check"></i><b>11.10</b> Your work</a></li>
+</ul></li>
+<li class="chapter" data-level="12" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i><b>12</b> References</a></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Machine Learning for Environmental Science: Notes for ESCI 506</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="classifying-with-knn" class="section level1 hasAnchor" number="5">
+<h1><span class="header-section-number">5</span> Classifying with kNN<a href="classifying-with-knn.html#classifying-with-knn" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<div id="big-idea-2" class="section level2 hasAnchor" number="5.1">
+<h2><span class="header-section-number">5.1</span> Big Idea<a href="classifying-with-knn.html#big-idea-2" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Predicting categorical class membership is one of two big areas of machine learning (the other being predicting a continuous response – e.g., regression). The idea behind kNN is simple. For an unclassified sample, the algorithm finds some number (<span class="math inline">\(k\)</span>) of samples that are close by in a parameter space and classifies the unknown sample by the class membership of the nearest neighbors. It’s an appealing and intuitive approach.</p>
+</div>
+<div id="packages-3" class="section level2 hasAnchor" number="5.2">
+<h2><span class="header-section-number">5.2</span> Packages<a href="classifying-with-knn.html#packages-3" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div class="sourceCode" id="cb133"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb133-1"><a href="classifying-with-knn.html#cb133-1" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code></pre></div>
+<pre><code>## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+## ✔ dplyr     1.1.4     ✔ readr     2.1.6
+## ✔ forcats   1.0.1     ✔ stringr   1.6.0
+## ✔ ggplot2   4.0.1     ✔ tibble    3.3.1
+## ✔ lubridate 1.9.4     ✔ tidyr     1.3.2
+## ✔ purrr     1.2.1     
+## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+## ✖ dplyr::filter() masks stats::filter()
+## ✖ dplyr::lag()    masks stats::lag()
+## ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
+<div class="sourceCode" id="cb135"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb135-1"><a href="classifying-with-knn.html#cb135-1" tabindex="-1"></a><span class="fu">library</span>(scales)</span></code></pre></div>
+<pre><code>## 
+## Attaching package: &#39;scales&#39;
+## 
+## The following object is masked from &#39;package:purrr&#39;:
+## 
+##     discard
+## 
+## The following object is masked from &#39;package:readr&#39;:
+## 
+##     col_factor</code></pre>
+<div class="sourceCode" id="cb137"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb137-1"><a href="classifying-with-knn.html#cb137-1" tabindex="-1"></a><span class="fu">library</span>(class)</span>
+<span id="cb137-2"><a href="classifying-with-knn.html#cb137-2" tabindex="-1"></a><span class="fu">library</span>(caret)</span></code></pre></div>
+<pre><code>## Loading required package: lattice
+## 
+## Attaching package: &#39;caret&#39;
+## 
+## The following object is masked from &#39;package:purrr&#39;:
+## 
+##     lift</code></pre>
+</div>
+<div id="reading-3" class="section level2 hasAnchor" number="5.3">
+<h2><span class="header-section-number">5.3</span> Reading<a href="classifying-with-knn.html#reading-3" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Chapter 3: Lazy Learning – Classification Using Nearest Neighbors in Machine Learning with R: Expert techniques for predictive modeling, 3rd Edition. Link on Canvas.</p>
+</div>
+<div id="classification-voting-by-distance" class="section level2 hasAnchor" number="5.4">
+<h2><span class="header-section-number">5.4</span> Classification Voting by Distance<a href="classifying-with-knn.html#classification-voting-by-distance" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Most machine learning tasks come down to prediction, right? When the response variable (the left hand side of the equation) is categorical we call this classification. The kNN algorithm is a very simple but effective classifier that goes back to the 1950s and assigns membership to an unknown sample based on its proximity to known samples. It’s used quite a bit because of its simplicity and often seen as a “recommender” algorithm (e.g., Netflix, Spotify, Amazon). We will learn more about other (slicker?) methods like neural nets later on but kNN is still a workhorse in the classification game.</p>
+</div>
+<div id="high-dimensional-space" class="section level2 hasAnchor" number="5.5">
+<h2><span class="header-section-number">5.5</span> High Dimensional Space<a href="classifying-with-knn.html#high-dimensional-space" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>In ML, we spend a lot of time and effort thinking about the relationships between samples as described by many (maybe related, maybe independent) variables. In the classic Palmer Penguin data we’ve used there is categorical data on species, sex, and island for each bird. And we have continuous measurements of bill length, bill depth, flipper length, body mass. That is, for the continuous data, we have a four dimensional space in which we can characterize each bird. In ML applications we will deal with high dimensional space all the time. In fact we often have so many dimensions that we reduce them to more manageable sizes using tools like PCA.</p>
+<p>Algorithms like kNN work just fine in high dimensional space. But that doesn’t mean you can just chuck variables in without thinking about what they are because they all get weighted equally. As the number of dimensions increases, distances between points tend to become more similar to one another. This means that the idea of a “nearest” neighbor can start to break down - a common issue referred to as the curse of dimensionality. Adding predictors does not automatically improve kNN performance.</p>
+<p>Let’s review Euclidean distance which will help make sense of how you think about variables.</p>
+<div id="euclidean-distance" class="section level3 hasAnchor" number="5.5.1">
+<h3><span class="header-section-number">5.5.1</span> Euclidean Distance<a href="classifying-with-knn.html#euclidean-distance" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Between your coursework here, in ESCI 503, and in ESCI 505 you’ll have had a bellyful of Euclidean distance (and other distance measures in ESCI 503) by the time June rolls around. But just to cover all the bases, here is a quick example of how we get distances in 1D (one dimension), 2D, 3D, and then <span class="math inline">\(n\)</span>D. The key point is that distance is computed across all predictors simultaneously, with each contributing equally once variables are on the same scale.</p>
+<p>One dimension is easy, right? If we have two points (<span class="math inline">\(p\)</span> and <span class="math inline">\(q\)</span>) at <span class="math inline">\(p=3\)</span> and <span class="math inline">\(q=10\)</span> we know that the distance between them is <span class="math inline">\(d(p,q) = \sqrt{(q - p)^2} = 7\)</span>, right?</p>
+<div class="sourceCode" id="cb139"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb139-1"><a href="classifying-with-knn.html#cb139-1" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="dv">3</span></span>
+<span id="cb139-2"><a href="classifying-with-knn.html#cb139-2" tabindex="-1"></a>q <span class="ot">&lt;-</span> <span class="dv">10</span></span>
+<span id="cb139-3"><a href="classifying-with-knn.html#cb139-3" tabindex="-1"></a><span class="fu">sqrt</span>((q<span class="sc">-</span>p)<span class="sc">^</span><span class="dv">2</span>)</span></code></pre></div>
+<pre><code>## [1] 7</code></pre>
+<p><img src="04HiDiddilyHoNeighborino_files/figure-html/unnamed-chunk-4-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
+<p>If the points <span class="math inline">\(p\)</span> and <span class="math inline">\(q\)</span> are in a two dimensional plane we extend that as:
+<span class="math display">\[d(p,q)=\sqrt{(q_1-p_1)^2 + (q_2-p_2)^2}\]</span></p>
+<div class="sourceCode" id="cb141"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb141-1"><a href="classifying-with-knn.html#cb141-1" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">3</span>,<span class="dv">1</span>)</span>
+<span id="cb141-2"><a href="classifying-with-knn.html#cb141-2" tabindex="-1"></a>q <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">10</span>,<span class="dv">6</span>)</span>
+<span id="cb141-3"><a href="classifying-with-knn.html#cb141-3" tabindex="-1"></a><span class="fu">sqrt</span>((q[<span class="dv">1</span>] <span class="sc">-</span> p[<span class="dv">1</span>])<span class="sc">^</span><span class="dv">2</span> <span class="sc">+</span> (q[<span class="dv">2</span>] <span class="sc">-</span> p[<span class="dv">2</span>])<span class="sc">^</span><span class="dv">2</span>)</span></code></pre></div>
+<pre><code>## [1] 8.602325</code></pre>
+<p>I think I encountered this first as finding the hypotenuse of a right triangle in middle school.</p>
+<p><img src="04HiDiddilyHoNeighborino_files/figure-html/unnamed-chunk-6-1.png" alt="" width="672" style="display: block; margin: auto;" />
+Since we are just adding the two dimensions together, we can generalize that expression a bit as:
+<span class="math display">\[d(p,q)=\sqrt{(q_1-p_1)^2 + (q_2-p_2)^2} = \sqrt{\sum_{i=1}^n(q_i-p_i)^2}\]</span>
+where <span class="math inline">\(n\)</span> is the total number of dimensions.</p>
+<div class="sourceCode" id="cb143"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb143-1"><a href="classifying-with-knn.html#cb143-1" tabindex="-1"></a><span class="fu">sqrt</span>(<span class="fu">sum</span>((q<span class="sc">-</span>p)<span class="sc">^</span><span class="dv">2</span>))</span></code></pre></div>
+<pre><code>## [1] 8.602325</code></pre>
+<p>In 3D space (like measuring the distance from where you are now to the upper left-hand corner of the room), <span class="math inline">\(n=3\)</span>. Let’s add a third dimension to <span class="math inline">\(p\)</span> and <span class="math inline">\(q\)</span> and calculate the distance.</p>
+<div class="sourceCode" id="cb145"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb145-1"><a href="classifying-with-knn.html#cb145-1" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">3</span>,<span class="dv">1</span>,<span class="dv">5</span>)</span>
+<span id="cb145-2"><a href="classifying-with-knn.html#cb145-2" tabindex="-1"></a>q <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">10</span>,<span class="dv">6</span>,<span class="dv">7</span>)</span>
+<span id="cb145-3"><a href="classifying-with-knn.html#cb145-3" tabindex="-1"></a><span class="fu">sqrt</span>((q[<span class="dv">1</span>] <span class="sc">-</span> p[<span class="dv">1</span>])<span class="sc">^</span><span class="dv">2</span> <span class="sc">+</span> (q[<span class="dv">2</span>] <span class="sc">-</span> p[<span class="dv">2</span>])<span class="sc">^</span><span class="dv">2</span> <span class="sc">+</span> (q[<span class="dv">3</span>] <span class="sc">-</span> p[<span class="dv">3</span>])<span class="sc">^</span><span class="dv">2</span>)</span></code></pre></div>
+<pre><code>## [1] 8.831761</code></pre>
+<p>Here is an attempt at a 3D plot.</p>
+<div class="plotly html-widget html-fill-item" id="htmlwidget-8c4d9b60d14b65263b72" style="width:672px;height:480px;"></div>
+<script type="application/json" data-for="htmlwidget-8c4d9b60d14b65263b72">{"x":{"visdat":{"a88c6f291498":["function () ","plotlyVisDat"]},"cur_data":"a88c6f291498","attrs":{"a88c6f291498":{"x":{},"y":{},"z":{},"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"scatter3d","mode":"markers","marker":{"color":"black"},"inherit":true},"a88c6f291498.1":{"x":{},"y":{},"z":{},"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"scatter3d","mode":"lines","line":{"color":"black"},"inherit":true}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"scene":{"xaxis":{"title":"x","range":[0,12]},"yaxis":{"title":"y","range":[0,12]},"zaxis":{"title":"z","range":[0,12]},"aspectmode":"cube"},"showlegend":false,"hovermode":"closest"},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"data":[{"x":[3,10],"y":[1,6],"z":[5,7],"type":"scatter3d","mode":"markers","marker":{"color":"black","line":{"color":"rgba(31,119,180,1)"}},"error_y":{"color":"rgba(31,119,180,1)"},"error_x":{"color":"rgba(31,119,180,1)"},"line":{"color":"rgba(31,119,180,1)"},"frame":null},{"x":[3,10],"y":[1,6],"z":[5,7],"type":"scatter3d","mode":"lines","line":{"color":"black"},"marker":{"color":"rgba(255,127,14,1)","line":{"color":"rgba(255,127,14,1)"}},"error_y":{"color":"rgba(255,127,14,1)"},"error_x":{"color":"rgba(255,127,14,1)"},"frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+<p>Of course, we can use the generalized equation as well:
+<span class="math display">\[d(p,q)=\sqrt{\sum_{i=1}^n(q_i-p_i)^2}\]</span></p>
+<p>Implemented the same as above using <code>sum</code>:</p>
+<div class="sourceCode" id="cb147"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb147-1"><a href="classifying-with-knn.html#cb147-1" tabindex="-1"></a><span class="fu">sqrt</span>(<span class="fu">sum</span>((q<span class="sc">-</span>p)<span class="sc">^</span><span class="dv">2</span>))</span></code></pre></div>
+<pre><code>## [1] 8.831761</code></pre>
+<p>We just did a 3D example and I tried to visualize it. But we can do as many dimensions as we want. Our brains break after 3D but we can add as many dimensions as we like. Here is the 5D Euclidean distance between two points:</p>
+<div class="sourceCode" id="cb149"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb149-1"><a href="classifying-with-knn.html#cb149-1" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">3</span>,<span class="dv">1</span>,<span class="dv">5</span>,<span class="dv">7</span>,<span class="dv">2</span>)</span>
+<span id="cb149-2"><a href="classifying-with-knn.html#cb149-2" tabindex="-1"></a>q <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">10</span>,<span class="dv">6</span>,<span class="dv">7</span>,<span class="dv">13</span>,<span class="dv">1</span>)</span>
+<span id="cb149-3"><a href="classifying-with-knn.html#cb149-3" tabindex="-1"></a><span class="fu">sqrt</span>((q[<span class="dv">1</span>] <span class="sc">-</span> p[<span class="dv">1</span>])<span class="sc">^</span><span class="dv">2</span> <span class="sc">+</span> (q[<span class="dv">2</span>] <span class="sc">-</span> p[<span class="dv">2</span>])<span class="sc">^</span><span class="dv">2</span> <span class="sc">+</span> (q[<span class="dv">3</span>] <span class="sc">-</span> p[<span class="dv">3</span>])<span class="sc">^</span><span class="dv">2</span> <span class="sc">+</span> (q[<span class="dv">4</span>] <span class="sc">-</span> p[<span class="dv">4</span>])<span class="sc">^</span><span class="dv">2</span> <span class="sc">+</span> (q[<span class="dv">5</span>] <span class="sc">-</span> p[<span class="dv">5</span>])<span class="sc">^</span><span class="dv">2</span>)</span></code></pre></div>
+<pre><code>## [1] 10.72381</code></pre>
+<p>Or:</p>
+<div class="sourceCode" id="cb151"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb151-1"><a href="classifying-with-knn.html#cb151-1" tabindex="-1"></a><span class="fu">sqrt</span>(<span class="fu">sum</span>((q<span class="sc">-</span>p)<span class="sc">^</span><span class="dv">2</span>))</span></code></pre></div>
+<pre><code>## [1] 10.72381</code></pre>
+<p>High-dimensional spaces occur all the time in science. Have four variables to describe something? You have a 4D space and can calculate the Euclidean distance between your observations. Six variables? 6D space and so on. N variables? nD space. It’ll be important as we continue on that you are comfortable with the idea of distances in high-dimensional spaces.</p>
+</div>
+<div id="space-in-knn" class="section level3 hasAnchor" number="5.5.2">
+<h3><span class="header-section-number">5.5.2</span> Space in kNN<a href="classifying-with-knn.html#space-in-knn" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>The kNN algorithm uses space explicitly as each variable becomes an equally weighted axis in the <span class="math inline">\(n\)</span> dimensional space. Because the algorithm for kNN doesn’t teach itself to recognize which variables might be more important than others it’s up to the analyst (that’s you) to build a model sensibly.</p>
+</div>
+</div>
+<div id="the-knn-algorithm" class="section level2 hasAnchor" number="5.6">
+<h2><span class="header-section-number">5.6</span> The kNN Algorithm<a href="classifying-with-knn.html#the-knn-algorithm" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>The kNN is a dirt simple classifier the assigns membership based on the membership of points that are close by in the parameter space. Typically, the distance is Euclidean as we saw above. The text and materials linked on Canvas explain it all pretty well but I’ll walk through an example based on the fruits and veggies examples in the reading real quick.</p>
+<div id="eat-your-fruits-and-veggies" class="section level3 hasAnchor" number="5.6.1">
+<h3><span class="header-section-number">5.6.1</span> Eat Your Fruits and Veggies<a href="classifying-with-knn.html#eat-your-fruits-and-veggies" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb153"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb153-1"><a href="classifying-with-knn.html#cb153-1" tabindex="-1"></a>foodStuffs <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">culinaryUse =</span> <span class="fu">c</span>(<span class="st">&quot;vegetable&quot;</span>,<span class="st">&quot;vegetable&quot;</span>,<span class="st">&quot;vegetable&quot;</span>,</span>
+<span id="cb153-2"><a href="classifying-with-knn.html#cb153-2" tabindex="-1"></a>                                     <span class="st">&quot;vegetable&quot;</span>,<span class="st">&quot;vegetable&quot;</span>,<span class="st">&quot;vegetable&quot;</span>,</span>
+<span id="cb153-3"><a href="classifying-with-knn.html#cb153-3" tabindex="-1"></a>                                     <span class="st">&quot;fruit&quot;</span>, <span class="st">&quot;fruit&quot;</span>, <span class="st">&quot;fruit&quot;</span>,</span>
+<span id="cb153-4"><a href="classifying-with-knn.html#cb153-4" tabindex="-1"></a>                                     <span class="st">&quot;fruit&quot;</span>, <span class="st">&quot;fruit&quot;</span>, <span class="st">&quot;fruit&quot;</span>),</span>
+<span id="cb153-5"><a href="classifying-with-knn.html#cb153-5" tabindex="-1"></a>                     <span class="at">item =</span>  <span class="fu">c</span>(<span class="st">&quot;green bean&quot;</span>,<span class="st">&quot;broccoli&quot;</span>,<span class="st">&quot;cauliflower&quot;</span>,</span>
+<span id="cb153-6"><a href="classifying-with-knn.html#cb153-6" tabindex="-1"></a>                               <span class="st">&quot;cabbage&quot;</span>,<span class="st">&quot;asparagus&quot;</span>,<span class="st">&quot;kale&quot;</span>,</span>
+<span id="cb153-7"><a href="classifying-with-knn.html#cb153-7" tabindex="-1"></a>                               <span class="st">&quot;apple&quot;</span>,<span class="st">&quot;organge&quot;</span>, <span class="st">&quot;grape&quot;</span>,</span>
+<span id="cb153-8"><a href="classifying-with-knn.html#cb153-8" tabindex="-1"></a>                               <span class="st">&quot;banana&quot;</span>,<span class="st">&quot;peach&quot;</span>,<span class="st">&quot;blueberry&quot;</span>),</span>
+<span id="cb153-9"><a href="classifying-with-knn.html#cb153-9" tabindex="-1"></a>                     <span class="at">sweetness =</span> <span class="fu">c</span>(<span class="fl">0.5</span>,<span class="fl">0.2</span>,<span class="fl">0.2</span>,</span>
+<span id="cb153-10"><a href="classifying-with-knn.html#cb153-10" tabindex="-1"></a>                                   <span class="fl">0.3</span>,<span class="fl">0.3</span>,<span class="fl">0.1</span>,</span>
+<span id="cb153-11"><a href="classifying-with-knn.html#cb153-11" tabindex="-1"></a>                                   <span class="fl">0.7</span>,<span class="fl">0.9</span>,<span class="fl">0.9</span>,</span>
+<span id="cb153-12"><a href="classifying-with-knn.html#cb153-12" tabindex="-1"></a>                                   <span class="fl">0.6</span>,<span class="fl">0.8</span>,<span class="fl">0.7</span>),</span>
+<span id="cb153-13"><a href="classifying-with-knn.html#cb153-13" tabindex="-1"></a>                     <span class="at">crunchiness =</span> <span class="fu">c</span>(<span class="fl">0.8</span>,<span class="fl">0.6</span>,<span class="fl">0.9</span>,</span>
+<span id="cb153-14"><a href="classifying-with-knn.html#cb153-14" tabindex="-1"></a>                                     <span class="fl">0.7</span>,<span class="fl">0.6</span>,<span class="fl">0.5</span>,</span>
+<span id="cb153-15"><a href="classifying-with-knn.html#cb153-15" tabindex="-1"></a>                                     <span class="fl">0.7</span>,<span class="fl">0.1</span>,<span class="fl">0.2</span>,</span>
+<span id="cb153-16"><a href="classifying-with-knn.html#cb153-16" tabindex="-1"></a>                                     <span class="fl">0.1</span>,<span class="fl">0.3</span>,<span class="fl">0.2</span>))</span>
+<span id="cb153-17"><a href="classifying-with-knn.html#cb153-17" tabindex="-1"></a></span>
+<span id="cb153-18"><a href="classifying-with-knn.html#cb153-18" tabindex="-1"></a>foodPlot <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data=</span>foodStuffs, <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x=</span>sweetness, <span class="at">y =</span> crunchiness)) <span class="sc">+</span></span>
+<span id="cb153-19"><a href="classifying-with-knn.html#cb153-19" tabindex="-1"></a>  <span class="fu">geom_label</span>(<span class="fu">aes</span>(<span class="at">label=</span>item,<span class="at">fill=</span>culinaryUse),<span class="at">position =</span> <span class="st">&quot;jitter&quot;</span>) <span class="sc">+</span> </span>
+<span id="cb153-20"><a href="classifying-with-knn.html#cb153-20" tabindex="-1"></a>  <span class="fu">lims</span>(<span class="at">x=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>),<span class="at">y=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>)) <span class="sc">+</span> <span class="fu">coord_fixed</span>() <span class="sc">+</span> <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">&quot;none&quot;</span>)</span>
+<span id="cb153-21"><a href="classifying-with-knn.html#cb153-21" tabindex="-1"></a>foodPlot</span></code></pre></div>
+<p><img src="04HiDiddilyHoNeighborino_files/figure-html/unnamed-chunk-13-1.png" alt="" width="672" style="display: block; margin: auto;" />
+As many of you with botany training know that the fruit/veggie dichotomy is quite different in terms of culinary classification as opposed to biological classification (e.g., green beans, cucumbers, green bears, etc. are all fruits botanically but we use mostly use them as vegetables around these parts at least). So let’s think about these in terms of culinary uses.</p>
+<p>Imagine putting in a new item like a strawberry into this space. It’s sweet and not crunchy and we’d call it a fruit using kNN because its nearest neighbors would all be fruits. Let’s do this kNN calculation for, I dunno, eggplant (technically a fruit as well!). Here is my scoring for eggplant and I’ll add it to the plot with a “?”.</p>
+<div class="sourceCode" id="cb154"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb154-1"><a href="classifying-with-knn.html#cb154-1" tabindex="-1"></a>eggplant <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">sweetness=</span><span class="fl">0.5</span>, <span class="at">crunchiness =</span> <span class="fl">0.6</span>)</span>
+<span id="cb154-2"><a href="classifying-with-knn.html#cb154-2" tabindex="-1"></a>foodPlot <span class="sc">+</span> <span class="fu">geom_point</span>(<span class="at">data=</span>eggplant, <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x=</span>sweetness,<span class="at">y=</span>crunchiness),<span class="at">shape=</span><span class="st">&quot;?&quot;</span>,<span class="at">size=</span><span class="dv">7</span>)</span></code></pre></div>
+<p><img src="04HiDiddilyHoNeighborino_files/figure-html/unnamed-chunk-14-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
+<p>Our first step is to get the distances from our unknown item to all the known items. So here is the distance between green beans and eggplant. Note that this is a 2D space but this approach would work in as many dimensions as we might care to assign to our foods.</p>
+<div class="sourceCode" id="cb155"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb155-1"><a href="classifying-with-knn.html#cb155-1" tabindex="-1"></a>p <span class="ot">&lt;-</span> foodStuffs <span class="sc">%&gt;%</span> <span class="fu">filter</span>(item <span class="sc">==</span> <span class="st">&quot;green bean&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb155-2"><a href="classifying-with-knn.html#cb155-2" tabindex="-1"></a>  <span class="fu">select</span>(sweetness,crunchiness)</span>
+<span id="cb155-3"><a href="classifying-with-knn.html#cb155-3" tabindex="-1"></a>q <span class="ot">&lt;-</span> eggplant <span class="sc">%&gt;%</span> <span class="fu">select</span>(sweetness,crunchiness)</span>
+<span id="cb155-4"><a href="classifying-with-knn.html#cb155-4" tabindex="-1"></a><span class="co"># distance from eggplant to green bean</span></span>
+<span id="cb155-5"><a href="classifying-with-knn.html#cb155-5" tabindex="-1"></a><span class="fu">sqrt</span>(<span class="fu">sum</span>((q<span class="sc">-</span>p)<span class="sc">^</span><span class="dv">2</span>))</span></code></pre></div>
+<pre><code>## [1] 0.2</code></pre>
+<p>And eggplant to blueberry.</p>
+<div class="sourceCode" id="cb157"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb157-1"><a href="classifying-with-knn.html#cb157-1" tabindex="-1"></a>p <span class="ot">&lt;-</span> foodStuffs <span class="sc">%&gt;%</span> <span class="fu">filter</span>(item <span class="sc">==</span> <span class="st">&quot;blueberry&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb157-2"><a href="classifying-with-knn.html#cb157-2" tabindex="-1"></a>  <span class="fu">select</span>(sweetness,crunchiness)</span>
+<span id="cb157-3"><a href="classifying-with-knn.html#cb157-3" tabindex="-1"></a>q <span class="ot">&lt;-</span> eggplant <span class="sc">%&gt;%</span> <span class="fu">select</span>(sweetness,crunchiness)</span>
+<span id="cb157-4"><a href="classifying-with-knn.html#cb157-4" tabindex="-1"></a><span class="co"># distance from eggplant to blueberry</span></span>
+<span id="cb157-5"><a href="classifying-with-knn.html#cb157-5" tabindex="-1"></a><span class="fu">sqrt</span>(<span class="fu">sum</span>((q<span class="sc">-</span>p)<span class="sc">^</span><span class="dv">2</span>))</span></code></pre></div>
+<pre><code>## [1] 0.4472136</code></pre>
+<p>We can use <code>apply</code> to look at the distance from eggplant to all the rows in
+the <code>foodStuffs</code> data.</p>
+<div class="sourceCode" id="cb159"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb159-1"><a href="classifying-with-knn.html#cb159-1" tabindex="-1"></a>p <span class="ot">&lt;-</span> foodStuffs <span class="sc">%&gt;%</span> <span class="fu">select</span>(sweetness,crunchiness)</span>
+<span id="cb159-2"><a href="classifying-with-knn.html#cb159-2" tabindex="-1"></a>q <span class="ot">&lt;-</span> eggplant <span class="sc">%&gt;%</span> <span class="fu">select</span>(sweetness,crunchiness)</span>
+<span id="cb159-3"><a href="classifying-with-knn.html#cb159-3" tabindex="-1"></a><span class="co"># distance from eggplant to all the items</span></span>
+<span id="cb159-4"><a href="classifying-with-knn.html#cb159-4" tabindex="-1"></a>dist2all <span class="ot">&lt;-</span> <span class="fu">apply</span>(p,<span class="dv">1</span>,<span class="cf">function</span>(x){<span class="fu">sqrt</span>(<span class="fu">sum</span>((q<span class="sc">-</span>x)<span class="sc">^</span><span class="dv">2</span>))})</span>
+<span id="cb159-5"><a href="classifying-with-knn.html#cb159-5" tabindex="-1"></a><span class="fu">tibble</span>(<span class="at">culinaryUse =</span> foodStuffs<span class="sc">$</span>culinaryUse, <span class="at">d =</span> dist2all) <span class="sc">%&gt;%</span></span>
+<span id="cb159-6"><a href="classifying-with-knn.html#cb159-6" tabindex="-1"></a>  <span class="fu">arrange</span>(d)</span></code></pre></div>
+<pre><code>## # A tibble: 12 × 2
+##    culinaryUse     d
+##    &lt;chr&gt;       &lt;dbl&gt;
+##  1 vegetable   0.2  
+##  2 vegetable   0.2  
+##  3 fruit       0.224
+##  4 vegetable   0.224
+##  5 vegetable   0.3  
+##  6 vegetable   0.412
+##  7 vegetable   0.424
+##  8 fruit       0.424
+##  9 fruit       0.447
+## 10 fruit       0.510
+## 11 fruit       0.566
+## 12 fruit       0.640</code></pre>
+<p>Now, to classify the eggplant we’d ask for a vote based on <span class="math inline">\(k\)</span>. If we asked for the three closest neighbors (<span class="math inline">\(k=3\)</span>) the vote would be two veggie and one fruit (that crunchy but sweet apple is the minority vote) So we’d call the eggplant a vegetable. The choice of <span class="math inline">\(k\)</span> controls a tradeoff. Small values of <span class="math inline">\(k\)</span> lead to very local decisions that can be sensitive to noise (high variance). Larger values of <span class="math inline">\(k\)</span> produce smoother decision boundaries but can blur meaningful local structure (higher bias).</p>
+<p>Make sense? Now this is a trivial example but I will note that ML is being used in cooking and cuisine! Imagine you wanted an ingredient to contrast with your others and had a big database of flavor profiles. You could end up with something really cool (think “curry ice cream” which is awesome) if a ML algorithm helped you find a pattern that you hadn’t thought about before. Google <a href="https://www.google.com/search?q=chef+watson">Chef Watson</a> for this in real life.</p>
+</div>
+</div>
+<div id="other-tidbits" class="section level2 hasAnchor" number="5.7">
+<h2><span class="header-section-number">5.7</span> Other Tidbits<a href="classifying-with-knn.html#other-tidbits" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div id="rescaling" class="section level3 hasAnchor" number="5.7.1">
+<h3><span class="header-section-number">5.7.1</span> Rescaling<a href="classifying-with-knn.html#rescaling" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>The reading describes why variables used in kNN have to be on the same scale. I won’t belabor that point here but this is a critical idea. When working in a parameter space that includes many different kinds of variables (length, width, number, whatever) they all need to be scaled to the same frame of reference before you can think about distance. The book uses a min|max normalization from 0 to 1 for all the variables and also talks about transforming to z-scores. In practice, scaling parameters should be computed using the training data only, and then applied to the test data. Computing scaling parameters on the full dataset can leak information from the test set into the model.</p>
+</div>
+<div id="categorical-predictors" class="section level3 hasAnchor" number="5.7.2">
+<h3><span class="header-section-number">5.7.2</span> Categorical Predictors<a href="classifying-with-knn.html#categorical-predictors" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>You can use categorical data in kNN but that doesn’t mean that you should. Categorical data (e.g., <code>sex</code> in the penguin data) can be used in kNN but would have to be converted into numbers (e.g., 0 and 1) before being used to calculate distance. If you have multiple categories (e.g., <code>island</code> in the penguin data) it’s not clear how you transform those into distance because coding them as integers won’t work. One possibility in that case is to put the categories as numbers equally spaced around a circle – that way the distance between any pair of them is the same but that starts getting complicated fast. kNN might not be the best choice if you have a lot of categorical data that you want to use as predictors.</p>
+</div>
+</div>
+<div id="worked-example" class="section level2 hasAnchor" number="5.8">
+<h2><span class="header-section-number">5.8</span> Worked Example<a href="classifying-with-knn.html#worked-example" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div id="diagnostic-wisconsin-breast-cancer-database" class="section level3 hasAnchor" number="5.8.1">
+<h3><span class="header-section-number">5.8.1</span> Diagnostic Wisconsin Breast Cancer Database<a href="classifying-with-knn.html#diagnostic-wisconsin-breast-cancer-database" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>We are going to follow along with the book and look at the Diagnostic Wisconsin Breast Cancer Database. The data are archived <a href="https://archive.ics.uci.edu/ml/datasets/Breast+Cancer+Wisconsin+%28Diagnostic%29">here</a> and I’ve put the csv file on Canvas. As you can read, there are 569 rows (samples) and 30 explanatory variables for the diagnosis (malignant or benign). There is also an id column that we will ignore (never use ID to predict!). The 30 explanatory variables are the mean, standard error, and largest (worst) value for 10 different characteristics of the digitized cell nuclei.</p>
+<p>I’m not going to retype the textbook. Read the book along with the code below.</p>
+<p>Let’s read the data, shuffle the rows to make sure they are random, drop the id column, and recode the diagnosis column to be a factor.</p>
+<p>As you work through the code below, focus on three things:</p>
+<ol style="list-style-type: decimal">
+<li>How the data are split into training and test sets</li>
+<li>How the choice of <span class="math inline">\(k\)</span> affects predictions</li>
+<li>How to interpret the confusion matrix rather than the raw accuracy alone</li>
+</ol>
+<div class="sourceCode" id="cb161"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb161-1"><a href="classifying-with-knn.html#cb161-1" tabindex="-1"></a>wbcd <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;data/wisc_bc_data.csv&quot;</span>)</span>
+<span id="cb161-2"><a href="classifying-with-knn.html#cb161-2" tabindex="-1"></a>rowShuffle <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="at">x =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(wbcd),<span class="at">size =</span> <span class="fu">nrow</span>(wbcd),<span class="at">replace =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb161-3"><a href="classifying-with-knn.html#cb161-3" tabindex="-1"></a>wbcd <span class="ot">&lt;-</span> wbcd[rowShuffle,] <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="sc">-</span>id) <span class="sc">%&gt;%</span> </span>
+<span id="cb161-4"><a href="classifying-with-knn.html#cb161-4" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">diagnosis =</span> <span class="fu">factor</span>(diagnosis, </span>
+<span id="cb161-5"><a href="classifying-with-knn.html#cb161-5" tabindex="-1"></a>                            <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">&quot;B&quot;</span>,<span class="st">&quot;M&quot;</span>), </span>
+<span id="cb161-6"><a href="classifying-with-knn.html#cb161-6" tabindex="-1"></a>                            <span class="at">labels =</span>  <span class="fu">c</span>(<span class="st">&quot;Benign&quot;</span>,<span class="st">&quot;Malignant&quot;</span>)))</span></code></pre></div>
+<p>And get a count of the response (diagnosis).</p>
+<div class="sourceCode" id="cb162"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb162-1"><a href="classifying-with-knn.html#cb162-1" tabindex="-1"></a>wbcd <span class="sc">%&gt;%</span> <span class="fu">count</span>(diagnosis) <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">freq =</span> n <span class="sc">/</span> <span class="fu">sum</span>(n))</span></code></pre></div>
+<pre><code>## # A tibble: 2 × 3
+##   diagnosis     n  freq
+##   &lt;fct&gt;     &lt;int&gt; &lt;dbl&gt;
+## 1 Benign      357 0.627
+## 2 Malignant   212 0.373</code></pre>
+<p>So far we are following along with the book but I’m using tidy syntax. The next step is to normalize the predictor variables to get them on the same scale. The book shows you how to write your own function <code>normalize</code> to get each variable on a scale from zero to one. While I applaud rolling your own functions, I’ll use the <code>rescale</code> function in the <code>scales</code> library which does the same thing. Note that the <code>scales</code> library has all kinds of cool and useful transformations in it.</p>
+<div class="sourceCode" id="cb164"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb164-1"><a href="classifying-with-knn.html#cb164-1" tabindex="-1"></a>wbcd_n <span class="ot">&lt;-</span> wbcd <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="dv">2</span><span class="sc">:</span><span class="dv">31</span>, rescale))</span></code></pre></div>
+<p>Look at <code>area_mean</code> in the normalized data.</p>
+<div class="sourceCode" id="cb165"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb165-1"><a href="classifying-with-knn.html#cb165-1" tabindex="-1"></a>wbcd_n <span class="sc">%&gt;%</span> <span class="fu">select</span>(area_mean) <span class="sc">%&gt;%</span> <span class="fu">summary</span>()</span></code></pre></div>
+<pre><code>##    area_mean     
+##  Min.   :0.0000  
+##  1st Qu.:0.1174  
+##  Median :0.1729  
+##  Mean   :0.2169  
+##  3rd Qu.:0.2711  
+##  Max.   :1.0000</code></pre>
+<p>All systems go. Note that one difference here as compared to the book is that I’ve kept the <code>diagnosis</code> column in the data so far. I prefer keeping data together as long as possible but because the books pulls the diagnosis column out, I will bow to pressure and make the labels a separate object here.</p>
+<div class="sourceCode" id="cb167"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb167-1"><a href="classifying-with-knn.html#cb167-1" tabindex="-1"></a>wbcd_labels <span class="ot">&lt;-</span> wbcd_n <span class="sc">%&gt;%</span> <span class="fu">pull</span>(diagnosis)</span>
+<span id="cb167-2"><a href="classifying-with-knn.html#cb167-2" tabindex="-1"></a>wbcd_n <span class="ot">&lt;-</span> wbcd_n <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="sc">-</span>diagnosis)</span></code></pre></div>
+</div>
+<div id="traintest" class="section level3 hasAnchor" number="5.8.2">
+<h3><span class="header-section-number">5.8.2</span> Train/Test<a href="classifying-with-knn.html#traintest" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Let’s get training and test data. Because the rows have already been shuffled, we can divide using row indices. The book, somewhat arbitrarily, uses 100 rows for the testing data. Because I’ve shuffled the data above (and you will have your own random shuffle), the results will be slightly different between the book, what I have below, and what you get when you run it. But they should be very similar. If they aren’t, that tells you a lot about the stability of the approach.</p>
+<div class="sourceCode" id="cb168"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb168-1"><a href="classifying-with-knn.html#cb168-1" tabindex="-1"></a>wbcd_train <span class="ot">&lt;-</span> wbcd_n[<span class="dv">1</span><span class="sc">:</span><span class="dv">469</span>,]</span>
+<span id="cb168-2"><a href="classifying-with-knn.html#cb168-2" tabindex="-1"></a>wbcd_train_labels <span class="ot">&lt;-</span> wbcd_labels[<span class="dv">1</span><span class="sc">:</span><span class="dv">469</span>]</span>
+<span id="cb168-3"><a href="classifying-with-knn.html#cb168-3" tabindex="-1"></a></span>
+<span id="cb168-4"><a href="classifying-with-knn.html#cb168-4" tabindex="-1"></a>wbcd_test <span class="ot">&lt;-</span> wbcd_n[<span class="dv">470</span><span class="sc">:</span><span class="dv">569</span>,]</span>
+<span id="cb168-5"><a href="classifying-with-knn.html#cb168-5" tabindex="-1"></a>wbcd_test_labels <span class="ot">&lt;-</span> wbcd_labels[<span class="dv">470</span><span class="sc">:</span><span class="dv">569</span>]</span></code></pre></div>
+</div>
+<div id="run-knn" class="section level3 hasAnchor" number="5.8.3">
+<h3><span class="header-section-number">5.8.3</span> Run kNN<a href="classifying-with-knn.html#run-knn" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>And now we will do the classification using <code>knn</code>.</p>
+<div class="sourceCode" id="cb169"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb169-1"><a href="classifying-with-knn.html#cb169-1" tabindex="-1"></a>wbcd_test_pred <span class="ot">&lt;-</span> <span class="fu">knn</span>(<span class="at">train =</span> wbcd_train, </span>
+<span id="cb169-2"><a href="classifying-with-knn.html#cb169-2" tabindex="-1"></a>                      <span class="at">test =</span> wbcd_test,</span>
+<span id="cb169-3"><a href="classifying-with-knn.html#cb169-3" tabindex="-1"></a>                      <span class="at">cl=</span>wbcd_train_labels,</span>
+<span id="cb169-4"><a href="classifying-with-knn.html#cb169-4" tabindex="-1"></a>                      <span class="at">k=</span><span class="dv">21</span>)</span></code></pre></div>
+<p>Let’s take a look at that object of predictions.</p>
+<div class="sourceCode" id="cb170"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb170-1"><a href="classifying-with-knn.html#cb170-1" tabindex="-1"></a><span class="fu">table</span>(wbcd_test_pred)</span></code></pre></div>
+<pre><code>## wbcd_test_pred
+##    Benign Malignant 
+##        67        33</code></pre>
+<p>There are 100 predictions and 64 times the case was classified as Benign and 36 times as Malignant. Because these are the test data we know the real answers for each of these cases. E.g.,:</p>
+<div class="sourceCode" id="cb172"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb172-1"><a href="classifying-with-knn.html#cb172-1" tabindex="-1"></a><span class="fu">tibble</span>(<span class="at">preds =</span> wbcd_test_pred, <span class="at">truth =</span> wbcd_test_labels)</span></code></pre></div>
+<pre><code>## # A tibble: 100 × 2
+##    preds     truth    
+##    &lt;fct&gt;     &lt;fct&gt;    
+##  1 Benign    Benign   
+##  2 Benign    Benign   
+##  3 Benign    Benign   
+##  4 Benign    Benign   
+##  5 Benign    Benign   
+##  6 Benign    Benign   
+##  7 Benign    Benign   
+##  8 Malignant Malignant
+##  9 Malignant Malignant
+## 10 Benign    Benign   
+## # ℹ 90 more rows</code></pre>
+<p>This is the predicted values from <code>knn</code> and the observed (aka truth aka reference) values. They are mostly the same (that’s good!) but sometimes we have a misclassification (that’s bad).</p>
+</div>
+<div id="the-confusion-matrix" class="section level3 hasAnchor" number="5.8.4">
+<h3><span class="header-section-number">5.8.4</span> The Confusion Matrix<a href="classifying-with-knn.html#the-confusion-matrix" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>We can evaluate the fit with the aptly named <a href="https://en.wikipedia.org/wiki/Confusion_matrix">confusion matrix</a> (i.e., which classes are confused with each other). The book uses the <code>CrossTable</code> function from the <code>gmodels</code> library. That’s fine and has all the information you need (run <code>gmodels::CrossTable(x=wbcd_test_labels,y = wbcd_test_pred)</code>) to get the output the book shows. I’m going to show you the output using <code>confusionMatrix</code> function from <code>caret</code> which I see more commonly in the wild.</p>
+<div class="sourceCode" id="cb174"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb174-1"><a href="classifying-with-knn.html#cb174-1" tabindex="-1"></a>cm <span class="ot">&lt;-</span> <span class="fu">confusionMatrix</span>(<span class="at">data =</span> wbcd_test_pred,<span class="at">reference =</span> wbcd_test_labels)</span>
+<span id="cb174-2"><a href="classifying-with-knn.html#cb174-2" tabindex="-1"></a>cm</span></code></pre></div>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##            Reference
+## Prediction  Benign Malignant
+##   Benign        65         2
+##   Malignant      1        32
+##                                           
+##                Accuracy : 0.97            
+##                  95% CI : (0.9148, 0.9938)
+##     No Information Rate : 0.66            
+##     P-Value [Acc &gt; NIR] : 2.113e-14       
+##                                           
+##                   Kappa : 0.9327          
+##                                           
+##  Mcnemar&#39;s Test P-Value : 1               
+##                                           
+##             Sensitivity : 0.9848          
+##             Specificity : 0.9412          
+##          Pos Pred Value : 0.9701          
+##          Neg Pred Value : 0.9697          
+##              Prevalence : 0.6600          
+##          Detection Rate : 0.6500          
+##    Detection Prevalence : 0.6700          
+##       Balanced Accuracy : 0.9630          
+##                                           
+##        &#39;Positive&#39; Class : Benign          
+## </code></pre>
+<p>Don’t freak out at all that information, we will walk through the most important parts. The key part being the table itself (<code>cm$table</code>). It’s just four numbers and look at all we can infer from it!</p>
+<p>The predictions from <code>knn</code> are in rows. The truth (aka observed, aka reference) are in the columns. Thus, the top-left corner and the bottom-right corner are the cases that are classified correctly. The lower-left and upper-right corners are misclassifications. In this table we say that a result of “Benign” is a positive result and thus then the lower left shows that there is one false negative (aka type II error) and the upper right shows that there are two false positives (aka type I error).</p>
+<p>These errors are summarized in the “Sensitivity” and “Specificity” (those of you that follow the COVID test and vaccine development will be familiar with those terms already). Sensitivity is the proportion of positives (“Benign”) that are correctly identified while Specificity is the proportion of negatives (“Malignant”) that are correctly identified.</p>
+<p>The other statistic in that sea that I’ll break down a bit for you is kappa (<span class="math inline">\(\kappa\)</span>). This is pretty much always reported when you see a classification. The kappa statistic is a number less than one that tells you how much better your classification is performing as compared to a random expectation. It’s calculated as:</p>
+<p><span class="math display">\[ \kappa = \frac{p_o - p_e}{1-p_e}\]</span></p>
+<p>where <span class="math inline">\(p_o\)</span> is the is the observed agreement, and <span class="math inline">\(p_e\)</span> is the expected agreement. There isn’t a p-value for kappa but you can loosely think about it as a value &lt; 0 means no agreement between the classes, 0–0.20 as slight agreement, 0.21–0.40 as fair, 0.41–0.60 as moderate, 0.61–0.80 as substantial, and 0.81–1 as excellent agreement. A pretty no nonsense but very thorough write up is on <a href="https://stats.stackexchange.com/questions/82162/cohens-kappa-in-plain-english">stackexchange</a>.</p>
+<p>There is a lot more in the <code>confusionMatrix</code> output but that’s enough for now I think. For details on interpreting all the numbers in this function look at the help page. It’s pretty clean: <code>?confusionMatrix</code>.</p>
+</div>
+<div id="some-interp" class="section level3 hasAnchor" number="5.8.5">
+<h3><span class="header-section-number">5.8.5</span> Some Interp<a href="classifying-with-knn.html#some-interp" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>The book walks through some of the important aspects and trade offs as you interpret this classification. Is it better for an analyst to worry about false positives or false negatives in terms of patient care? How does changing <span class="math inline">\(k\)</span> affect this classification? What about the variable normalization? What about the “right” number of predictors to use? I’ll talk about each of these in the video but they are all important considerations.</p>
+</div>
+</div>
+<div id="your-work-3" class="section level2 hasAnchor" number="5.9">
+<h2><span class="header-section-number">5.9</span> Your Work<a href="classifying-with-knn.html#your-work-3" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Let’s use a cool data set of fish caught in Finland in 1917. There are 159 fish from seven species caught from <a href="https://www.google.com/maps/place/L%C3%A4ngelm%C3%A4vesi/@61.5563738,24.2872989,11z/">lake Laengelmavesi</a>. In addition to the species there are columns for the weight of the fish (in grams), three measurements of length: 1. Length from the nose to the beginning of the tail, 2. Length from the nose to the notch of the tail, and 3. Length from the nose to the end of the tail. All of the length measurements are in cm. There is also the width of the fish and its height (in cm) as well as the ratio of height to total length and the ratio of width to total length (in percent). The raw data are archived <a href="http://jse.amstat.org/jse_data_archive.htm">here</a> and formatted nicely in the <code>fishcatch.csv</code> file.</p>
+<p>I’m going to read in the file and do some wrangling and cleaning. I’ll drop all the <code>NA</code> values first. I’ll limit the species we are going to classify to just three species. Then I select just four of the variables to predict species (weight, total length, height, and width) which are rescaled from zero to one.</p>
+<div class="sourceCode" id="cb176"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb176-1"><a href="classifying-with-knn.html#cb176-1" tabindex="-1"></a>fish <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;data/fishcatch.csv&quot;</span>)</span></code></pre></div>
+<pre><code>## Rows: 159 Columns: 11
+## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## chr (3): std_name, common_name, sex
+## dbl (8): weight_g, length_nose2tail_base_cm, length_nose2tail_notch_cm, leng...
+## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<div class="sourceCode" id="cb178"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb178-1"><a href="classifying-with-knn.html#cb178-1" tabindex="-1"></a>fishFiltered <span class="ot">&lt;-</span> fish <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="sc">-</span>std_name,<span class="sc">-</span>sex) <span class="sc">%&gt;%</span></span>
+<span id="cb178-2"><a href="classifying-with-knn.html#cb178-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">common_name =</span> <span class="fu">factor</span>(common_name)) <span class="sc">%&gt;%</span></span>
+<span id="cb178-3"><a href="classifying-with-knn.html#cb178-3" tabindex="-1"></a>  <span class="fu">filter</span>(common_name <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;bream&quot;</span>,<span class="st">&quot;perch&quot;</span>,<span class="st">&quot;pike&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb178-4"><a href="classifying-with-knn.html#cb178-4" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">common_name =</span> <span class="fu">factor</span>(common_name)) <span class="sc">%&gt;%</span></span>
+<span id="cb178-5"><a href="classifying-with-knn.html#cb178-5" tabindex="-1"></a>  <span class="fu">select</span>(common_name,</span>
+<span id="cb178-6"><a href="classifying-with-knn.html#cb178-6" tabindex="-1"></a>         weight_g,</span>
+<span id="cb178-7"><a href="classifying-with-knn.html#cb178-7" tabindex="-1"></a>         length_nose2tail_end_cm,</span>
+<span id="cb178-8"><a href="classifying-with-knn.html#cb178-8" tabindex="-1"></a>         height_cm,</span>
+<span id="cb178-9"><a href="classifying-with-knn.html#cb178-9" tabindex="-1"></a>         width_cm) <span class="sc">%&gt;%</span></span>
+<span id="cb178-10"><a href="classifying-with-knn.html#cb178-10" tabindex="-1"></a>  <span class="fu">drop_na</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb178-11"><a href="classifying-with-knn.html#cb178-11" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="dv">2</span><span class="sc">:</span><span class="dv">5</span>, rescale))</span></code></pre></div>
+<p>Let’s try a 3d view (have to leave out weight for this plot).</p>
+<div class="sourceCode" id="cb179"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb179-1"><a href="classifying-with-knn.html#cb179-1" tabindex="-1"></a><span class="fu">library</span>(plotly)</span>
+<span id="cb179-2"><a href="classifying-with-knn.html#cb179-2" tabindex="-1"></a><span class="fu">plot_ly</span>(fishFiltered, </span>
+<span id="cb179-3"><a href="classifying-with-knn.html#cb179-3" tabindex="-1"></a>        <span class="at">x =</span> <span class="sc">~</span>length_nose2tail_end_cm,</span>
+<span id="cb179-4"><a href="classifying-with-knn.html#cb179-4" tabindex="-1"></a>        <span class="at">y =</span> <span class="sc">~</span>height_cm,</span>
+<span id="cb179-5"><a href="classifying-with-knn.html#cb179-5" tabindex="-1"></a>        <span class="at">z =</span> <span class="sc">~</span>width_cm, </span>
+<span id="cb179-6"><a href="classifying-with-knn.html#cb179-6" tabindex="-1"></a>        <span class="at">color =</span> <span class="sc">~</span>common_name) <span class="sc">%&gt;%</span></span>
+<span id="cb179-7"><a href="classifying-with-knn.html#cb179-7" tabindex="-1"></a>  <span class="fu">add_markers</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb179-8"><a href="classifying-with-knn.html#cb179-8" tabindex="-1"></a>  <span class="fu">layout</span>(<span class="at">scene =</span> <span class="fu">list</span>(<span class="at">xaxis =</span> <span class="fu">list</span>(<span class="at">title =</span> <span class="st">&#39;Length&#39;</span>),</span>
+<span id="cb179-9"><a href="classifying-with-knn.html#cb179-9" tabindex="-1"></a>                      <span class="at">yaxis =</span> <span class="fu">list</span>(<span class="at">title =</span> <span class="st">&#39;Height&#39;</span>),</span>
+<span id="cb179-10"><a href="classifying-with-knn.html#cb179-10" tabindex="-1"></a>                      <span class="at">zaxis =</span> <span class="fu">list</span>(<span class="at">title =</span> <span class="st">&#39;Width&#39;</span>))) <span class="sc">%&gt;%</span></span>
+<span id="cb179-11"><a href="classifying-with-knn.html#cb179-11" tabindex="-1"></a>  <span class="fu">layout</span>(<span class="at">showlegend =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
+<div class="plotly html-widget html-fill-item" id="htmlwidget-b6565f515210d1576420" style="width:672px;height:480px;"></div>
+<script type="application/json" data-for="htmlwidget-b6565f515210d1576420">{"x":{"visdat":{"a88c719ace36":["function () ","plotlyVisDat"]},"cur_data":"a88c719ace36","attrs":{"a88c719ace36":{"x":{},"y":{},"z":{},"color":{},"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"scatter3d","mode":"markers","inherit":true}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"scene":{"xaxis":{"title":"Length"},"yaxis":{"title":"Height"},"zaxis":{"title":"Width"}},"showlegend":false,"hovermode":"closest"},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"data":[{"x":[0.35810810810810806,0.37837837837837834,0.3766891891891892,0.41722972972972971,0.42567567567567566,0.4375,0.4341216216216216,0.44256756756756754,0.44425675675675674,0.46283783783783783,0.46283783783783783,0.46283783783783783,0.46621621621621617,0.47972972972972977,0.47972972972972977,0.49831081081081074,0.50168918918918914,0.5033783783783784,0.50506756756756754,0.51858108108108103,0.51351351351351349,0.52195945945945943,0.53716216216216217,0.53547297297297292,0.5422297297297296,0.53716216216216217,0.55236486486486491,0.55405405405405395,0.57094594594594583,0.59628378378378366,0.59459459459459463,0.61655405405405406,0.62668918918918903,0.63682432432432434],"y":[0.55621301775147935,0.61538461538461542,0.60946745562130189,0.62721893491124259,0.60946745562130189,0.68047337278106512,0.71597633136094674,0.62721893491124259,0.70414201183431957,0.71597633136094674,0.72189349112426049,0.72781065088757402,0.6923076923076924,0.76331360946745574,0.78698224852071019,0.75739644970414211,0.75739644970414211,0.79881656804733736,0.73372781065088766,0.76923076923076927,0.82248520710059181,0.79289940828402372,0.79289940828402372,0.83431952662721898,0.84615384615384615,0.84615384615384615,0.8520710059171599,0.87573964497041423,1,0.94082840236686405,0.94674556213017758,0.98816568047337283,0.97633136094674566,0.9171597633136096],"z":[0.38805970149253738,0.43283582089552242,0.49253731343283591,0.46268656716417916,0.55223880597014929,0.52238805970149271,0.58208955223880599,0.49253731343283591,0.5074626865671642,0.537313432835821,0.55223880597014929,0.5074626865671642,0.44776119402985087,0.56716417910447769,0.62686567164179097,0.58208955223880599,0.56716417910447769,0.55223880597014929,0.64179104477611959,0.62686567164179097,0.59701492537313439,0.58208955223880599,0.70149253731343275,0.62686567164179097,0.70149253731343275,0.70149253731343275,0.67164179104477617,0.71641791044776137,0.77611940298507465,0.73134328358208966,0.73134328358208966,0.79104477611940316,0.79104477611940316,0.74626865671641796],"type":"scatter3d","mode":"markers","name":"bream","marker":{"color":"rgba(102,194,165,1)","line":{"color":"rgba(102,194,165,1)"}},"textfont":{"color":"rgba(102,194,165,1)"},"error_y":{"color":"rgba(102,194,165,1)"},"error_x":{"color":"rgba(102,194,165,1)"},"line":{"color":"rgba(102,194,165,1)"},"frame":null},{"x":[0,0.09966216216216213,0.1216216216216216,0.14189189189189186,0.16385135135135134,0.17567567567567563,0.179054054054054,0.19256756756756754,0.20270270270270269,0.20608108108108106,0.23141891891891889,0.23141891891891889,0.23141891891891889,0.23648648648648649,0.2483108108108108,0.2483108108108108,0.2483108108108108,0.2483108108108108,0.2483108108108108,0.25675675675675674,0.25675675675675674,0.26013513513513509,0.26520270270270269,0.27364864864864863,0.28209459459459457,0.28209459459459457,0.29391891891891886,0.29898648648648646,0.3074324324324324,0.32432432432432429,0.33614864864864863,0.33952702702702697,0.33952702702702697,0.33952702702702697,0.34797297297297292,0.35979729729729731,0.38513513513513514,0.42567567567567566,0.46790540540540537,0.48141891891891886,0.51013513513513509,0.49831081081081074,0.51689189189189189,0.51520270270270263,0.55067567567567555,0.55067567567567555,0.54898648648648651,0.5658783783783784,0.5692567567567568,0.56756756756756743,0.5692567567567568,0.6047297297297296,0.61486486486486491,0.61993243243243246,0.6283783783783784,0.63851351351351349],"y":[0,0.082840236686390539,0.10059171597633135,0.14792899408284022,0.14792899408284022,0.18343195266272191,0.18343195266272191,0.20710059171597633,0.17751479289940827,0.17751479289940827,0.21301775147928997,0.2248520710059172,0.21301775147928997,0.25443786982248529,0.23668639053254437,0.20710059171597633,0.23668639053254437,0.2248520710059172,0.20118343195266272,0.2248520710059172,0.27810650887573962,0.23076923076923078,0.18343195266272191,0.24852071005917159,0.30769230769230765,0.25443786982248529,0.27218934911242604,0.25443786982248529,0.26627218934911245,0.30177514792899407,0.36686390532544388,0.30177514792899407,0.29585798816568049,0.30769230769230765,0.33727810650887574,0.32544378698224857,0.32544378698224857,0.4674556213017752,0.48520710059171607,0.55621301775147935,0.52071005917159774,0.50295857988165682,0.5147928994082841,0.50295857988165682,0.53254437869822491,0.53254437869822491,0.60946745562130189,0.5798816568047338,0.56804733727810652,0.60946745562130189,0.53254437869822491,0.63313609467455634,0.5798816568047338,0.61538461538461542,0.62130177514792906,0.61538461538461542],"z":[0,0.089552238805970172,0.1492537313432836,0.17910447761194034,0.22388059701492541,0.28358208955223885,0.25373134328358216,0.25373134328358216,0.23880597014925378,0.20895522388059704,0.32835820895522394,0.28358208955223885,0.34328358208955234,0.31343283582089559,0.29850746268656719,0.31343283582089559,0.31343283582089559,0.31343283582089559,0.38805970149253738,0.32835820895522394,0.32835820895522394,0.32835820895522394,0.32835820895522394,0.34328358208955234,0.34328358208955234,0.35820895522388063,0.41791044776119413,0.34328358208955234,0.41791044776119413,0.40298507462686567,0.55223880597014929,0.43283582089552242,0.43283582089552242,0.47761194029850745,0.41791044776119413,0.47761194029850745,0.5074626865671642,0.68656716417910446,0.74626865671641796,0.95522388059701513,0.82089552238805974,0.79104477611940316,0.73134328358208966,0.74626865671641796,0.91044776119402993,0.68656716417910446,0.89552238805970164,0.85074626865671643,0.86567164179104494,0.91044776119402993,0.77611940298507465,0.82089552238805974,0.88059701492537323,0.89552238805970164,1,0.92537313432835822],"type":"scatter3d","mode":"markers","name":"perch","marker":{"color":"rgba(252,141,98,1)","line":{"color":"rgba(252,141,98,1)"}},"textfont":{"color":"rgba(252,141,98,1)"},"error_y":{"color":"rgba(252,141,98,1)"},"error_x":{"color":"rgba(252,141,98,1)"},"line":{"color":"rgba(252,141,98,1)"},"frame":null},{"x":[0.43918918918918909,0.4898648648648648,0.50675675675675669,0.52364864864864857,0.53547297297297292,0.54391891891891897,0.61993243243243246,0.61993243243243246,0.625,0.66216216216216217,0.67398648648648651,0.71621621621621623,0.78209459459459452,0.85979729729729737,0.93243243243243246,0.93243243243243246,1],"y":[0.20710059171597633,0.21301775147928997,0.2248520710059172,0.24852071005917159,0.30769230769230765,0.25443786982248529,0.30769230769230765,0.27810650887573962,0.33727810650887574,0.2899408284023669,0.33727810650887574,0.33136094674556216,0.4023668639053255,0.50887573964497046,0.44378698224852076,0.44378698224852076,0.5147928994082841],"z":[0.29850746268656719,0.41791044776119413,0.44776119402985087,0.38805970149253738,0.47761194029850745,0.38805970149253738,0.43283582089552242,0.46268656716417916,0.55223880597014929,0.52238805970149271,0.52238805970149271,0.59701492537313439,0.71641791044776137,0.83582089552238814,0.70149253731343275,0.70149253731343275,0.91044776119402993],"type":"scatter3d","mode":"markers","name":"pike","marker":{"color":"rgba(141,160,203,1)","line":{"color":"rgba(141,160,203,1)"}},"textfont":{"color":"rgba(141,160,203,1)"},"error_y":{"color":"rgba(141,160,203,1)"},"error_x":{"color":"rgba(141,160,203,1)"},"line":{"color":"rgba(141,160,203,1)"},"frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+<p>What I want you to do is use <code>knn</code> in <code>fishFiltered</code> to classify species using the four variables. You’ll have to specify <span class="math inline">\(k\)</span> obviously as well as come up with some kind of <code>train</code> and <code>test</code> scheme. You can use <code>knn</code> as above or use the <code>train</code> function in <code>caret</code> if you are feeling ambitious. No matter what, you need to do some cross validation. Summarize your findings. Feel free to expand the species, variables used, or the rescaling as well for those that really like to color outside the lines.</p>
+
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="always-be-cross-validating-abcv.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="classifying-with-decision-trees.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+  "sharing": {
+    "github": false,
+    "facebook": true,
+    "twitter": true,
+    "linkedin": false,
+    "weibo": false,
+    "instapaper": false,
+    "vk": false,
+    "whatsapp": false,
+    "all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+  },
+  "fontsettings": {
+    "theme": "white",
+    "family": "sans",
+    "size": 2
+  },
+  "edit": {
+    "link": null,
+    "text": null
+  },
+  "history": {
+    "link": null,
+    "text": null
+  },
+  "view": {
+    "link": null,
+    "text": null
+  },
+  "download": null,
+  "search": {
+    "engine": "fuse",
+    "options": null
+  },
+  "toc": {
+    "collapse": "section",
+    "scroll_highlight": true
+  }
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

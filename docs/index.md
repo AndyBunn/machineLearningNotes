@@ -1,0 +1,153 @@
+--- 
+title: "Machine Learning for Environmental Science: Notes for ESCI 506"
+author: "Andy Bunn"
+date: "05-March-2026"
+description: "Machine learning notes and exercises for ESCI 506"
+documentclass: book
+bibliography: [packages.bib]
+#csl: global-change-biology.csl
+biblio-style: apalike
+link-citations: yes
+site: bookdown::bookdown_site
+output: 
+  bookdown::gitbook:
+    includes:
+      in_header: hide_code.html # inspired by: https://stackoverflow.com/questions/45360998/code-folding-in-bookdown
+    config:
+      toc:
+        collapse: section
+        scroll_highlight: true
+        before: null
+        after: null
+    split_bib: no
+---
+
+# Welcome
+
+This document is a compilation of notes, examples, and exercises
+developed for our Machine Learning Studio. Rather than follow a
+traditional textbook, the course takes a modular, hands-on approach to
+understanding how learning algorithms work and how to evaluate them.
+Each section introduces a method or concept and then works through
+examples in R, with an emphasis on interpretation, experimentation, and
+practical use.
+
+You'll find annotated code, worked examples, and commentary throughout -
+some informal, some technical - all aimed at helping you *build and
+evaluate models*, not just read about them. The examples draw from a mix
+of environmental and general datasets, but the focus of the course is
+less on any particular domain and more on understanding how learning
+algorithms behave: how they generalize, how they fail, and how their
+performance can be improved.
+
+From time to time I'll refer you to textbooks, papers, or online
+resources that develop the theory more formally. Those serve as
+complements to these notes rather than replacements. The goal here is to
+develop intuition about how these methods work by implementing them,
+testing them, and seeing what happens.
+
+The tone of these notes is meant to be accessible, pragmatic, and
+occasionally opinionated. You'll see suggestions, cautions, and side
+comments about common pitfalls, trade-offs, and practical decisions that
+come up when working with machine learning methods.
+
+This is not meant to be a comprehensive text on machine learning.
+Instead it is a working guide for the methods we explore in the studio.
+Think of it as a field guide to model learning: enough structure to get
+started, enough detail to run experiments, and enough context to
+interpret what the algorithms are doing.
+
+*This is a living document - feedback and corrections are always
+welcome.*
+
+## How to Use These Notes
+
+These notes are designed to be used alongside the studio sessions. Each
+module introduces an idea and then explores it through examples and
+small experiments. The goal is not just to see how an algorithm works,
+but to develop intuition about when it works well, when it fails, and
+how its behavior changes under different conditions.
+
+Many sections include code that you are encouraged to run, modify, and
+extend. Changing parameters, trying different datasets, or deliberately
+breaking things is often the fastest way to understand how a method
+behaves.
+
+Some modules depend on ideas introduced earlier, particularly those
+related to model evaluation (bootstrapping, permutation tests, and cross
+validation). But most sections can be read somewhat independently if you
+are looking for a specific method.
+
+## What's in These Notes
+
+The notes move through a set of core ideas in machine learning, roughly
+in this order:
+
+-   **Bootstrapping** - using resampling to estimate variability and
+    understand model stability
+-   **Permutation Methods** - assessing significance and variable
+    importance through randomization
+-   **Cross Validation** - estimating predictive performance and
+    guarding against overfitting
+-   **k-Nearest Neighbors (kNN)** - a simple instance-based learning
+    method based on similarity
+-   **Decision Trees** - recursive partitioning for classification and
+    regression
+-   **Regression and Model Trees** - combining tree structures with
+    local regression models
+-   **Neural Networks** - flexible nonlinear models built from layered
+    units
+-   **Eigenfaces** - a dimensionality-reduction example using principal
+    components for image recognition
+-   **Improving Model Learning** - strategies for tuning, comparing, and
+    improving predictive models
+
+Some sections build on earlier ideas (especially around model
+evaluation), but most modules can be read independently.
+
+## Technical Setup
+
+This document was written in Markdown using the **bookdown** package and
+built with **R version 4.5.2**. You should be reasonably up
+to date on your versions of R, RStudio, and relevant packages. You can
+update your packages by running:
+
+``` r
+update.packages()
+```
+
+### Project Structure
+
+To follow along with the examples, you'll want a working RStudio
+project.
+
+1.  **Create a new RStudio project**\
+    Go to **File → New Project → New Directory → New Project**. Give it
+    a name (for example `machineLearning-course`) and choose where to
+    save it.
+
+2.  **Download the `data/` folder**\
+    The datasets used in the examples are available in the `data/`
+    folder of the course repository. Download that folder and place it
+    inside your project directory.
+    
+You can download the data directly from the GitHub [repo](https://github.com/AndyBunn/machineLearningNotes). The hard link to it is:
+    https://github.com/AndyBunn/machineLearningNotes/blob/main/data.zip 
+
+Once it's unzipped your folder structure should look something like this:
+
+    machineLearning-course/
+    ├── data/
+    │   ├── faces.csv
+    │   ├── mushroomsClean.csv
+    │   └── ...
+    └── machineLearning-course.Rproj
+
+3.  **Refer to data files using relative paths**
+
+In your code, use paths like `"data/fishcatch.csv"` rather than full file
+paths. This keeps the code portable and ensures that it will run on
+different machines without modification. E.g., `fishcatch <- read.csv(data/fishcatch.csv`.
+
+
+

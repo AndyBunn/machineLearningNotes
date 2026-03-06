@@ -1,0 +1,1798 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>7 Continuous Prediction with Regression Trees | Machine Learning for Environmental Science: Notes for ESCI 506</title>
+  <meta name="description" content="Machine learning notes and exercises for ESCI 506" />
+  <meta name="generator" content="bookdown 0.46 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="7 Continuous Prediction with Regression Trees | Machine Learning for Environmental Science: Notes for ESCI 506" />
+  <meta property="og:type" content="book" />
+  
+  <meta property="og:description" content="Machine learning notes and exercises for ESCI 506" />
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="7 Continuous Prediction with Regression Trees | Machine Learning for Environmental Science: Notes for ESCI 506" />
+  
+  <meta name="twitter:description" content="Machine learning notes and exercises for ESCI 506" />
+  
+
+<meta name="author" content="Andy Bunn" />
+
+
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="classifying-with-decision-trees.html"/>
+<link rel="next" href="neural-nets.html"/>
+<script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+<link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
+<link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
+<link href="libs/htmltools-fill-0.5.9/fill.css" rel="stylesheet" />
+<script src="libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+<script src="libs/plotly-binding-4.12.0/plotly.js"></script>
+<script src="libs/typedarray-0.1/typedarray.min.js"></script>
+<link href="libs/crosstalk-1.2.2/css/crosstalk.min.css" rel="stylesheet" />
+<script src="libs/crosstalk-1.2.2/js/crosstalk.min.js"></script>
+<link href="libs/plotly-htmlwidgets-css-2.25.2/plotly-htmlwidgets.css" rel="stylesheet" />
+<script src="libs/plotly-main-2.25.2/plotly-latest.min.js"></script>
+<link href="libs/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet" />
+<script src="libs/datatables-binding-0.34.0/datatables.js"></script>
+<link href="libs/dt-core-1.13.6/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="libs/dt-core-1.13.6/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="libs/dt-core-1.13.6/js/jquery.dataTables.min.js"></script>
+<link href="libs/vis-9.1.0/vis-network.min.css" rel="stylesheet" />
+<script src="libs/vis-9.1.0/vis-network.min.js"></script>
+<script src="libs/visNetwork-binding-2.1.4/visNetwork.js"></script>
+<script src="libs/FileSaver-1.1.20151003/FileSaver.min.js"></script>
+<script src="libs/Blob-1.0/Blob.js"></script>
+<script src="libs/canvas-toBlob-1.0/canvas-toBlob.js"></script>
+<script src="libs/html2canvas-0.5.0/html2canvas.js"></script>
+<script src="libs/jspdf-1.3.2/jspdf.debug.js"></script>
+<link href="libs/jquery-sparkline-2.1.2/jquery.sparkline.css" rel="stylesheet" />
+<script src="libs/jquery-sparkline-2.1.2/jquery.sparkline.js"></script>
+<script src="libs/sparkline-binding-2.0/sparkline.js"></script>
+
+<script>
+/* ========================================================================
+ * Bootstrap: transition.js v3.3.7
+ * http://getbootstrap.com/javascript/#transitions
+ * ========================================================================
+ * Copyright 2011-2016 Twitter, Inc.
+ * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+ * ======================================================================== */
+
+
++function ($) {
+  'use strict';
+
+  // CSS TRANSITION SUPPORT (Shoutout: http://www.modernizr.com/)
+  // ============================================================
+
+  function transitionEnd() {
+    var el = document.createElement('bootstrap')
+
+    var transEndEventNames = {
+      WebkitTransition : 'webkitTransitionEnd',
+      MozTransition    : 'transitionend',
+      OTransition      : 'oTransitionEnd otransitionend',
+      transition       : 'transitionend'
+    }
+
+    for (var name in transEndEventNames) {
+      if (el.style[name] !== undefined) {
+        return { end: transEndEventNames[name] }
+      }
+    }
+
+    return false // explicit for ie8 (  ._.)
+  }
+
+  // http://blog.alexmaccaw.com/css-transitions
+  $.fn.emulateTransitionEnd = function (duration) {
+    var called = false
+    var $el = this
+    $(this).one('bsTransitionEnd', function () { called = true })
+    var callback = function () { if (!called) $($el).trigger($.support.transition.end) }
+    setTimeout(callback, duration)
+    return this
+  }
+
+  $(function () {
+    $.support.transition = transitionEnd()
+
+    if (!$.support.transition) return
+
+    $.event.special.bsTransitionEnd = {
+      bindType: $.support.transition.end,
+      delegateType: $.support.transition.end,
+      handle: function (e) {
+        if ($(e.target).is(this)) return e.handleObj.handler.apply(this, arguments)
+      }
+    }
+  })
+
+}(jQuery);
+</script>
+<script>
+/* ========================================================================
+ * Bootstrap: collapse.js v3.3.7
+ * http://getbootstrap.com/javascript/#collapse
+ * ========================================================================
+ * Copyright 2011-2016 Twitter, Inc.
+ * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+ * ======================================================================== */
+
+/* jshint latedef: false */
+
++function ($) {
+  'use strict';
+
+  // COLLAPSE PUBLIC CLASS DEFINITION
+  // ================================
+
+  var Collapse = function (element, options) {
+    this.$element      = $(element)
+    this.options       = $.extend({}, Collapse.DEFAULTS, options)
+    this.$trigger      = $('[data-toggle="collapse"][href="#' + element.id + '"],' +
+                           '[data-toggle="collapse"][data-target="#' + element.id + '"]')
+    this.transitioning = null
+
+    if (this.options.parent) {
+      this.$parent = this.getParent()
+    } else {
+      this.addAriaAndCollapsedClass(this.$element, this.$trigger)
+    }
+
+    if (this.options.toggle) this.toggle()
+  }
+
+  Collapse.VERSION  = '3.3.7'
+
+  Collapse.TRANSITION_DURATION = 350
+
+  Collapse.DEFAULTS = {
+    toggle: true
+  }
+
+  Collapse.prototype.dimension = function () {
+    var hasWidth = this.$element.hasClass('width')
+    return hasWidth ? 'width' : 'height'
+  }
+
+  Collapse.prototype.show = function () {
+    if (this.transitioning || this.$element.hasClass('in')) return
+
+    var activesData
+    var actives = this.$parent && this.$parent.children('.panel').children('.in, .collapsing')
+
+    if (actives && actives.length) {
+      activesData = actives.data('bs.collapse')
+      if (activesData && activesData.transitioning) return
+    }
+
+    var startEvent = $.Event('show.bs.collapse')
+    this.$element.trigger(startEvent)
+    if (startEvent.isDefaultPrevented()) return
+
+    if (actives && actives.length) {
+      Plugin.call(actives, 'hide')
+      activesData || actives.data('bs.collapse', null)
+    }
+
+    var dimension = this.dimension()
+
+    this.$element
+      .removeClass('collapse')
+      .addClass('collapsing')[dimension](0)
+      .attr('aria-expanded', true)
+
+    this.$trigger
+      .removeClass('collapsed')
+      .attr('aria-expanded', true)
+
+    this.transitioning = 1
+
+    var complete = function () {
+      this.$element
+        .removeClass('collapsing')
+        .addClass('collapse in')[dimension]('')
+      this.transitioning = 0
+      this.$element
+        .trigger('shown.bs.collapse')
+    }
+
+    if (!$.support.transition) return complete.call(this)
+
+    var scrollSize = $.camelCase(['scroll', dimension].join('-'))
+
+    this.$element
+      .one('bsTransitionEnd', $.proxy(complete, this))
+      .emulateTransitionEnd(Collapse.TRANSITION_DURATION)[dimension](this.$element[0][scrollSize])
+  }
+
+  Collapse.prototype.hide = function () {
+    if (this.transitioning || !this.$element.hasClass('in')) return
+
+    var startEvent = $.Event('hide.bs.collapse')
+    this.$element.trigger(startEvent)
+    if (startEvent.isDefaultPrevented()) return
+
+    var dimension = this.dimension()
+
+    this.$element[dimension](this.$element[dimension]())[0].offsetHeight
+
+    this.$element
+      .addClass('collapsing')
+      .removeClass('collapse in')
+      .attr('aria-expanded', false)
+
+    this.$trigger
+      .addClass('collapsed')
+      .attr('aria-expanded', false)
+
+    this.transitioning = 1
+
+    var complete = function () {
+      this.transitioning = 0
+      this.$element
+        .removeClass('collapsing')
+        .addClass('collapse')
+        .trigger('hidden.bs.collapse')
+    }
+
+    if (!$.support.transition) return complete.call(this)
+
+    this.$element
+      [dimension](0)
+      .one('bsTransitionEnd', $.proxy(complete, this))
+      .emulateTransitionEnd(Collapse.TRANSITION_DURATION)
+  }
+
+  Collapse.prototype.toggle = function () {
+    this[this.$element.hasClass('in') ? 'hide' : 'show']()
+  }
+
+  Collapse.prototype.getParent = function () {
+    return $(this.options.parent)
+      .find('[data-toggle="collapse"][data-parent="' + this.options.parent + '"]')
+      .each($.proxy(function (i, element) {
+        var $element = $(element)
+        this.addAriaAndCollapsedClass(getTargetFromTrigger($element), $element)
+      }, this))
+      .end()
+  }
+
+  Collapse.prototype.addAriaAndCollapsedClass = function ($element, $trigger) {
+    var isOpen = $element.hasClass('in')
+
+    $element.attr('aria-expanded', isOpen)
+    $trigger
+      .toggleClass('collapsed', !isOpen)
+      .attr('aria-expanded', isOpen)
+  }
+
+  function getTargetFromTrigger($trigger) {
+    var href
+    var target = $trigger.attr('data-target')
+      || (href = $trigger.attr('href')) && href.replace(/.*(?=#[^\s]+$)/, '') // strip for ie7
+
+    return $(target)
+  }
+
+
+  // COLLAPSE PLUGIN DEFINITION
+  // ==========================
+
+  function Plugin(option) {
+    return this.each(function () {
+      var $this   = $(this)
+      var data    = $this.data('bs.collapse')
+      var options = $.extend({}, Collapse.DEFAULTS, $this.data(), typeof option == 'object' && option)
+
+      if (!data && options.toggle && /show|hide/.test(option)) options.toggle = false
+      if (!data) $this.data('bs.collapse', (data = new Collapse(this, options)))
+      if (typeof option == 'string') data[option]()
+    })
+  }
+
+  var old = $.fn.collapse
+
+  $.fn.collapse             = Plugin
+  $.fn.collapse.Constructor = Collapse
+
+
+  // COLLAPSE NO CONFLICT
+  // ====================
+
+  $.fn.collapse.noConflict = function () {
+    $.fn.collapse = old
+    return this
+  }
+
+
+  // COLLAPSE DATA-API
+  // =================
+
+  $(document).on('click.bs.collapse.data-api', '[data-toggle="collapse"]', function (e) {
+    var $this   = $(this)
+
+    if (!$this.attr('data-target')) e.preventDefault()
+
+    var $target = getTargetFromTrigger($this)
+    var data    = $target.data('bs.collapse')
+    var option  = data ? 'toggle' : $this.data()
+
+    Plugin.call($target, option)
+  })
+
+}(jQuery);
+</script>
+<script>
+window.initializeCodeFolding = function(show) {
+
+  // handlers for show-all and hide all
+  $("#rmd-show-all-code").click(function() {
+    // close the dropdown menu when an option is clicked
+    $("#allCodeButton").dropdown("toggle");
+    $('div.r-code-collapse').each(function() {
+      $(this).collapse('show');
+    });
+  });
+  $("#rmd-hide-all-code").click(function() {
+    // close the dropdown menu when an option is clicked
+    $("#allCodeButton").dropdown("toggle");
+    $('div.r-code-collapse').each(function() {
+      $(this).collapse('hide');
+    });
+  });
+
+  // index for unique code element ids
+  var currentIndex = 1;
+
+  // select all R code blocks
+  var rCodeBlocks = $('pre.sourceCode, pre.r, pre.python, pre.bash, pre.sql, pre.cpp, pre.stan');
+  rCodeBlocks.each(function() {
+
+    // if code block has been labeled with class `fold-show`, show the code on init!
+    var classList = $(this).attr('class').split(/\s+/);
+    for (var i = 0; i < classList.length; i++) {
+    if (classList[i] === 'fold-show') {
+        show = true;
+      }
+      // AGB add fold-hide
+    if (classList[i] === 'fold-hide') {
+        show = false;
+      }
+    }
+    // AGB
+    // if code block has been labeled with class `fold-hide`, hide the code on init!
+//    var classList = $(this).attr('class').split(/\s+/);
+//    for (var i = 0; i < classList.length; i++) {
+//    if (classList[i] === 'fold-hide') {
+//        show = false;
+//      }
+//    }
+
+    // create a collapsable div to wrap the code in
+    var div = $('<div class="collapse r-code-collapse"></div>');
+    if (show)
+      div.addClass('in');
+    var id = 'rcode-643E0F36' + currentIndex++;
+    div.attr('id', id);
+    $(this).before(div);
+    $(this).detach().appendTo(div);
+
+    // add a show code button right above
+    var showCodeText = $('<span>' + (show ? 'Hide' : 'Code') + '</span>');
+    var showCodeButton = $('<button type="button" class="btn btn-default btn-xs code-folding-btn pull-right"></button>');
+    showCodeButton.append(showCodeText);
+    showCodeButton
+        .attr('data-toggle', 'collapse')
+        .attr('data-target', '#' + id)
+        .attr('aria-expanded', show)
+        .attr('aria-controls', id);
+
+    var buttonRow = $('<div class="row"></div>');
+    var buttonCol = $('<div class="col-md-12"></div>');
+
+    buttonCol.append(showCodeButton);
+    buttonRow.append(buttonCol);
+
+    div.before(buttonRow);
+
+    // hack: return show to false, otherwise all next codeBlocks will be shown!
+    show = true;
+
+    // update state of button on show/hide
+    div.on('hidden.bs.collapse', function () {
+      showCodeText.text('Code');
+    });
+    div.on('show.bs.collapse', function () {
+      showCodeText.text('Hide');
+    });
+  });
+
+}
+</script>
+<script>
+/* ========================================================================
+ * Bootstrap: dropdown.js v3.3.7
+ * http://getbootstrap.com/javascript/#dropdowns
+ * ========================================================================
+ * Copyright 2011-2016 Twitter, Inc.
+ * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+ * ======================================================================== */
+
+
++function ($) {
+  'use strict';
+
+  // DROPDOWN CLASS DEFINITION
+  // =========================
+
+  var backdrop = '.dropdown-backdrop'
+  var toggle   = '[data-toggle="dropdown"]'
+  var Dropdown = function (element) {
+    $(element).on('click.bs.dropdown', this.toggle)
+  }
+
+  Dropdown.VERSION = '3.3.7'
+
+  function getParent($this) {
+    var selector = $this.attr('data-target')
+
+    if (!selector) {
+      selector = $this.attr('href')
+      selector = selector && /#[A-Za-z]/.test(selector) && selector.replace(/.*(?=#[^\s]*$)/, '') // strip for ie7
+    }
+
+    var $parent = selector && $(selector)
+
+    return $parent && $parent.length ? $parent : $this.parent()
+  }
+
+  function clearMenus(e) {
+    if (e && e.which === 3) return
+    $(backdrop).remove()
+    $(toggle).each(function () {
+      var $this         = $(this)
+      var $parent       = getParent($this)
+      var relatedTarget = { relatedTarget: this }
+
+      if (!$parent.hasClass('open')) return
+
+      if (e && e.type == 'click' && /input|textarea/i.test(e.target.tagName) && $.contains($parent[0], e.target)) return
+
+      $parent.trigger(e = $.Event('hide.bs.dropdown', relatedTarget))
+
+      if (e.isDefaultPrevented()) return
+
+      $this.attr('aria-expanded', 'false')
+      $parent.removeClass('open').trigger($.Event('hidden.bs.dropdown', relatedTarget))
+    })
+  }
+
+  Dropdown.prototype.toggle = function (e) {
+    var $this = $(this)
+
+    if ($this.is('.disabled, :disabled')) return
+
+    var $parent  = getParent($this)
+    var isActive = $parent.hasClass('open')
+
+    clearMenus()
+
+    if (!isActive) {
+      if ('ontouchstart' in document.documentElement && !$parent.closest('.navbar-nav').length) {
+        // if mobile we use a backdrop because click events don't delegate
+        $(document.createElement('div'))
+          .addClass('dropdown-backdrop')
+          .insertAfter($(this))
+          .on('click', clearMenus)
+      }
+
+      var relatedTarget = { relatedTarget: this }
+      $parent.trigger(e = $.Event('show.bs.dropdown', relatedTarget))
+
+      if (e.isDefaultPrevented()) return
+
+      $this
+        .trigger('focus')
+        .attr('aria-expanded', 'true')
+
+      $parent
+        .toggleClass('open')
+        .trigger($.Event('shown.bs.dropdown', relatedTarget))
+    }
+
+    return false
+  }
+
+  Dropdown.prototype.keydown = function (e) {
+    if (!/(38|40|27|32)/.test(e.which) || /input|textarea/i.test(e.target.tagName)) return
+
+    var $this = $(this)
+
+    e.preventDefault()
+    e.stopPropagation()
+
+    if ($this.is('.disabled, :disabled')) return
+
+    var $parent  = getParent($this)
+    var isActive = $parent.hasClass('open')
+
+    if (!isActive && e.which != 27 || isActive && e.which == 27) {
+      if (e.which == 27) $parent.find(toggle).trigger('focus')
+      return $this.trigger('click')
+    }
+
+    var desc = ' li:not(.disabled):visible a'
+    var $items = $parent.find('.dropdown-menu' + desc)
+
+    if (!$items.length) return
+
+    var index = $items.index(e.target)
+
+    if (e.which == 38 && index > 0)                 index--         // up
+    if (e.which == 40 && index < $items.length - 1) index++         // down
+    if (!~index)                                    index = 0
+
+    $items.eq(index).trigger('focus')
+  }
+
+
+  // DROPDOWN PLUGIN DEFINITION
+  // ==========================
+
+  function Plugin(option) {
+    return this.each(function () {
+      var $this = $(this)
+      var data  = $this.data('bs.dropdown')
+
+      if (!data) $this.data('bs.dropdown', (data = new Dropdown(this)))
+      if (typeof option == 'string') data[option].call($this)
+    })
+  }
+
+  var old = $.fn.dropdown
+
+  $.fn.dropdown             = Plugin
+  $.fn.dropdown.Constructor = Dropdown
+
+
+  // DROPDOWN NO CONFLICT
+  // ====================
+
+  $.fn.dropdown.noConflict = function () {
+    $.fn.dropdown = old
+    return this
+  }
+
+
+  // APPLY TO STANDARD DROPDOWN ELEMENTS
+  // ===================================
+
+  $(document)
+    .on('click.bs.dropdown.data-api', clearMenus)
+    .on('click.bs.dropdown.data-api', '.dropdown form', function (e) { e.stopPropagation() })
+    .on('click.bs.dropdown.data-api', toggle, Dropdown.prototype.toggle)
+    .on('keydown.bs.dropdown.data-api', toggle, Dropdown.prototype.keydown)
+    .on('keydown.bs.dropdown.data-api', '.dropdown-menu', Dropdown.prototype.keydown)
+
+}(jQuery);
+</script>
+<style type="text/css">
+.code-folding-btn {
+  margin-bottom: 4px;
+}
+
+.row { display: flex; }
+.collapse { display: none; }
+.in { display:block }
+.pull-right > .dropdown-menu {
+    right: 0;
+    left: auto;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1000;
+    display: none;
+    float: left;
+    min-width: 160px;
+    padding: 5px 0;
+    margin: 2px 0 0;
+    font-size: 14px;
+    text-align: left;
+    list-style: none;
+    background-color: #fff;
+    -webkit-background-clip: padding-box;
+    background-clip: padding-box;
+    border: 1px solid #ccc;
+    border: 1px solid rgba(0,0,0,.15);
+    border-radius: 4px;
+    -webkit-box-shadow: 0 6px 12px rgba(0,0,0,.175);
+    box-shadow: 0 6px 12px rgba(0,0,0,.175);
+}
+
+.open > .dropdown-menu {
+    display: block;
+    color: #ffffff;
+    background-color: #ffffff;
+    background-image: none;
+    border-color: #92897e;
+}
+
+.dropdown-menu > li > a {
+  display: block;
+  padding: 3px 20px;
+  clear: both;
+  font-weight: 400;
+  line-height: 1.42857143;
+  color: #000000;
+  white-space: nowrap;
+}
+
+.dropdown-menu > li > a:hover,
+.dropdown-menu > li > a:focus {
+  color: #ffffff;
+  text-decoration: none;
+  background-color: #e95420;
+}
+
+.dropdown-menu > .active > a,
+.dropdown-menu > .active > a:hover,
+.dropdown-menu > .active > a:focus {
+  color: #ffffff;
+  text-decoration: none;
+  background-color: #e95420;
+  outline: 0;
+}
+.dropdown-menu > .disabled > a,
+.dropdown-menu > .disabled > a:hover,
+.dropdown-menu > .disabled > a:focus {
+  color: #aea79f;
+}
+
+.dropdown-menu > .disabled > a:hover,
+.dropdown-menu > .disabled > a:focus {
+  text-decoration: none;
+  cursor: not-allowed;
+  background-color: transparent;
+  background-image: none;
+  filter: progid:DXImageTransform.Microsoft.gradient(enabled = false);
+}
+
+.btn {
+  display: inline-block;
+  margin-bottom: 1;
+  font-weight: normal;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  -ms-touch-action: manipulation;
+      touch-action: manipulation;
+  cursor: pointer;
+  background-image: none;
+  border: 1px solid transparent;
+  padding: 4px 8px;
+  font-size: 14px;
+  line-height: 1.42857143;
+  border-radius: 4px;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.btn:focus,
+.btn:active:focus,
+.btn.active:focus,
+.btn.focus,
+.btn:active.focus,
+.btn.active.focus {
+  outline: 5px auto -webkit-focus-ring-color;
+  outline-offset: -2px;
+}
+.btn:hover,
+.btn:focus,
+.btn.focus {
+  color: #ffffff;
+  text-decoration: none;
+}
+.btn:active,
+.btn.active {
+  background-image: none;
+  outline: 0;
+  box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+}
+.btn.disabled,
+.btn[disabled],
+fieldset[disabled] .btn {
+  cursor: not-allowed;
+  filter: alpha(opacity=65);
+  opacity: 0.65;
+  box-shadow: none;
+}
+a.btn.disabled,
+fieldset[disabled] a.btn {
+  pointer-events: none;
+}
+.btn-default {
+  color: #ffffff;
+  background-color: #aea79f; #important
+  border-color: #aea79f;
+}
+
+.btn-default:focus,
+.btn-default.focus {
+  color: #ffffff;
+  background-color: #978e83;
+  border-color: #6f675e;
+}
+
+.btn-default:hover {
+  color: #ffffff;
+  background-color: #978e83;
+  border-color: #92897e;
+}
+.btn-default:active,
+.btn-default.active,
+.btn-group > .btn:not(:first-child):not(:last-child):not(.dropdown-toggle) {
+  border-radius: 0;
+}
+.btn-group > .btn:first-child {
+  margin-left: 0;
+}
+.btn-group > .btn:first-child:not(:last-child):not(.dropdown-toggle) {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.btn-group > .btn:last-child:not(:first-child),
+.btn-group > .dropdown-toggle:not(:first-child) {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+.btn-group > .btn-group {
+  float: left;
+}
+.btn-group > .btn-group:not(:first-child):not(:last-child) > .btn {
+  border-radius: 0;
+}
+.btn-group > .btn-group:first-child:not(:last-child) > .btn:last-child,
+.btn-group > .btn-group:first-child:not(:last-child) > .dropdown-toggle {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.btn-group > .btn-group:last-child:not(:first-child) > .btn:first-child {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+.btn-group .dropdown-toggle:active,
+.btn-group.open .dropdown-toggle {
+  outline: 0;
+}
+.btn-group > .btn + .dropdown-toggle {
+  padding-right: 8px;
+  padding-left: 8px;
+}
+.btn-group > .btn-lg + .dropdown-toggle {
+  padding-right: 12px;
+  padding-left: 12px;
+}
+.btn-group.open .dropdown-toggle {
+  box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+}
+.btn-group.open .dropdown-toggle.btn-link {
+  box-shadow: none;
+}
+
+</style>
+<script>
+var str = '<div class="btn-group pull-right" style="position: fixed; right: 50px; top: 10px; z-index: 200"><button type="button" class="btn btn-default btn-xs dropdown-toggle" id="allCodeButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" data-_extension-text-contrast=""><span>Code</span> <span class="caret"></span></button><ul class="dropdown-menu" style="min-width: 50px;"><li><a id="rmd-show-all-code" href="#">Show All Code</a></li><li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li></ul></div>';
+document.write(str);
+</script>
+<script>
+$(document).ready(function () {
+  // AGB add fold-hide changed === to !== to default to showing code
+  window.initializeCodeFolding("show" !== "hide");
+});
+</script>
+
+
+<style type="text/css">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<style type="text/css">
+  
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+</style>
+
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Welcome</a>
+<ul>
+<li class="chapter" data-level="1.1" data-path="index.html"><a href="index.html#how-to-use-these-notes"><i class="fa fa-check"></i><b>1.1</b> How to Use These Notes</a></li>
+<li class="chapter" data-level="1.2" data-path="index.html"><a href="index.html#whats-in-these-notes"><i class="fa fa-check"></i><b>1.2</b> What’s in These Notes</a></li>
+<li class="chapter" data-level="1.3" data-path="index.html"><a href="index.html#technical-setup"><i class="fa fa-check"></i><b>1.3</b> Technical Setup</a>
+<ul>
+<li class="chapter" data-level="1.3.1" data-path="index.html"><a href="index.html#project-structure"><i class="fa fa-check"></i><b>1.3.1</b> Project Structure</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="bootstrapping.html"><a href="bootstrapping.html"><i class="fa fa-check"></i><b>2</b> Bootstrapping</a>
+<ul>
+<li class="chapter" data-level="2.1" data-path="bootstrapping.html"><a href="bootstrapping.html#big-idea"><i class="fa fa-check"></i><b>2.1</b> Big Idea</a></li>
+<li class="chapter" data-level="2.2" data-path="bootstrapping.html"><a href="bootstrapping.html#reading"><i class="fa fa-check"></i><b>2.2</b> Reading</a></li>
+<li class="chapter" data-level="2.3" data-path="bootstrapping.html"><a href="bootstrapping.html#methods-as-historical-artifacts"><i class="fa fa-check"></i><b>2.3</b> Methods as Historical Artifacts</a></li>
+<li class="chapter" data-level="2.4" data-path="bootstrapping.html"><a href="bootstrapping.html#packages"><i class="fa fa-check"></i><b>2.4</b> Packages</a></li>
+<li class="chapter" data-level="2.5" data-path="bootstrapping.html"><a href="bootstrapping.html#a-worked-example-bootstrapping-a-mean"><i class="fa fa-check"></i><b>2.5</b> A Worked Example: Bootstrapping a Mean</a>
+<ul>
+<li class="chapter" data-level="2.5.1" data-path="bootstrapping.html"><a href="bootstrapping.html#the-tiny-observed-data"><i class="fa fa-check"></i><b>2.5.1</b> The (tiny) observed data</a></li>
+<li class="chapter" data-level="2.5.2" data-path="bootstrapping.html"><a href="bootstrapping.html#resampling-with-replacement"><i class="fa fa-check"></i><b>2.5.2</b> Resampling with replacement</a></li>
+</ul></li>
+<li class="chapter" data-level="2.6" data-path="bootstrapping.html"><a href="bootstrapping.html#why-replacement-matters"><i class="fa fa-check"></i><b>2.6</b> Why replacement matters</a>
+<ul>
+<li class="chapter" data-level="2.6.1" data-path="bootstrapping.html"><a href="bootstrapping.html#what-we-are-assuming-when-we-bootstrap"><i class="fa fa-check"></i><b>2.6.1</b> What We Are Assuming When We Bootstrap</a></li>
+</ul></li>
+<li class="chapter" data-level="2.7" data-path="bootstrapping.html"><a href="bootstrapping.html#bird-diversity-data"><i class="fa fa-check"></i><b>2.7</b> Bird Diversity Data</a></li>
+<li class="chapter" data-level="2.8" data-path="bootstrapping.html"><a href="bootstrapping.html#diversity"><i class="fa fa-check"></i><b>2.8</b> Diversity</a></li>
+<li class="chapter" data-level="2.9" data-path="bootstrapping.html"><a href="bootstrapping.html#roll-your-own-bootstrap-for-one-habitat"><i class="fa fa-check"></i><b>2.9</b> Roll your own bootstrap for one habitat</a>
+<ul>
+<li class="chapter" data-level="2.9.1" data-path="bootstrapping.html"><a href="bootstrapping.html#do-it-with-boot"><i class="fa fa-check"></i><b>2.9.1</b> Do it with <code>boot</code></a></li>
+</ul></li>
+<li class="chapter" data-level="2.10" data-path="bootstrapping.html"><a href="bootstrapping.html#your-work"><i class="fa fa-check"></i><b>2.10</b> Your work</a></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="permutation.html"><a href="permutation.html"><i class="fa fa-check"></i><b>3</b> Permutation</a>
+<ul>
+<li class="chapter" data-level="3.1" data-path="permutation.html"><a href="permutation.html#big-picture"><i class="fa fa-check"></i><b>3.1</b> Big Picture</a></li>
+<li class="chapter" data-level="3.2" data-path="permutation.html"><a href="permutation.html#reading-1"><i class="fa fa-check"></i><b>3.2</b> Reading</a></li>
+<li class="chapter" data-level="3.3" data-path="permutation.html"><a href="permutation.html#methods-as-historical-artifacts-1"><i class="fa fa-check"></i><b>3.3</b> Methods as Historical Artifacts</a></li>
+<li class="chapter" data-level="3.4" data-path="permutation.html"><a href="permutation.html#packages-1"><i class="fa fa-check"></i><b>3.4</b> Packages</a></li>
+<li class="chapter" data-level="3.5" data-path="permutation.html"><a href="permutation.html#alpaca-sim"><i class="fa fa-check"></i><b>3.5</b> Alpaca sim</a>
+<ul>
+<li class="chapter" data-level="3.5.1" data-path="permutation.html"><a href="permutation.html#data"><i class="fa fa-check"></i><b>3.5.1</b> Data</a></li>
+<li class="chapter" data-level="3.5.2" data-path="permutation.html"><a href="permutation.html#test-statistic"><i class="fa fa-check"></i><b>3.5.2</b> Test statistic</a></li>
+<li class="chapter" data-level="3.5.3" data-path="permutation.html"><a href="permutation.html#randomize-group-membership"><i class="fa fa-check"></i><b>3.5.3</b> Randomize group membership</a></li>
+<li class="chapter" data-level="3.5.4" data-path="permutation.html"><a href="permutation.html#run-many-random-permutations"><i class="fa fa-check"></i><b>3.5.4</b> Run many random permutations</a></li>
+<li class="chapter" data-level="3.5.5" data-path="permutation.html"><a href="permutation.html#assess-the-results"><i class="fa fa-check"></i><b>3.5.5</b> Assess the results</a></li>
+</ul></li>
+<li class="chapter" data-level="3.6" data-path="permutation.html"><a href="permutation.html#your-work-1"><i class="fa fa-check"></i><b>3.6</b> Your work</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html"><i class="fa fa-check"></i><b>4</b> Always Be Cross Validating (ABCv)</a>
+<ul>
+<li class="chapter" data-level="4.1" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#big-idea-1"><i class="fa fa-check"></i><b>4.1</b> Big Idea</a></li>
+<li class="chapter" data-level="4.2" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#packages-2"><i class="fa fa-check"></i><b>4.2</b> Packages</a></li>
+<li class="chapter" data-level="4.3" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#reading-2"><i class="fa fa-check"></i><b>4.3</b> Reading</a></li>
+<li class="chapter" data-level="4.4" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#overfitting-and-underfitting"><i class="fa fa-check"></i><b>4.4</b> Overfitting and Underfitting</a></li>
+<li class="chapter" data-level="4.5" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#a-worked-example"><i class="fa fa-check"></i><b>4.5</b> A worked example</a></li>
+<li class="chapter" data-level="4.6" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#holdouts-divide-and-conquer-train-and-test"><i class="fa fa-check"></i><b>4.6</b> Holdouts, divide and conquer, train and test</a></li>
+<li class="chapter" data-level="4.7" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#doing-k-fold-cross-validation"><i class="fa fa-check"></i><b>4.7</b> Doing k-fold cross validation</a>
+<ul>
+<li class="chapter" data-level="4.7.1" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#aside-is-this-the-same-as-bootstrapping-or-permutation"><i class="fa fa-check"></i><b>4.7.1</b> Aside: Is this the same as bootstrapping? Or permutation?</a></li>
+</ul></li>
+<li class="chapter" data-level="4.8" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#doing-loocv"><i class="fa fa-check"></i><b>4.8</b> Doing LOOCV?</a></li>
+<li class="chapter" data-level="4.9" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#what-about-repeating-k-fold"><i class="fa fa-check"></i><b>4.9</b> What about repeating k-fold?</a></li>
+<li class="chapter" data-level="4.10" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#caret-classification-and-regression-training"><i class="fa fa-check"></i><b>4.10</b> <code>caret</code>: Classification And REgression Training</a></li>
+<li class="chapter" data-level="4.11" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#final-thoughts-abcv"><i class="fa fa-check"></i><b>4.11</b> Final thoughts: ABCv</a></li>
+<li class="chapter" data-level="4.12" data-path="always-be-cross-validating-abcv.html"><a href="always-be-cross-validating-abcv.html#your-work-2"><i class="fa fa-check"></i><b>4.12</b> Your Work</a></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html"><i class="fa fa-check"></i><b>5</b> Classifying with kNN</a>
+<ul>
+<li class="chapter" data-level="5.1" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#big-idea-2"><i class="fa fa-check"></i><b>5.1</b> Big Idea</a></li>
+<li class="chapter" data-level="5.2" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#packages-3"><i class="fa fa-check"></i><b>5.2</b> Packages</a></li>
+<li class="chapter" data-level="5.3" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#reading-3"><i class="fa fa-check"></i><b>5.3</b> Reading</a></li>
+<li class="chapter" data-level="5.4" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#classification-voting-by-distance"><i class="fa fa-check"></i><b>5.4</b> Classification Voting by Distance</a></li>
+<li class="chapter" data-level="5.5" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#high-dimensional-space"><i class="fa fa-check"></i><b>5.5</b> High Dimensional Space</a>
+<ul>
+<li class="chapter" data-level="5.5.1" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#euclidean-distance"><i class="fa fa-check"></i><b>5.5.1</b> Euclidean Distance</a></li>
+<li class="chapter" data-level="5.5.2" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#space-in-knn"><i class="fa fa-check"></i><b>5.5.2</b> Space in kNN</a></li>
+</ul></li>
+<li class="chapter" data-level="5.6" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#the-knn-algorithm"><i class="fa fa-check"></i><b>5.6</b> The kNN Algorithm</a>
+<ul>
+<li class="chapter" data-level="5.6.1" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#eat-your-fruits-and-veggies"><i class="fa fa-check"></i><b>5.6.1</b> Eat Your Fruits and Veggies</a></li>
+</ul></li>
+<li class="chapter" data-level="5.7" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#other-tidbits"><i class="fa fa-check"></i><b>5.7</b> Other Tidbits</a>
+<ul>
+<li class="chapter" data-level="5.7.1" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#rescaling"><i class="fa fa-check"></i><b>5.7.1</b> Rescaling</a></li>
+<li class="chapter" data-level="5.7.2" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#categorical-predictors"><i class="fa fa-check"></i><b>5.7.2</b> Categorical Predictors</a></li>
+</ul></li>
+<li class="chapter" data-level="5.8" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#worked-example"><i class="fa fa-check"></i><b>5.8</b> Worked Example</a>
+<ul>
+<li class="chapter" data-level="5.8.1" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#diagnostic-wisconsin-breast-cancer-database"><i class="fa fa-check"></i><b>5.8.1</b> Diagnostic Wisconsin Breast Cancer Database</a></li>
+<li class="chapter" data-level="5.8.2" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#traintest"><i class="fa fa-check"></i><b>5.8.2</b> Train/Test</a></li>
+<li class="chapter" data-level="5.8.3" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#run-knn"><i class="fa fa-check"></i><b>5.8.3</b> Run kNN</a></li>
+<li class="chapter" data-level="5.8.4" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#the-confusion-matrix"><i class="fa fa-check"></i><b>5.8.4</b> The Confusion Matrix</a></li>
+<li class="chapter" data-level="5.8.5" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#some-interp"><i class="fa fa-check"></i><b>5.8.5</b> Some Interp</a></li>
+</ul></li>
+<li class="chapter" data-level="5.9" data-path="classifying-with-knn.html"><a href="classifying-with-knn.html#your-work-3"><i class="fa fa-check"></i><b>5.9</b> Your Work</a></li>
+</ul></li>
+<li class="chapter" data-level="6" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html"><i class="fa fa-check"></i><b>6</b> Classifying with Decision Trees</a>
+<ul>
+<li class="chapter" data-level="6.1" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#big-idea-3"><i class="fa fa-check"></i><b>6.1</b> Big Idea</a></li>
+<li class="chapter" data-level="6.2" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#packages-4"><i class="fa fa-check"></i><b>6.2</b> Packages</a></li>
+<li class="chapter" data-level="6.3" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#reading-4"><i class="fa fa-check"></i><b>6.3</b> Reading</a></li>
+<li class="chapter" data-level="6.4" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#growing-and-pruning"><i class="fa fa-check"></i><b>6.4</b> Growing and Pruning</a></li>
+<li class="chapter" data-level="6.5" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#entropy-and-information-gain"><i class="fa fa-check"></i><b>6.5</b> Entropy and Information Gain</a></li>
+<li class="chapter" data-level="6.6" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#toy-example"><i class="fa fa-check"></i><b>6.6</b> Toy Example</a>
+<ul>
+<li class="chapter" data-level="6.6.1" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#entropy"><i class="fa fa-check"></i><b>6.6.1</b> Entropy</a></li>
+<li class="chapter" data-level="6.6.2" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#getting-to-information-gain"><i class="fa fa-check"></i><b>6.6.2</b> Getting to Information Gain</a></li>
+<li class="chapter" data-level="6.6.3" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#deciding-on-a-split"><i class="fa fa-check"></i><b>6.6.3</b> Deciding on a Split</a></li>
+<li class="chapter" data-level="6.6.4" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#information-gain-splits-on-continuous-data"><i class="fa fa-check"></i><b>6.6.4</b> Information Gain Splits on Continuous Data</a></li>
+</ul></li>
+<li class="chapter" data-level="6.7" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#a-real-example"><i class="fa fa-check"></i><b>6.7</b> A Real Example</a>
+<ul>
+<li class="chapter" data-level="6.7.1" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#go-fish"><i class="fa fa-check"></i><b>6.7.1</b> Go Fish</a></li>
+<li class="chapter" data-level="6.7.2" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#fish-finder"><i class="fa fa-check"></i><b>6.7.2</b> Fish Finder</a></li>
+<li class="chapter" data-level="6.7.3" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#visualizing-the-tree"><i class="fa fa-check"></i><b>6.7.3</b> Visualizing the Tree</a></li>
+<li class="chapter" data-level="6.7.4" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#train-and-test"><i class="fa fa-check"></i><b>6.7.4</b> Train and Test</a></li>
+</ul></li>
+<li class="chapter" data-level="6.8" data-path="classifying-with-decision-trees.html"><a href="classifying-with-decision-trees.html#your-work-4"><i class="fa fa-check"></i><b>6.8</b> Your Work</a></li>
+</ul></li>
+<li class="chapter" data-level="7" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html"><i class="fa fa-check"></i><b>7</b> Continuous Prediction with Regression Trees</a>
+<ul>
+<li class="chapter" data-level="7.1" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#big-idea-4"><i class="fa fa-check"></i><b>7.1</b> Big Idea</a></li>
+<li class="chapter" data-level="7.2" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#packages-5"><i class="fa fa-check"></i><b>7.2</b> Packages</a></li>
+<li class="chapter" data-level="7.3" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#reading-5"><i class="fa fa-check"></i><b>7.3</b> Reading</a></li>
+<li class="chapter" data-level="7.4" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#growing-and-pruning-1"><i class="fa fa-check"></i><b>7.4</b> Growing and Pruning</a></li>
+<li class="chapter" data-level="7.5" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#weird-tree-terms-model-trees-use-regression-but-regression-trees-dont"><i class="fa fa-check"></i><b>7.5</b> Weird Tree Terms: Model Trees Use Regression but Regression Trees Don’t</a></li>
+<li class="chapter" data-level="7.6" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#toy-example-splitting-continuous-variables"><i class="fa fa-check"></i><b>7.6</b> Toy Example: Splitting Continuous Variables</a>
+<ul>
+<li class="chapter" data-level="7.6.1" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#iteration-1"><i class="fa fa-check"></i><b>7.6.1</b> Iteration 1</a></li>
+<li class="chapter" data-level="7.6.2" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#iteration-2"><i class="fa fa-check"></i><b>7.6.2</b> Iteration 2</a></li>
+<li class="chapter" data-level="7.6.3" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#iteration-3"><i class="fa fa-check"></i><b>7.6.3</b> Iteration 3</a></li>
+<li class="chapter" data-level="7.6.4" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#loop-it"><i class="fa fa-check"></i><b>7.6.4</b> Loop It</a></li>
+<li class="chapter" data-level="7.6.5" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#describing-the-first-split"><i class="fa fa-check"></i><b>7.6.5</b> Describing the First Split</a></li>
+<li class="chapter" data-level="7.6.6" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#another-split"><i class="fa fa-check"></i><b>7.6.6</b> Another Split?</a></li>
+<li class="chapter" data-level="7.6.7" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#are-we-done-now"><i class="fa fa-check"></i><b>7.6.7</b> Are We Done Now?</a></li>
+</ul></li>
+<li class="chapter" data-level="7.7" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#regression-tree-example-lead-levels-in-st-louis"><i class="fa fa-check"></i><b>7.7</b> Regression Tree Example: Lead Levels in St Louis</a></li>
+<li class="chapter" data-level="7.8" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#model-tree-example-lead-levels-in-st-louis"><i class="fa fa-check"></i><b>7.8</b> Model Tree Example: Lead Levels in St Louis</a></li>
+<li class="chapter" data-level="7.9" data-path="continuous-prediction-with-regression-trees.html"><a href="continuous-prediction-with-regression-trees.html#your-work-5"><i class="fa fa-check"></i><b>7.9</b> Your Work</a></li>
+</ul></li>
+<li class="chapter" data-level="8" data-path="neural-nets.html"><a href="neural-nets.html"><i class="fa fa-check"></i><b>8</b> Neural Nets</a>
+<ul>
+<li class="chapter" data-level="8.1" data-path="neural-nets.html"><a href="neural-nets.html#big-idea-5"><i class="fa fa-check"></i><b>8.1</b> Big Idea</a></li>
+<li class="chapter" data-level="8.2" data-path="neural-nets.html"><a href="neural-nets.html#packages-6"><i class="fa fa-check"></i><b>8.2</b> Packages</a></li>
+<li class="chapter" data-level="8.3" data-path="neural-nets.html"><a href="neural-nets.html#reading-6"><i class="fa fa-check"></i><b>8.3</b> Reading</a></li>
+<li class="chapter" data-level="8.4" data-path="neural-nets.html"><a href="neural-nets.html#punting"><i class="fa fa-check"></i><b>8.4</b> Punting</a></li>
+<li class="chapter" data-level="8.5" data-path="neural-nets.html"><a href="neural-nets.html#example-here-comes-the-sun"><i class="fa fa-check"></i><b>8.5</b> Example: Here Comes the Sun</a></li>
+<li class="chapter" data-level="8.6" data-path="neural-nets.html"><a href="neural-nets.html#train-and-test-1"><i class="fa fa-check"></i><b>8.6</b> Train and Test</a></li>
+<li class="chapter" data-level="8.7" data-path="neural-nets.html"><a href="neural-nets.html#regression-tree"><i class="fa fa-check"></i><b>8.7</b> Regression Tree</a></li>
+<li class="chapter" data-level="8.8" data-path="neural-nets.html"><a href="neural-nets.html#big-fancy-squiggle-fitting-machine-aka-neural-network"><i class="fa fa-check"></i><b>8.8</b> Big Fancy Squiggle Fitting Machine aka Neural Network</a></li>
+<li class="chapter" data-level="8.9" data-path="neural-nets.html"><a href="neural-nets.html#your-work-6"><i class="fa fa-check"></i><b>8.9</b> Your Work</a></li>
+</ul></li>
+<li class="chapter" data-level="9" data-path="aside-animate-a-nn.html"><a href="aside-animate-a-nn.html"><i class="fa fa-check"></i><b>9</b> Aside: Animate a NN</a>
+<ul>
+<li class="chapter" data-level="9.1" data-path="aside-animate-a-nn.html"><a href="aside-animate-a-nn.html#libraries"><i class="fa fa-check"></i><b>9.1</b> Libraries</a></li>
+<li class="chapter" data-level="9.2" data-path="aside-animate-a-nn.html"><a href="aside-animate-a-nn.html#the-data"><i class="fa fa-check"></i><b>9.2</b> The Data</a></li>
+<li class="chapter" data-level="9.3" data-path="aside-animate-a-nn.html"><a href="aside-animate-a-nn.html#predicting"><i class="fa fa-check"></i><b>9.3</b> Predicting</a></li>
+<li class="chapter" data-level="9.4" data-path="aside-animate-a-nn.html"><a href="aside-animate-a-nn.html#animate"><i class="fa fa-check"></i><b>9.4</b> Animate</a></li>
+</ul></li>
+<li class="chapter" data-level="10" data-path="improving-model-performance.html"><a href="improving-model-performance.html"><i class="fa fa-check"></i><b>10</b> Improving Model Performance</a>
+<ul>
+<li class="chapter" data-level="10.1" data-path="improving-model-performance.html"><a href="improving-model-performance.html#big-idea-many-models-beat-one-model"><i class="fa fa-check"></i><b>10.1</b> Big Idea: Many Models Beat One Model</a>
+<ul>
+<li class="chapter" data-level="10.1.1" data-path="improving-model-performance.html"><a href="improving-model-performance.html#why-bagging-works-well-for-trees"><i class="fa fa-check"></i><b>10.1.1</b> Why Bagging Works Well for Trees</a></li>
+</ul></li>
+<li class="chapter" data-level="10.2" data-path="improving-model-performance.html"><a href="improving-model-performance.html#packages-7"><i class="fa fa-check"></i><b>10.2</b> Packages</a></li>
+<li class="chapter" data-level="10.3" data-path="improving-model-performance.html"><a href="improving-model-performance.html#reading-7"><i class="fa fa-check"></i><b>10.3</b> Reading</a></li>
+<li class="chapter" data-level="10.4" data-path="improving-model-performance.html"><a href="improving-model-performance.html#decision-tree-to-bagging-to-tuning"><i class="fa fa-check"></i><b>10.4</b> Decision Tree to Bagging to Tuning</a>
+<ul>
+<li class="chapter" data-level="10.4.1" data-path="improving-model-performance.html"><a href="improving-model-performance.html#the-modeling-ladder"><i class="fa fa-check"></i><b>10.4.1</b> The Modeling Ladder</a></li>
+<li class="chapter" data-level="10.4.2" data-path="improving-model-performance.html"><a href="improving-model-performance.html#fish-your-wish"><i class="fa fa-check"></i><b>10.4.2</b> Fish Your Wish</a></li>
+<li class="chapter" data-level="10.4.3" data-path="improving-model-performance.html"><a href="improving-model-performance.html#train-and-test-2"><i class="fa fa-check"></i><b>10.4.3</b> Train and Test</a></li>
+<li class="chapter" data-level="10.4.4" data-path="improving-model-performance.html"><a href="improving-model-performance.html#straight-decision-tree"><i class="fa fa-check"></i><b>10.4.4</b> Straight Decision Tree</a></li>
+<li class="chapter" data-level="10.4.5" data-path="improving-model-performance.html"><a href="improving-model-performance.html#bagging"><i class="fa fa-check"></i><b>10.4.5</b> Bagging</a></li>
+<li class="chapter" data-level="10.4.6" data-path="improving-model-performance.html"><a href="improving-model-performance.html#random-forest-aka-randomforest-aka-rf"><i class="fa fa-check"></i><b>10.4.6</b> Random Forest (aka randomForest, aka rF)</a></li>
+<li class="chapter" data-level="10.4.7" data-path="improving-model-performance.html"><a href="improving-model-performance.html#a-tuned-random-forest"><i class="fa fa-check"></i><b>10.4.7</b> A Tuned Random Forest</a></li>
+<li class="chapter" data-level="10.4.8" data-path="improving-model-performance.html"><a href="improving-model-performance.html#skill"><i class="fa fa-check"></i><b>10.4.8</b> Skill</a></li>
+</ul></li>
+<li class="chapter" data-level="10.5" data-path="improving-model-performance.html"><a href="improving-model-performance.html#takeaway"><i class="fa fa-check"></i><b>10.5</b> Takeaway</a></li>
+<li class="chapter" data-level="10.6" data-path="improving-model-performance.html"><a href="improving-model-performance.html#but-where-is-the-tree"><i class="fa fa-check"></i><b>10.6</b> But where is the tree?</a>
+<ul>
+<li class="chapter" data-level="10.6.1" data-path="improving-model-performance.html"><a href="improving-model-performance.html#how-can-they-predict-new-data"><i class="fa fa-check"></i><b>10.6.1</b> How can they predict new data?</a></li>
+<li class="chapter" data-level="10.6.2" data-path="improving-model-performance.html"><a href="improving-model-performance.html#which-trees-are-used"><i class="fa fa-check"></i><b>10.6.2</b> Which trees are used?</a></li>
+</ul></li>
+<li class="chapter" data-level="10.7" data-path="improving-model-performance.html"><a href="improving-model-performance.html#your-work-7"><i class="fa fa-check"></i><b>10.7</b> Your Work</a></li>
+<li class="chapter" data-level="10.8" data-path="improving-model-performance.html"><a href="improving-model-performance.html#postscript-boosting-and-stacking"><i class="fa fa-check"></i><b>10.8</b> Postscript: Boosting and Stacking</a>
+<ul>
+<li class="chapter" data-level="10.8.1" data-path="improving-model-performance.html"><a href="improving-model-performance.html#boosting"><i class="fa fa-check"></i><b>10.8.1</b> Boosting</a></li>
+</ul></li>
+<li class="chapter" data-level="10.9" data-path="improving-model-performance.html"><a href="improving-model-performance.html#stacking-briefly"><i class="fa fa-check"></i><b>10.9</b> Stacking (briefly)</a></li>
+</ul></li>
+<li class="chapter" data-level="11" data-path="eigen-faces.html"><a href="eigen-faces.html"><i class="fa fa-check"></i><b>11</b> Eigen Faces</a>
+<ul>
+<li class="chapter" data-level="11.1" data-path="eigen-faces.html"><a href="eigen-faces.html#big-idea-6"><i class="fa fa-check"></i><b>11.1</b> Big Idea</a></li>
+<li class="chapter" data-level="11.2" data-path="eigen-faces.html"><a href="eigen-faces.html#packages-8"><i class="fa fa-check"></i><b>11.2</b> Packages</a></li>
+<li class="chapter" data-level="11.3" data-path="eigen-faces.html"><a href="eigen-faces.html#reading-8"><i class="fa fa-check"></i><b>11.3</b> Reading</a></li>
+<li class="chapter" data-level="11.4" data-path="eigen-faces.html"><a href="eigen-faces.html#a-bunch-of-mostly-white-guys"><i class="fa fa-check"></i><b>11.4</b> A bunch of mostly white guys</a></li>
+<li class="chapter" data-level="11.5" data-path="eigen-faces.html"><a href="eigen-faces.html#average-face"><i class="fa fa-check"></i><b>11.5</b> Average face</a></li>
+<li class="chapter" data-level="11.6" data-path="eigen-faces.html"><a href="eigen-faces.html#principal-component-analysis"><i class="fa fa-check"></i><b>11.6</b> Principal Component Analysis</a></li>
+<li class="chapter" data-level="11.7" data-path="eigen-faces.html"><a href="eigen-faces.html#mapping-individuals"><i class="fa fa-check"></i><b>11.7</b> Mapping individuals</a></li>
+<li class="chapter" data-level="11.8" data-path="eigen-faces.html"><a href="eigen-faces.html#facial-recognition"><i class="fa fa-check"></i><b>11.8</b> Facial recognition</a>
+<ul>
+<li class="chapter" data-level="11.8.1" data-path="eigen-faces.html"><a href="eigen-faces.html#traintest-1"><i class="fa fa-check"></i><b>11.8.1</b> Train/Test</a></li>
+<li class="chapter" data-level="11.8.2" data-path="eigen-faces.html"><a href="eigen-faces.html#pca-on-training"><i class="fa fa-check"></i><b>11.8.2</b> PCA on training</a></li>
+<li class="chapter" data-level="11.8.3" data-path="eigen-faces.html"><a href="eigen-faces.html#project-the-test-photos"><i class="fa fa-check"></i><b>11.8.3</b> Project the test photos</a></li>
+<li class="chapter" data-level="11.8.4" data-path="eigen-faces.html"><a href="eigen-faces.html#distance"><i class="fa fa-check"></i><b>11.8.4</b> Distance</a></li>
+<li class="chapter" data-level="11.8.5" data-path="eigen-faces.html"><a href="eigen-faces.html#classify"><i class="fa fa-check"></i><b>11.8.5</b> Classify</a></li>
+</ul></li>
+<li class="chapter" data-level="11.9" data-path="eigen-faces.html"><a href="eigen-faces.html#environmental-applications"><i class="fa fa-check"></i><b>11.9</b> Environmental applications</a></li>
+<li class="chapter" data-level="11.10" data-path="eigen-faces.html"><a href="eigen-faces.html#your-work-8"><i class="fa fa-check"></i><b>11.10</b> Your work</a></li>
+</ul></li>
+<li class="chapter" data-level="12" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i><b>12</b> References</a></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Machine Learning for Environmental Science: Notes for ESCI 506</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="continuous-prediction-with-regression-trees" class="section level1 hasAnchor" number="7">
+<h1><span class="header-section-number">7</span> Continuous Prediction with Regression Trees<a href="continuous-prediction-with-regression-trees.html#continuous-prediction-with-regression-trees" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<div id="big-idea-4" class="section level2 hasAnchor" number="7.1">
+<h2><span class="header-section-number">7.1</span> Big Idea<a href="continuous-prediction-with-regression-trees.html#big-idea-4" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Predicting a continuous response is one of two big areas of machine learning (the other being predicting a categorical response – e.g., classification). Like decision trees, regression trees make rules that allow for prediction. These rules come from partitioning the data over and over to get the purest splits possible. It’s a computationally intensive method but it is effective when responses are non-linear and very intuitive. Importantly the tree that is produced can help shed light on processes or mechanisms that create the patterns.</p>
+</div>
+<div id="packages-5" class="section level2 hasAnchor" number="7.2">
+<h2><span class="header-section-number">7.2</span> Packages<a href="continuous-prediction-with-regression-trees.html#packages-5" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div class="sourceCode" id="cb246"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb246-1"><a href="continuous-prediction-with-regression-trees.html#cb246-1" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code></pre></div>
+<pre><code>## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+## ✔ dplyr     1.1.4     ✔ readr     2.1.6
+## ✔ forcats   1.0.1     ✔ stringr   1.6.0
+## ✔ ggplot2   4.0.1     ✔ tibble    3.3.1
+## ✔ lubridate 1.9.4     ✔ tidyr     1.3.2
+## ✔ purrr     1.2.1     
+## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+## ✖ dplyr::filter() masks stats::filter()
+## ✖ dplyr::lag()    masks stats::lag()
+## ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
+<div class="sourceCode" id="cb248"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb248-1"><a href="continuous-prediction-with-regression-trees.html#cb248-1" tabindex="-1"></a><span class="fu">library</span>(rpart)</span>
+<span id="cb248-2"><a href="continuous-prediction-with-regression-trees.html#cb248-2" tabindex="-1"></a><span class="fu">library</span>(Cubist)</span></code></pre></div>
+<pre><code>## Loading required package: lattice</code></pre>
+<div class="sourceCode" id="cb250"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb250-1"><a href="continuous-prediction-with-regression-trees.html#cb250-1" tabindex="-1"></a><span class="fu">library</span>(visNetwork)</span>
+<span id="cb250-2"><a href="continuous-prediction-with-regression-trees.html#cb250-2" tabindex="-1"></a><span class="fu">library</span>(sparkline) <span class="co"># visNetwork might need this</span></span></code></pre></div>
+</div>
+<div id="reading-5" class="section level2 hasAnchor" number="7.3">
+<h2><span class="header-section-number">7.3</span> Reading<a href="continuous-prediction-with-regression-trees.html#reading-5" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Chapter 6: Forecasting Numeric Data – Classification Using Decision Trees and Rules in Machine Learning with R: Expert techniques for predictive modeling, 3rd Edition. Link on Canvas.</p>
+<p>The first 2/3 of the chapter is a review of regression. You can skim that if you want to but it should all be review (albeit, a review laid out in a really nice way including stuff on using matrices that you might not have appreciated before). For this module focus on pages 200-216 which covers regression trees and model trees. We are going to cover the <code>rpart</code> algorithm in this module and explore the <code>cubist</code> algorithm in a little less depth. Like with classification trees, there are roughly a zillion ways to make regression trees and I want you to get the idea of how they are applied.</p>
+<p>Chapter 10: Decision Trees!!! in The StatQuest Illustrated Guide to Machine Learning!!! Focus on part two.</p>
+</div>
+<div id="growing-and-pruning-1" class="section level2 hasAnchor" number="7.4">
+<h2><span class="header-section-number">7.4</span> Growing and Pruning<a href="continuous-prediction-with-regression-trees.html#growing-and-pruning-1" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Just like with classification trees, there are two jobs that take place when making a regression tree. First, you grow the tree by partitioning the data according to some splitting algorithm. That’s what we will focus on here. The “problem” with these algorithms is that they are very effective at partitioning data and thus prone to overfitting. That is, they can accurately model a training data set but make so many fine splits that the data aren’t generalizable to new or withheld data. So the trees have to be pruned by some set of rules to make them more generally applicable. Just like a garden or an orchard, you cultivate growth and then have to weed and prune to get what you want.</p>
+<p>We will focus mostly on the growing of the trees in this module.</p>
+</div>
+<div id="weird-tree-terms-model-trees-use-regression-but-regression-trees-dont" class="section level2 hasAnchor" number="7.5">
+<h2><span class="header-section-number">7.5</span> Weird Tree Terms: Model Trees Use Regression but Regression Trees Don’t<a href="continuous-prediction-with-regression-trees.html#weird-tree-terms-model-trees-use-regression-but-regression-trees-dont" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>We are going to look at both regression trees and model trees in this module and the reading is in a chapter with “regression” in the title. And yet…regression trees (e.g., <code>rpart</code>) don’t really do regression in the sense of OLS regression described in the first part of the chapter. Weird. We find that kind of regression when we build model trees (e.g., <code>cubist</code>). It’s unfortunate that the terms are thrown about like that but that’s the way it is. The reading covers this on page 200 and is worth paying attention to.</p>
+</div>
+<div id="toy-example-splitting-continuous-variables" class="section level2 hasAnchor" number="7.6">
+<h2><span class="header-section-number">7.6</span> Toy Example: Splitting Continuous Variables<a href="continuous-prediction-with-regression-trees.html#toy-example-splitting-continuous-variables" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Recall how the classification tree algorithm we looked at in detail last module used entropy to measure increases in homogeneity in a class. This doesn’t work the same way for a continuous variable (entropy is undefined) so we need a different way of finding increases homogeneity. There are a few different ways of doing this with continuous data and I’ll explain how we can do this by minimizing the total sum of squared residuals (this is where the “regression” comes in as that’s a term and the sum of squares is concept you’ll remember from OLS).</p>
+<p>Here are some data.</p>
+<div class="sourceCode" id="cb251"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb251-1"><a href="continuous-prediction-with-regression-trees.html#cb251-1" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">seq</span>(<span class="sc">-</span><span class="dv">10</span>,<span class="sc">-</span><span class="dv">5</span>,<span class="at">by=</span><span class="fl">0.5</span>),</span>
+<span id="cb251-2"><a href="continuous-prediction-with-regression-trees.html#cb251-2" tabindex="-1"></a>       <span class="fu">seq</span>(<span class="sc">-</span><span class="fl">4.8</span>,<span class="dv">0</span>,<span class="at">by=</span><span class="fl">0.2</span>),</span>
+<span id="cb251-3"><a href="continuous-prediction-with-regression-trees.html#cb251-3" tabindex="-1"></a>       <span class="fu">seq</span>(<span class="fl">0.2</span>,<span class="dv">5</span>,<span class="at">by=</span><span class="fl">0.2</span>),</span>
+<span id="cb251-4"><a href="continuous-prediction-with-regression-trees.html#cb251-4" tabindex="-1"></a>       <span class="fu">seq</span>(<span class="fl">5.5</span>,<span class="dv">10</span>,<span class="at">by=</span><span class="fl">0.5</span>))</span>
+<span id="cb251-5"><a href="continuous-prediction-with-regression-trees.html#cb251-5" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="fu">length</span>(x)</span>
+<span id="cb251-6"><a href="continuous-prediction-with-regression-trees.html#cb251-6" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">/</span>(<span class="dv">1</span><span class="sc">+</span><span class="fu">exp</span>(<span class="sc">-</span>x)) <span class="sc">+</span> <span class="fu">runif</span>(n,<span class="sc">-</span><span class="fl">0.1</span>,<span class="fl">0.1</span>)</span>
+<span id="cb251-7"><a href="continuous-prediction-with-regression-trees.html#cb251-7" tabindex="-1"></a></span>
+<span id="cb251-8"><a href="continuous-prediction-with-regression-trees.html#cb251-8" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb251-9"><a href="continuous-prediction-with-regression-trees.html#cb251-9" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x=</span>x,<span class="at">y=</span>y),<span class="at">size=</span><span class="dv">3</span>)</span></code></pre></div>
+<p><img src="06Discrete2Continuous_files/figure-html/unnamed-chunk-3-1.png" alt="" width="672" /></p>
+<p>These are not data that would do well with linear regression, right? Imagine fitting a straight line. But this is the kind of thing that regression trees are very good at.</p>
+<p>Like all the modeling we’ve been doing in this class, we are trying to predict <span class="math inline">\(y\)</span>. So here, our goal is to find a rule by which we can find thresholds of <span class="math inline">\(x\)</span> that will predict values of <span class="math inline">\(y\)</span>. We call those predicted values <span class="math inline">\(\hat y\)</span>. The function above is a sigmoid and looking at it you’d be able to make the split by eye (the first split is on <span class="math inline">\(x=0\)</span> right?). Here is how we do it in a regression tree:</p>
+<ol style="list-style-type: decimal">
+<li><p>Ask the computer to divide the <span class="math inline">\(x\)</span> data into as many sequential subsets as it can with at least four adjacent points. This number can vary and is up to the user – but four is fine for our example.</p></li>
+<li><p>Get the average values of <span class="math inline">\(y\)</span> for each subset. Call this <span class="math inline">\(\bar y\)</span>.</p></li>
+<li><p>Get the residual values of <span class="math inline">\(y\)</span> as <span class="math inline">\(\sum_i^n (y_i - \bar y)^2\)</span> for each of the two subsets. Note that this is the sum of squared differences of the kind that we find in OLS.</p></li>
+<li><p>Choose the value of <span class="math inline">\(x\)</span> that minimizes the residuals of <span class="math inline">\(y\)</span>.</p></li>
+<li><p>Predict <span class="math inline">\(y\)</span> so that <span class="math inline">\(\hat y = \bar y\)</span> for each split.</p></li>
+</ol>
+<p>Let’s implement this. Let’s find the first split.</p>
+<div id="iteration-1" class="section level3 hasAnchor" number="7.6.1">
+<h3><span class="header-section-number">7.6.1</span> Iteration 1<a href="continuous-prediction-with-regression-trees.html#iteration-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb252"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb252-1"><a href="continuous-prediction-with-regression-trees.html#cb252-1" tabindex="-1"></a>x_left <span class="ot">&lt;-</span> x[<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>]</span>
+<span id="cb252-2"><a href="continuous-prediction-with-regression-trees.html#cb252-2" tabindex="-1"></a>x_right <span class="ot">&lt;-</span> x[<span class="dv">5</span><span class="sc">:</span>n]</span>
+<span id="cb252-3"><a href="continuous-prediction-with-regression-trees.html#cb252-3" tabindex="-1"></a></span>
+<span id="cb252-4"><a href="continuous-prediction-with-regression-trees.html#cb252-4" tabindex="-1"></a>y_left <span class="ot">&lt;-</span> y[<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>]</span>
+<span id="cb252-5"><a href="continuous-prediction-with-regression-trees.html#cb252-5" tabindex="-1"></a>y_right <span class="ot">&lt;-</span> y[<span class="dv">5</span><span class="sc">:</span>n]</span>
+<span id="cb252-6"><a href="continuous-prediction-with-regression-trees.html#cb252-6" tabindex="-1"></a></span>
+<span id="cb252-7"><a href="continuous-prediction-with-regression-trees.html#cb252-7" tabindex="-1"></a>split4plotting <span class="ot">&lt;-</span> (<span class="fu">max</span>(x_left) <span class="sc">+</span> <span class="fu">min</span>(x_right)) <span class="sc">/</span> <span class="dv">2</span></span>
+<span id="cb252-8"><a href="continuous-prediction-with-regression-trees.html#cb252-8" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb252-9"><a href="continuous-prediction-with-regression-trees.html#cb252-9" tabindex="-1"></a>  <span class="fu">geom_rect</span>(<span class="fu">aes</span>(<span class="at">xmin=</span><span class="sc">-</span><span class="cn">Inf</span>,<span class="at">xmax=</span>split4plotting,</span>
+<span id="cb252-10"><a href="continuous-prediction-with-regression-trees.html#cb252-10" tabindex="-1"></a>                <span class="at">ymin=</span><span class="sc">-</span><span class="cn">Inf</span>,<span class="at">ymax=</span><span class="cn">Inf</span>),</span>
+<span id="cb252-11"><a href="continuous-prediction-with-regression-trees.html#cb252-11" tabindex="-1"></a>            <span class="at">fill=</span><span class="st">&quot;lightgreen&quot;</span>, <span class="at">alpha=</span><span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb252-12"><a href="continuous-prediction-with-regression-trees.html#cb252-12" tabindex="-1"></a>  <span class="fu">geom_rect</span>(<span class="fu">aes</span>(<span class="at">xmin=</span>split4plotting,<span class="at">xmax=</span><span class="cn">Inf</span>,</span>
+<span id="cb252-13"><a href="continuous-prediction-with-regression-trees.html#cb252-13" tabindex="-1"></a>                <span class="at">ymin=</span><span class="sc">-</span><span class="cn">Inf</span>,<span class="at">ymax=</span><span class="cn">Inf</span>),</span>
+<span id="cb252-14"><a href="continuous-prediction-with-regression-trees.html#cb252-14" tabindex="-1"></a>            <span class="at">fill=</span><span class="st">&quot;lightblue&quot;</span>, <span class="at">alpha=</span><span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb252-15"><a href="continuous-prediction-with-regression-trees.html#cb252-15" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x=</span>x_left,<span class="at">y=</span>y_left),<span class="at">col=</span><span class="st">&quot;darkgreen&quot;</span>,<span class="at">size=</span><span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb252-16"><a href="continuous-prediction-with-regression-trees.html#cb252-16" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x=</span>x_right,<span class="at">y=</span>y_right),<span class="at">col=</span><span class="st">&quot;darkblue&quot;</span>,<span class="at">size=</span><span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb252-17"><a href="continuous-prediction-with-regression-trees.html#cb252-17" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x=</span><span class="st">&quot;x&quot;</span>,<span class="at">y=</span><span class="st">&quot;y&quot;</span>) <span class="sc">+</span></span>
+<span id="cb252-18"><a href="continuous-prediction-with-regression-trees.html#cb252-18" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">expand =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="fl">0.1</span>)) <span class="sc">+</span></span>
+<span id="cb252-19"><a href="continuous-prediction-with-regression-trees.html#cb252-19" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">ylim=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>),<span class="at">clip =</span> <span class="st">&quot;off&quot;</span>)</span>
+<span id="cb252-20"><a href="continuous-prediction-with-regression-trees.html#cb252-20" tabindex="-1"></a></span>
+<span id="cb252-21"><a href="continuous-prediction-with-regression-trees.html#cb252-21" tabindex="-1"></a>p1</span></code></pre></div>
+<p><img src="06Discrete2Continuous_files/figure-html/unnamed-chunk-4-1.png" alt="" width="672" /></p>
+<p>So we are splitting on the first four values of <span class="math inline">\(x\)</span>. Th mean value of <span class="math inline">\(y\)</span> for the left side of the plot is:</p>
+<div class="sourceCode" id="cb253"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb253-1"><a href="continuous-prediction-with-regression-trees.html#cb253-1" tabindex="-1"></a>ybar_left <span class="ot">&lt;-</span> <span class="fu">mean</span>(y_left)</span>
+<span id="cb253-2"><a href="continuous-prediction-with-regression-trees.html#cb253-2" tabindex="-1"></a>ybar_left</span></code></pre></div>
+<pre><code>## [1] -0.04212831</code></pre>
+<p>And for the right it is:</p>
+<div class="sourceCode" id="cb255"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb255-1"><a href="continuous-prediction-with-regression-trees.html#cb255-1" tabindex="-1"></a>ybar_right <span class="ot">&lt;-</span> <span class="fu">mean</span>(y_right)</span>
+<span id="cb255-2"><a href="continuous-prediction-with-regression-trees.html#cb255-2" tabindex="-1"></a>ybar_right</span></code></pre></div>
+<pre><code>## [1] 0.5256663</code></pre>
+<p>And the sum of the residuals is:</p>
+<div class="sourceCode" id="cb257"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb257-1"><a href="continuous-prediction-with-regression-trees.html#cb257-1" tabindex="-1"></a>resids_left <span class="ot">&lt;-</span> <span class="fu">sum</span>((y_left <span class="sc">-</span> ybar_left)<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb257-2"><a href="continuous-prediction-with-regression-trees.html#cb257-2" tabindex="-1"></a>resids_right <span class="ot">&lt;-</span> <span class="fu">sum</span>((y_right <span class="sc">-</span> ybar_right)<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb257-3"><a href="continuous-prediction-with-regression-trees.html#cb257-3" tabindex="-1"></a>resids_left</span></code></pre></div>
+<pre><code>## [1] 0.01467954</code></pre>
+<div class="sourceCode" id="cb259"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb259-1"><a href="continuous-prediction-with-regression-trees.html#cb259-1" tabindex="-1"></a>resids_right</span></code></pre></div>
+<pre><code>## [1] 10.97691</code></pre>
+<p>This shows you what the means and the residuals look like for this first split. The total of sum-of-squared residuals for the left is essentially zero (0.0146795) but for the right it is pretty big (10.977).</p>
+<div class="sourceCode" id="cb261"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb261-1"><a href="continuous-prediction-with-regression-trees.html#cb261-1" tabindex="-1"></a>p1  <span class="sc">+</span> <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">y=</span>ybar_left,<span class="at">yend=</span>ybar_left,</span>
+<span id="cb261-2"><a href="continuous-prediction-with-regression-trees.html#cb261-2" tabindex="-1"></a>                       <span class="at">x=</span><span class="fu">min</span>(x_left),<span class="at">xend=</span><span class="fu">max</span>(x_left)),</span>
+<span id="cb261-3"><a href="continuous-prediction-with-regression-trees.html#cb261-3" tabindex="-1"></a>                   <span class="at">color=</span><span class="st">&quot;darkgreen&quot;</span>, <span class="at">size=</span><span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb261-4"><a href="continuous-prediction-with-regression-trees.html#cb261-4" tabindex="-1"></a>  <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">y=</span>ybar_right,<span class="at">yend=</span>ybar_right,</span>
+<span id="cb261-5"><a href="continuous-prediction-with-regression-trees.html#cb261-5" tabindex="-1"></a>                   <span class="at">x=</span><span class="fu">min</span>(x_right),<span class="at">xend=</span><span class="fu">max</span>(x_right)),</span>
+<span id="cb261-6"><a href="continuous-prediction-with-regression-trees.html#cb261-6" tabindex="-1"></a>               <span class="at">color=</span><span class="st">&quot;darkblue&quot;</span>, <span class="at">size=</span><span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb261-7"><a href="continuous-prediction-with-regression-trees.html#cb261-7" tabindex="-1"></a>  <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">y=</span>ybar_left,<span class="at">yend=</span>y_left,</span>
+<span id="cb261-8"><a href="continuous-prediction-with-regression-trees.html#cb261-8" tabindex="-1"></a>                   <span class="at">x=</span>x_left,<span class="at">xend=</span>x_left),</span>
+<span id="cb261-9"><a href="continuous-prediction-with-regression-trees.html#cb261-9" tabindex="-1"></a>               <span class="at">color=</span><span class="st">&quot;darkgreen&quot;</span>, <span class="at">linetype=</span><span class="st">&quot;dashed&quot;</span>) <span class="sc">+</span></span>
+<span id="cb261-10"><a href="continuous-prediction-with-regression-trees.html#cb261-10" tabindex="-1"></a>  <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">y=</span>ybar_right,<span class="at">yend=</span>y_right,</span>
+<span id="cb261-11"><a href="continuous-prediction-with-regression-trees.html#cb261-11" tabindex="-1"></a>                   <span class="at">x=</span>x_right,<span class="at">xend=</span>x_right),</span>
+<span id="cb261-12"><a href="continuous-prediction-with-regression-trees.html#cb261-12" tabindex="-1"></a>               <span class="at">color=</span><span class="st">&quot;darkblue&quot;</span>, <span class="at">linetype=</span><span class="st">&quot;dashed&quot;</span>) <span class="sc">+</span></span>
+<span id="cb261-13"><a href="continuous-prediction-with-regression-trees.html#cb261-13" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x=</span><span class="fu">mean</span>(x_left),<span class="at">y=</span><span class="dv">1</span>,</span>
+<span id="cb261-14"><a href="continuous-prediction-with-regression-trees.html#cb261-14" tabindex="-1"></a>                          <span class="at">label=</span><span class="fu">paste</span>(<span class="st">&quot;SSD=&quot;</span>,</span>
+<span id="cb261-15"><a href="continuous-prediction-with-regression-trees.html#cb261-15" tabindex="-1"></a>                                      <span class="fu">round</span>(resids_left,<span class="dv">3</span>),</span>
+<span id="cb261-16"><a href="continuous-prediction-with-regression-trees.html#cb261-16" tabindex="-1"></a>                                      <span class="at">sep=</span><span class="st">&quot;&quot;</span>)),</span>
+<span id="cb261-17"><a href="continuous-prediction-with-regression-trees.html#cb261-17" tabindex="-1"></a>            <span class="at">color=</span><span class="st">&quot;darkgreen&quot;</span>,<span class="at">vjust=</span><span class="sc">-</span><span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb261-18"><a href="continuous-prediction-with-regression-trees.html#cb261-18" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x=</span><span class="fu">mean</span>(x_right),<span class="at">y=</span><span class="dv">1</span>,</span>
+<span id="cb261-19"><a href="continuous-prediction-with-regression-trees.html#cb261-19" tabindex="-1"></a>                          <span class="at">label=</span><span class="fu">paste</span>(<span class="st">&quot;SSD=&quot;</span>,</span>
+<span id="cb261-20"><a href="continuous-prediction-with-regression-trees.html#cb261-20" tabindex="-1"></a>                                      <span class="fu">round</span>(resids_right,<span class="dv">3</span>),</span>
+<span id="cb261-21"><a href="continuous-prediction-with-regression-trees.html#cb261-21" tabindex="-1"></a>                                      <span class="at">sep=</span><span class="st">&quot;&quot;</span>)),</span>
+<span id="cb261-22"><a href="continuous-prediction-with-regression-trees.html#cb261-22" tabindex="-1"></a>            <span class="at">color=</span><span class="st">&quot;darkblue&quot;</span>,<span class="at">vjust=</span><span class="sc">-</span><span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb261-23"><a href="continuous-prediction-with-regression-trees.html#cb261-23" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">subtitle =</span> <span class="fu">paste</span>(<span class="st">&quot;Total SSD=&quot;</span>,</span>
+<span id="cb261-24"><a href="continuous-prediction-with-regression-trees.html#cb261-24" tabindex="-1"></a>                        <span class="fu">round</span>(resids_left<span class="sc">+</span>resids_right,<span class="dv">3</span>),</span>
+<span id="cb261-25"><a href="continuous-prediction-with-regression-trees.html#cb261-25" tabindex="-1"></a>                        <span class="at">sep=</span><span class="st">&quot;&quot;</span>))</span></code></pre></div>
+<pre><code>## Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
+## ℹ Please use `linewidth` instead.
+## This warning is displayed once per session.
+## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+## generated.</code></pre>
+<p><img src="06Discrete2Continuous_files/figure-html/unnamed-chunk-8-1.png" alt="" width="672" /></p>
+</div>
+<div id="iteration-2" class="section level3 hasAnchor" number="7.6.2">
+<h3><span class="header-section-number">7.6.2</span> Iteration 2<a href="continuous-prediction-with-regression-trees.html#iteration-2" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Let’s increment by one to try the next split with the first five values of <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span>.</p>
+<div class="sourceCode" id="cb263"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb263-1"><a href="continuous-prediction-with-regression-trees.html#cb263-1" tabindex="-1"></a>x_left <span class="ot">&lt;-</span> x[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>]</span>
+<span id="cb263-2"><a href="continuous-prediction-with-regression-trees.html#cb263-2" tabindex="-1"></a>x_right <span class="ot">&lt;-</span> x[<span class="dv">6</span><span class="sc">:</span>n]</span>
+<span id="cb263-3"><a href="continuous-prediction-with-regression-trees.html#cb263-3" tabindex="-1"></a></span>
+<span id="cb263-4"><a href="continuous-prediction-with-regression-trees.html#cb263-4" tabindex="-1"></a>y_left <span class="ot">&lt;-</span> y[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>]</span>
+<span id="cb263-5"><a href="continuous-prediction-with-regression-trees.html#cb263-5" tabindex="-1"></a>y_right <span class="ot">&lt;-</span> y[<span class="dv">6</span><span class="sc">:</span>n]</span>
+<span id="cb263-6"><a href="continuous-prediction-with-regression-trees.html#cb263-6" tabindex="-1"></a></span>
+<span id="cb263-7"><a href="continuous-prediction-with-regression-trees.html#cb263-7" tabindex="-1"></a>split4plotting <span class="ot">&lt;-</span> (<span class="fu">max</span>(x_left) <span class="sc">+</span> <span class="fu">min</span>(x_right)) <span class="sc">/</span> <span class="dv">2</span></span>
+<span id="cb263-8"><a href="continuous-prediction-with-regression-trees.html#cb263-8" tabindex="-1"></a></span>
+<span id="cb263-9"><a href="continuous-prediction-with-regression-trees.html#cb263-9" tabindex="-1"></a>ybar_left <span class="ot">&lt;-</span> <span class="fu">mean</span>(y_left)</span>
+<span id="cb263-10"><a href="continuous-prediction-with-regression-trees.html#cb263-10" tabindex="-1"></a>ybar_right <span class="ot">&lt;-</span> <span class="fu">mean</span>(y_right)</span>
+<span id="cb263-11"><a href="continuous-prediction-with-regression-trees.html#cb263-11" tabindex="-1"></a></span>
+<span id="cb263-12"><a href="continuous-prediction-with-regression-trees.html#cb263-12" tabindex="-1"></a>resids_left <span class="ot">&lt;-</span> <span class="fu">sum</span>((y_left <span class="sc">-</span> ybar_left)<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb263-13"><a href="continuous-prediction-with-regression-trees.html#cb263-13" tabindex="-1"></a>resids_right <span class="ot">&lt;-</span> <span class="fu">sum</span>((y_right <span class="sc">-</span> ybar_right)<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb263-14"><a href="continuous-prediction-with-regression-trees.html#cb263-14" tabindex="-1"></a></span>
+<span id="cb263-15"><a href="continuous-prediction-with-regression-trees.html#cb263-15" tabindex="-1"></a>p2 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb263-16"><a href="continuous-prediction-with-regression-trees.html#cb263-16" tabindex="-1"></a>  <span class="fu">geom_rect</span>(<span class="fu">aes</span>(<span class="at">xmin=</span><span class="sc">-</span><span class="cn">Inf</span>,<span class="at">xmax=</span>split4plotting,</span>
+<span id="cb263-17"><a href="continuous-prediction-with-regression-trees.html#cb263-17" tabindex="-1"></a>                <span class="at">ymin=</span><span class="sc">-</span><span class="cn">Inf</span>,<span class="at">ymax=</span><span class="cn">Inf</span>),</span>
+<span id="cb263-18"><a href="continuous-prediction-with-regression-trees.html#cb263-18" tabindex="-1"></a>            <span class="at">fill=</span><span class="st">&quot;lightgreen&quot;</span>, <span class="at">alpha=</span><span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb263-19"><a href="continuous-prediction-with-regression-trees.html#cb263-19" tabindex="-1"></a>  <span class="fu">geom_rect</span>(<span class="fu">aes</span>(<span class="at">xmin=</span>split4plotting,<span class="at">xmax=</span><span class="cn">Inf</span>,</span>
+<span id="cb263-20"><a href="continuous-prediction-with-regression-trees.html#cb263-20" tabindex="-1"></a>                <span class="at">ymin=</span><span class="sc">-</span><span class="cn">Inf</span>,<span class="at">ymax=</span><span class="cn">Inf</span>),</span>
+<span id="cb263-21"><a href="continuous-prediction-with-regression-trees.html#cb263-21" tabindex="-1"></a>            <span class="at">fill=</span><span class="st">&quot;lightblue&quot;</span>, <span class="at">alpha=</span><span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb263-22"><a href="continuous-prediction-with-regression-trees.html#cb263-22" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x=</span>x_left,<span class="at">y=</span>y_left),<span class="at">col=</span><span class="st">&quot;darkgreen&quot;</span>,<span class="at">size=</span><span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb263-23"><a href="continuous-prediction-with-regression-trees.html#cb263-23" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x=</span>x_right,<span class="at">y=</span>y_right),<span class="at">col=</span><span class="st">&quot;darkblue&quot;</span>,<span class="at">size=</span><span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb263-24"><a href="continuous-prediction-with-regression-trees.html#cb263-24" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x=</span><span class="st">&quot;x&quot;</span>,<span class="at">y=</span><span class="st">&quot;y&quot;</span>) <span class="sc">+</span></span>
+<span id="cb263-25"><a href="continuous-prediction-with-regression-trees.html#cb263-25" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">expand =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="fl">0.1</span>)) <span class="sc">+</span></span>
+<span id="cb263-26"><a href="continuous-prediction-with-regression-trees.html#cb263-26" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">ylim=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>),<span class="at">clip =</span> <span class="st">&quot;off&quot;</span>)</span>
+<span id="cb263-27"><a href="continuous-prediction-with-regression-trees.html#cb263-27" tabindex="-1"></a></span>
+<span id="cb263-28"><a href="continuous-prediction-with-regression-trees.html#cb263-28" tabindex="-1"></a>p2  <span class="sc">+</span> <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">y=</span>ybar_left,<span class="at">yend=</span>ybar_left,</span>
+<span id="cb263-29"><a href="continuous-prediction-with-regression-trees.html#cb263-29" tabindex="-1"></a>                       <span class="at">x=</span><span class="fu">min</span>(x_left),<span class="at">xend=</span><span class="fu">max</span>(x_left)),</span>
+<span id="cb263-30"><a href="continuous-prediction-with-regression-trees.html#cb263-30" tabindex="-1"></a>                   <span class="at">color=</span><span class="st">&quot;darkgreen&quot;</span>, <span class="at">size=</span><span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb263-31"><a href="continuous-prediction-with-regression-trees.html#cb263-31" tabindex="-1"></a>  <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">y=</span>ybar_right,<span class="at">yend=</span>ybar_right,</span>
+<span id="cb263-32"><a href="continuous-prediction-with-regression-trees.html#cb263-32" tabindex="-1"></a>                   <span class="at">x=</span><span class="fu">min</span>(x_right),<span class="at">xend=</span><span class="fu">max</span>(x_right)),</span>
+<span id="cb263-33"><a href="continuous-prediction-with-regression-trees.html#cb263-33" tabindex="-1"></a>               <span class="at">color=</span><span class="st">&quot;darkblue&quot;</span>, <span class="at">size=</span><span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb263-34"><a href="continuous-prediction-with-regression-trees.html#cb263-34" tabindex="-1"></a>  <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">y=</span>ybar_left,<span class="at">yend=</span>y_left,</span>
+<span id="cb263-35"><a href="continuous-prediction-with-regression-trees.html#cb263-35" tabindex="-1"></a>                   <span class="at">x=</span>x_left,<span class="at">xend=</span>x_left),</span>
+<span id="cb263-36"><a href="continuous-prediction-with-regression-trees.html#cb263-36" tabindex="-1"></a>               <span class="at">color=</span><span class="st">&quot;darkgreen&quot;</span>, <span class="at">linetype=</span><span class="st">&quot;dashed&quot;</span>) <span class="sc">+</span></span>
+<span id="cb263-37"><a href="continuous-prediction-with-regression-trees.html#cb263-37" tabindex="-1"></a>  <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">y=</span>ybar_right,<span class="at">yend=</span>y_right,</span>
+<span id="cb263-38"><a href="continuous-prediction-with-regression-trees.html#cb263-38" tabindex="-1"></a>                   <span class="at">x=</span>x_right,<span class="at">xend=</span>x_right),</span>
+<span id="cb263-39"><a href="continuous-prediction-with-regression-trees.html#cb263-39" tabindex="-1"></a>               <span class="at">color=</span><span class="st">&quot;darkblue&quot;</span>, <span class="at">linetype=</span><span class="st">&quot;dashed&quot;</span>) <span class="sc">+</span></span>
+<span id="cb263-40"><a href="continuous-prediction-with-regression-trees.html#cb263-40" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x=</span><span class="fu">mean</span>(x_left),<span class="at">y=</span><span class="dv">1</span>,</span>
+<span id="cb263-41"><a href="continuous-prediction-with-regression-trees.html#cb263-41" tabindex="-1"></a>                          <span class="at">label=</span><span class="fu">paste</span>(<span class="st">&quot;SSD=&quot;</span>,<span class="fu">round</span>(resids_left,<span class="dv">3</span>),<span class="at">sep=</span><span class="st">&quot;&quot;</span>)),</span>
+<span id="cb263-42"><a href="continuous-prediction-with-regression-trees.html#cb263-42" tabindex="-1"></a>            <span class="at">color=</span><span class="st">&quot;darkgreen&quot;</span>,<span class="at">vjust=</span><span class="sc">-</span><span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb263-43"><a href="continuous-prediction-with-regression-trees.html#cb263-43" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x=</span><span class="fu">mean</span>(x_right),<span class="at">y=</span><span class="dv">1</span>,</span>
+<span id="cb263-44"><a href="continuous-prediction-with-regression-trees.html#cb263-44" tabindex="-1"></a>                          <span class="at">label=</span><span class="fu">paste</span>(<span class="st">&quot;SSD=&quot;</span>,<span class="fu">round</span>(resids_right,<span class="dv">3</span>),<span class="at">sep=</span><span class="st">&quot;&quot;</span>)),</span>
+<span id="cb263-45"><a href="continuous-prediction-with-regression-trees.html#cb263-45" tabindex="-1"></a>            <span class="at">color=</span><span class="st">&quot;darkblue&quot;</span>,<span class="at">vjust=</span><span class="sc">-</span><span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb263-46"><a href="continuous-prediction-with-regression-trees.html#cb263-46" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">subtitle =</span> <span class="fu">paste</span>(<span class="st">&quot;Total SSD=&quot;</span>,<span class="fu">round</span>(resids_left<span class="sc">+</span>resids_right,<span class="dv">3</span>),<span class="at">sep=</span><span class="st">&quot;&quot;</span>))</span></code></pre></div>
+<p><img src="06Discrete2Continuous_files/figure-html/unnamed-chunk-9-1.png" alt="" width="672" />
+This has decreased the total sum of squares a bit.</p>
+</div>
+<div id="iteration-3" class="section level3 hasAnchor" number="7.6.3">
+<h3><span class="header-section-number">7.6.3</span> Iteration 3<a href="continuous-prediction-with-regression-trees.html#iteration-3" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Get the idea? Let’s do the next one with the first six values of <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span>.</p>
+<div class="sourceCode" id="cb264"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb264-1"><a href="continuous-prediction-with-regression-trees.html#cb264-1" tabindex="-1"></a>x_left <span class="ot">&lt;-</span> x[<span class="dv">1</span><span class="sc">:</span><span class="dv">6</span>]</span>
+<span id="cb264-2"><a href="continuous-prediction-with-regression-trees.html#cb264-2" tabindex="-1"></a>x_right <span class="ot">&lt;-</span> x[<span class="dv">7</span><span class="sc">:</span>n]</span>
+<span id="cb264-3"><a href="continuous-prediction-with-regression-trees.html#cb264-3" tabindex="-1"></a></span>
+<span id="cb264-4"><a href="continuous-prediction-with-regression-trees.html#cb264-4" tabindex="-1"></a>y_left <span class="ot">&lt;-</span> y[<span class="dv">1</span><span class="sc">:</span><span class="dv">6</span>]</span>
+<span id="cb264-5"><a href="continuous-prediction-with-regression-trees.html#cb264-5" tabindex="-1"></a>y_right <span class="ot">&lt;-</span> y[<span class="dv">7</span><span class="sc">:</span>n]</span>
+<span id="cb264-6"><a href="continuous-prediction-with-regression-trees.html#cb264-6" tabindex="-1"></a></span>
+<span id="cb264-7"><a href="continuous-prediction-with-regression-trees.html#cb264-7" tabindex="-1"></a>split4plotting <span class="ot">&lt;-</span> (<span class="fu">max</span>(x_left) <span class="sc">+</span> <span class="fu">min</span>(x_right)) <span class="sc">/</span> <span class="dv">2</span></span>
+<span id="cb264-8"><a href="continuous-prediction-with-regression-trees.html#cb264-8" tabindex="-1"></a></span>
+<span id="cb264-9"><a href="continuous-prediction-with-regression-trees.html#cb264-9" tabindex="-1"></a>ybar_left <span class="ot">&lt;-</span> <span class="fu">mean</span>(y_left)</span>
+<span id="cb264-10"><a href="continuous-prediction-with-regression-trees.html#cb264-10" tabindex="-1"></a>ybar_right <span class="ot">&lt;-</span> <span class="fu">mean</span>(y_right)</span>
+<span id="cb264-11"><a href="continuous-prediction-with-regression-trees.html#cb264-11" tabindex="-1"></a></span>
+<span id="cb264-12"><a href="continuous-prediction-with-regression-trees.html#cb264-12" tabindex="-1"></a>resids_left <span class="ot">&lt;-</span> <span class="fu">sum</span>((y_left <span class="sc">-</span> ybar_left)<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb264-13"><a href="continuous-prediction-with-regression-trees.html#cb264-13" tabindex="-1"></a>resids_right <span class="ot">&lt;-</span> <span class="fu">sum</span>((y_right <span class="sc">-</span> ybar_right)<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb264-14"><a href="continuous-prediction-with-regression-trees.html#cb264-14" tabindex="-1"></a></span>
+<span id="cb264-15"><a href="continuous-prediction-with-regression-trees.html#cb264-15" tabindex="-1"></a>p3 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb264-16"><a href="continuous-prediction-with-regression-trees.html#cb264-16" tabindex="-1"></a>  <span class="fu">geom_rect</span>(<span class="fu">aes</span>(<span class="at">xmin=</span><span class="sc">-</span><span class="cn">Inf</span>,<span class="at">xmax=</span>split4plotting,</span>
+<span id="cb264-17"><a href="continuous-prediction-with-regression-trees.html#cb264-17" tabindex="-1"></a>                <span class="at">ymin=</span><span class="sc">-</span><span class="cn">Inf</span>,<span class="at">ymax=</span><span class="cn">Inf</span>),</span>
+<span id="cb264-18"><a href="continuous-prediction-with-regression-trees.html#cb264-18" tabindex="-1"></a>            <span class="at">fill=</span><span class="st">&quot;lightgreen&quot;</span>, <span class="at">alpha=</span><span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb264-19"><a href="continuous-prediction-with-regression-trees.html#cb264-19" tabindex="-1"></a>  <span class="fu">geom_rect</span>(<span class="fu">aes</span>(<span class="at">xmin=</span>split4plotting,<span class="at">xmax=</span><span class="cn">Inf</span>,</span>
+<span id="cb264-20"><a href="continuous-prediction-with-regression-trees.html#cb264-20" tabindex="-1"></a>                <span class="at">ymin=</span><span class="sc">-</span><span class="cn">Inf</span>,<span class="at">ymax=</span><span class="cn">Inf</span>),</span>
+<span id="cb264-21"><a href="continuous-prediction-with-regression-trees.html#cb264-21" tabindex="-1"></a>            <span class="at">fill=</span><span class="st">&quot;lightblue&quot;</span>, <span class="at">alpha=</span><span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb264-22"><a href="continuous-prediction-with-regression-trees.html#cb264-22" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x=</span>x_left,<span class="at">y=</span>y_left),<span class="at">col=</span><span class="st">&quot;darkgreen&quot;</span>,<span class="at">size=</span><span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb264-23"><a href="continuous-prediction-with-regression-trees.html#cb264-23" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x=</span>x_right,<span class="at">y=</span>y_right),<span class="at">col=</span><span class="st">&quot;darkblue&quot;</span>,<span class="at">size=</span><span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb264-24"><a href="continuous-prediction-with-regression-trees.html#cb264-24" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x=</span><span class="st">&quot;x&quot;</span>,<span class="at">y=</span><span class="st">&quot;y&quot;</span>) <span class="sc">+</span></span>
+<span id="cb264-25"><a href="continuous-prediction-with-regression-trees.html#cb264-25" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">expand =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="fl">0.1</span>)) <span class="sc">+</span></span>
+<span id="cb264-26"><a href="continuous-prediction-with-regression-trees.html#cb264-26" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">ylim=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>),<span class="at">clip =</span> <span class="st">&quot;off&quot;</span>)</span>
+<span id="cb264-27"><a href="continuous-prediction-with-regression-trees.html#cb264-27" tabindex="-1"></a></span>
+<span id="cb264-28"><a href="continuous-prediction-with-regression-trees.html#cb264-28" tabindex="-1"></a>p3  <span class="sc">+</span> <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">y=</span>ybar_left,<span class="at">yend=</span>ybar_left,</span>
+<span id="cb264-29"><a href="continuous-prediction-with-regression-trees.html#cb264-29" tabindex="-1"></a>                       <span class="at">x=</span><span class="fu">min</span>(x_left),<span class="at">xend=</span><span class="fu">max</span>(x_left)),</span>
+<span id="cb264-30"><a href="continuous-prediction-with-regression-trees.html#cb264-30" tabindex="-1"></a>                   <span class="at">color=</span><span class="st">&quot;darkgreen&quot;</span>, <span class="at">size=</span><span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb264-31"><a href="continuous-prediction-with-regression-trees.html#cb264-31" tabindex="-1"></a>  <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">y=</span>ybar_right,<span class="at">yend=</span>ybar_right,</span>
+<span id="cb264-32"><a href="continuous-prediction-with-regression-trees.html#cb264-32" tabindex="-1"></a>                   <span class="at">x=</span><span class="fu">min</span>(x_right),<span class="at">xend=</span><span class="fu">max</span>(x_right)),</span>
+<span id="cb264-33"><a href="continuous-prediction-with-regression-trees.html#cb264-33" tabindex="-1"></a>               <span class="at">color=</span><span class="st">&quot;darkblue&quot;</span>, <span class="at">size=</span><span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb264-34"><a href="continuous-prediction-with-regression-trees.html#cb264-34" tabindex="-1"></a>  <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">y=</span>ybar_left,<span class="at">yend=</span>y_left,</span>
+<span id="cb264-35"><a href="continuous-prediction-with-regression-trees.html#cb264-35" tabindex="-1"></a>                   <span class="at">x=</span>x_left,<span class="at">xend=</span>x_left),</span>
+<span id="cb264-36"><a href="continuous-prediction-with-regression-trees.html#cb264-36" tabindex="-1"></a>               <span class="at">color=</span><span class="st">&quot;darkgreen&quot;</span>, <span class="at">linetype=</span><span class="st">&quot;dashed&quot;</span>) <span class="sc">+</span></span>
+<span id="cb264-37"><a href="continuous-prediction-with-regression-trees.html#cb264-37" tabindex="-1"></a>  <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">y=</span>ybar_right,<span class="at">yend=</span>y_right,</span>
+<span id="cb264-38"><a href="continuous-prediction-with-regression-trees.html#cb264-38" tabindex="-1"></a>                   <span class="at">x=</span>x_right,<span class="at">xend=</span>x_right),</span>
+<span id="cb264-39"><a href="continuous-prediction-with-regression-trees.html#cb264-39" tabindex="-1"></a>               <span class="at">color=</span><span class="st">&quot;darkblue&quot;</span>, <span class="at">linetype=</span><span class="st">&quot;dashed&quot;</span>) <span class="sc">+</span></span>
+<span id="cb264-40"><a href="continuous-prediction-with-regression-trees.html#cb264-40" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x=</span><span class="fu">mean</span>(x_left),<span class="at">y=</span><span class="dv">1</span>,</span>
+<span id="cb264-41"><a href="continuous-prediction-with-regression-trees.html#cb264-41" tabindex="-1"></a>                          <span class="at">label=</span><span class="fu">paste</span>(<span class="st">&quot;SSD=&quot;</span>,<span class="fu">round</span>(resids_left,<span class="dv">3</span>),<span class="at">sep=</span><span class="st">&quot;&quot;</span>)),</span>
+<span id="cb264-42"><a href="continuous-prediction-with-regression-trees.html#cb264-42" tabindex="-1"></a>            <span class="at">color=</span><span class="st">&quot;darkgreen&quot;</span>,<span class="at">vjust=</span><span class="sc">-</span><span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb264-43"><a href="continuous-prediction-with-regression-trees.html#cb264-43" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x=</span><span class="fu">mean</span>(x_right),<span class="at">y=</span><span class="dv">1</span>,</span>
+<span id="cb264-44"><a href="continuous-prediction-with-regression-trees.html#cb264-44" tabindex="-1"></a>                          <span class="at">label=</span><span class="fu">paste</span>(<span class="st">&quot;SSD=&quot;</span>,<span class="fu">round</span>(resids_right,<span class="dv">3</span>),<span class="at">sep=</span><span class="st">&quot;&quot;</span>)),</span>
+<span id="cb264-45"><a href="continuous-prediction-with-regression-trees.html#cb264-45" tabindex="-1"></a>            <span class="at">color=</span><span class="st">&quot;darkblue&quot;</span>,<span class="at">vjust=</span><span class="sc">-</span><span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb264-46"><a href="continuous-prediction-with-regression-trees.html#cb264-46" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">subtitle =</span> <span class="fu">paste</span>(<span class="st">&quot;Total SSD=&quot;</span>,<span class="fu">round</span>(resids_left<span class="sc">+</span>resids_right,<span class="dv">3</span>),<span class="at">sep=</span><span class="st">&quot;&quot;</span>))</span></code></pre></div>
+<p><img src="06Discrete2Continuous_files/figure-html/unnamed-chunk-10-1.png" alt="" width="672" /></p>
+<p>Ok. That’s even better – the total sum of squares has decreased again. But this is tedious. Let’s do this right – with a loop.</p>
+</div>
+<div id="loop-it" class="section level3 hasAnchor" number="7.6.4">
+<h3><span class="header-section-number">7.6.4</span> Loop It<a href="continuous-prediction-with-regression-trees.html#loop-it" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Here is the same idea. But we will just keep incrementing in a loop.</p>
+<div class="sourceCode" id="cb265"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb265-1"><a href="continuous-prediction-with-regression-trees.html#cb265-1" tabindex="-1"></a>runningSSD <span class="ot">&lt;-</span> <span class="fu">numeric</span>()</span>
+<span id="cb265-2"><a href="continuous-prediction-with-regression-trees.html#cb265-2" tabindex="-1"></a>runningSplit <span class="ot">&lt;-</span> <span class="fu">numeric</span>()</span>
+<span id="cb265-3"><a href="continuous-prediction-with-regression-trees.html#cb265-3" tabindex="-1"></a></span>
+<span id="cb265-4"><a href="continuous-prediction-with-regression-trees.html#cb265-4" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">4</span><span class="sc">:</span>(n<span class="dv">-4</span>)){</span>
+<span id="cb265-5"><a href="continuous-prediction-with-regression-trees.html#cb265-5" tabindex="-1"></a>  x_left <span class="ot">&lt;-</span> x[<span class="dv">1</span><span class="sc">:</span>i]</span>
+<span id="cb265-6"><a href="continuous-prediction-with-regression-trees.html#cb265-6" tabindex="-1"></a>  x_right <span class="ot">&lt;-</span> x[(i<span class="sc">+</span><span class="dv">1</span>)<span class="sc">:</span>n]</span>
+<span id="cb265-7"><a href="continuous-prediction-with-regression-trees.html#cb265-7" tabindex="-1"></a>  </span>
+<span id="cb265-8"><a href="continuous-prediction-with-regression-trees.html#cb265-8" tabindex="-1"></a>  y_left <span class="ot">&lt;-</span> y[<span class="dv">1</span><span class="sc">:</span>i]</span>
+<span id="cb265-9"><a href="continuous-prediction-with-regression-trees.html#cb265-9" tabindex="-1"></a>  y_right <span class="ot">&lt;-</span> y[(i<span class="sc">+</span><span class="dv">1</span>)<span class="sc">:</span>n]</span>
+<span id="cb265-10"><a href="continuous-prediction-with-regression-trees.html#cb265-10" tabindex="-1"></a>  </span>
+<span id="cb265-11"><a href="continuous-prediction-with-regression-trees.html#cb265-11" tabindex="-1"></a>  split4plotting <span class="ot">&lt;-</span> (<span class="fu">max</span>(x_left) <span class="sc">+</span> <span class="fu">min</span>(x_right)) <span class="sc">/</span> <span class="dv">2</span></span>
+<span id="cb265-12"><a href="continuous-prediction-with-regression-trees.html#cb265-12" tabindex="-1"></a>  </span>
+<span id="cb265-13"><a href="continuous-prediction-with-regression-trees.html#cb265-13" tabindex="-1"></a>  ybar_left <span class="ot">&lt;-</span> <span class="fu">mean</span>(y_left)</span>
+<span id="cb265-14"><a href="continuous-prediction-with-regression-trees.html#cb265-14" tabindex="-1"></a>  ybar_right <span class="ot">&lt;-</span> <span class="fu">mean</span>(y_right)</span>
+<span id="cb265-15"><a href="continuous-prediction-with-regression-trees.html#cb265-15" tabindex="-1"></a>  </span>
+<span id="cb265-16"><a href="continuous-prediction-with-regression-trees.html#cb265-16" tabindex="-1"></a>  resids_left <span class="ot">&lt;-</span> <span class="fu">sum</span>((y_left <span class="sc">-</span> ybar_left)<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb265-17"><a href="continuous-prediction-with-regression-trees.html#cb265-17" tabindex="-1"></a>  resids_right <span class="ot">&lt;-</span> <span class="fu">sum</span>((y_right <span class="sc">-</span> ybar_right)<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb265-18"><a href="continuous-prediction-with-regression-trees.html#cb265-18" tabindex="-1"></a>  </span>
+<span id="cb265-19"><a href="continuous-prediction-with-regression-trees.html#cb265-19" tabindex="-1"></a>  runningSSD[i<span class="dv">-3</span>] <span class="ot">&lt;-</span> resids_left <span class="sc">+</span> resids_right</span>
+<span id="cb265-20"><a href="continuous-prediction-with-regression-trees.html#cb265-20" tabindex="-1"></a>  runningSplit[i<span class="dv">-3</span>] <span class="ot">&lt;-</span> split4plotting</span>
+<span id="cb265-21"><a href="continuous-prediction-with-regression-trees.html#cb265-21" tabindex="-1"></a>  </span>
+<span id="cb265-22"><a href="continuous-prediction-with-regression-trees.html#cb265-22" tabindex="-1"></a>  pTmp <span class="ot">&lt;-</span> <span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb265-23"><a href="continuous-prediction-with-regression-trees.html#cb265-23" tabindex="-1"></a>    <span class="fu">geom_rect</span>(<span class="fu">aes</span>(<span class="at">xmin=</span><span class="sc">-</span><span class="cn">Inf</span>,<span class="at">xmax=</span>split4plotting,</span>
+<span id="cb265-24"><a href="continuous-prediction-with-regression-trees.html#cb265-24" tabindex="-1"></a>                  <span class="at">ymin=</span><span class="sc">-</span><span class="cn">Inf</span>,<span class="at">ymax=</span><span class="cn">Inf</span>),</span>
+<span id="cb265-25"><a href="continuous-prediction-with-regression-trees.html#cb265-25" tabindex="-1"></a>              <span class="at">fill=</span><span class="st">&quot;lightgreen&quot;</span>, <span class="at">alpha=</span><span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb265-26"><a href="continuous-prediction-with-regression-trees.html#cb265-26" tabindex="-1"></a>    <span class="fu">geom_rect</span>(<span class="fu">aes</span>(<span class="at">xmin=</span>split4plotting,<span class="at">xmax=</span><span class="cn">Inf</span>,</span>
+<span id="cb265-27"><a href="continuous-prediction-with-regression-trees.html#cb265-27" tabindex="-1"></a>                  <span class="at">ymin=</span><span class="sc">-</span><span class="cn">Inf</span>,<span class="at">ymax=</span><span class="cn">Inf</span>),</span>
+<span id="cb265-28"><a href="continuous-prediction-with-regression-trees.html#cb265-28" tabindex="-1"></a>              <span class="at">fill=</span><span class="st">&quot;lightblue&quot;</span>, <span class="at">alpha=</span><span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb265-29"><a href="continuous-prediction-with-regression-trees.html#cb265-29" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x=</span>x_left,<span class="at">y=</span>y_left),<span class="at">col=</span><span class="st">&quot;darkgreen&quot;</span>,<span class="at">size=</span><span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb265-30"><a href="continuous-prediction-with-regression-trees.html#cb265-30" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x=</span>x_right,<span class="at">y=</span>y_right),<span class="at">col=</span><span class="st">&quot;darkblue&quot;</span>,<span class="at">size=</span><span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb265-31"><a href="continuous-prediction-with-regression-trees.html#cb265-31" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">x=</span><span class="st">&quot;x&quot;</span>,<span class="at">y=</span><span class="st">&quot;y&quot;</span>) <span class="sc">+</span></span>
+<span id="cb265-32"><a href="continuous-prediction-with-regression-trees.html#cb265-32" tabindex="-1"></a>    <span class="fu">scale_y_continuous</span>(<span class="at">expand =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="fl">0.1</span>)) <span class="sc">+</span></span>
+<span id="cb265-33"><a href="continuous-prediction-with-regression-trees.html#cb265-33" tabindex="-1"></a>    <span class="fu">coord_cartesian</span>(<span class="at">ylim=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>),<span class="at">clip =</span> <span class="st">&quot;off&quot;</span>)</span>
+<span id="cb265-34"><a href="continuous-prediction-with-regression-trees.html#cb265-34" tabindex="-1"></a>  </span>
+<span id="cb265-35"><a href="continuous-prediction-with-regression-trees.html#cb265-35" tabindex="-1"></a>  pTmp <span class="ot">&lt;-</span> pTmp  <span class="sc">+</span> <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">y=</span>ybar_left,<span class="at">yend=</span>ybar_left,</span>
+<span id="cb265-36"><a href="continuous-prediction-with-regression-trees.html#cb265-36" tabindex="-1"></a>                                   <span class="at">x=</span><span class="fu">min</span>(x_left),<span class="at">xend=</span><span class="fu">max</span>(x_left)),</span>
+<span id="cb265-37"><a href="continuous-prediction-with-regression-trees.html#cb265-37" tabindex="-1"></a>                               <span class="at">color=</span><span class="st">&quot;darkgreen&quot;</span>, <span class="at">size=</span><span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb265-38"><a href="continuous-prediction-with-regression-trees.html#cb265-38" tabindex="-1"></a>    <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">y=</span>ybar_right,<span class="at">yend=</span>ybar_right,</span>
+<span id="cb265-39"><a href="continuous-prediction-with-regression-trees.html#cb265-39" tabindex="-1"></a>                     <span class="at">x=</span><span class="fu">min</span>(x_right),<span class="at">xend=</span><span class="fu">max</span>(x_right)),</span>
+<span id="cb265-40"><a href="continuous-prediction-with-regression-trees.html#cb265-40" tabindex="-1"></a>                 <span class="at">color=</span><span class="st">&quot;darkblue&quot;</span>, <span class="at">size=</span><span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb265-41"><a href="continuous-prediction-with-regression-trees.html#cb265-41" tabindex="-1"></a>    <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">y=</span>ybar_left,<span class="at">yend=</span>y_left,</span>
+<span id="cb265-42"><a href="continuous-prediction-with-regression-trees.html#cb265-42" tabindex="-1"></a>                     <span class="at">x=</span>x_left,<span class="at">xend=</span>x_left),</span>
+<span id="cb265-43"><a href="continuous-prediction-with-regression-trees.html#cb265-43" tabindex="-1"></a>                 <span class="at">color=</span><span class="st">&quot;darkgreen&quot;</span>, <span class="at">linetype=</span><span class="st">&quot;dashed&quot;</span>) <span class="sc">+</span></span>
+<span id="cb265-44"><a href="continuous-prediction-with-regression-trees.html#cb265-44" tabindex="-1"></a>    <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">y=</span>ybar_right,<span class="at">yend=</span>y_right,</span>
+<span id="cb265-45"><a href="continuous-prediction-with-regression-trees.html#cb265-45" tabindex="-1"></a>                     <span class="at">x=</span>x_right,<span class="at">xend=</span>x_right),</span>
+<span id="cb265-46"><a href="continuous-prediction-with-regression-trees.html#cb265-46" tabindex="-1"></a>                 <span class="at">color=</span><span class="st">&quot;darkblue&quot;</span>, <span class="at">linetype=</span><span class="st">&quot;dashed&quot;</span>) <span class="sc">+</span></span>
+<span id="cb265-47"><a href="continuous-prediction-with-regression-trees.html#cb265-47" tabindex="-1"></a>    <span class="fu">geom_text</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x=</span><span class="fu">mean</span>(x_left),<span class="at">y=</span><span class="dv">1</span>,</span>
+<span id="cb265-48"><a href="continuous-prediction-with-regression-trees.html#cb265-48" tabindex="-1"></a>                            <span class="at">label=</span><span class="fu">paste</span>(<span class="st">&quot;SSD=&quot;</span>,<span class="fu">round</span>(resids_left,<span class="dv">3</span>),<span class="at">sep=</span><span class="st">&quot;&quot;</span>)),</span>
+<span id="cb265-49"><a href="continuous-prediction-with-regression-trees.html#cb265-49" tabindex="-1"></a>              <span class="at">color=</span><span class="st">&quot;darkgreen&quot;</span>,<span class="at">vjust=</span><span class="sc">-</span><span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb265-50"><a href="continuous-prediction-with-regression-trees.html#cb265-50" tabindex="-1"></a>    <span class="fu">geom_text</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x=</span><span class="fu">mean</span>(x_right),<span class="at">y=</span><span class="dv">1</span>,</span>
+<span id="cb265-51"><a href="continuous-prediction-with-regression-trees.html#cb265-51" tabindex="-1"></a>                            <span class="at">label=</span><span class="fu">paste</span>(<span class="st">&quot;SSD=&quot;</span>,<span class="fu">round</span>(resids_right,<span class="dv">3</span>),<span class="at">sep=</span><span class="st">&quot;&quot;</span>)),</span>
+<span id="cb265-52"><a href="continuous-prediction-with-regression-trees.html#cb265-52" tabindex="-1"></a>              <span class="at">color=</span><span class="st">&quot;darkblue&quot;</span>,<span class="at">vjust=</span><span class="sc">-</span><span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb265-53"><a href="continuous-prediction-with-regression-trees.html#cb265-53" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">subtitle =</span> <span class="fu">paste</span>(<span class="st">&quot;Total SSD=&quot;</span>,<span class="fu">round</span>(resids_left<span class="sc">+</span>resids_right,<span class="dv">3</span>),<span class="at">sep=</span><span class="st">&quot;&quot;</span>))</span>
+<span id="cb265-54"><a href="continuous-prediction-with-regression-trees.html#cb265-54" tabindex="-1"></a>  <span class="fu">print</span>(pTmp)</span>
+<span id="cb265-55"><a href="continuous-prediction-with-regression-trees.html#cb265-55" tabindex="-1"></a>}</span></code></pre></div>
+<p><img src="06Discrete2Continuous_files/figure-html/unnamed-chunk-11-.gif" alt="" width="672" /></p>
+<p>And where should we split? We pick the value of <span class="math inline">\(x\)</span> at the minimum value of the residuals.</p>
+<div class="sourceCode" id="cb266"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb266-1"><a href="continuous-prediction-with-regression-trees.html#cb266-1" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb266-2"><a href="continuous-prediction-with-regression-trees.html#cb266-2" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x=</span>runningSplit,<span class="at">y=</span>runningSSD)) <span class="sc">+</span> </span>
+<span id="cb266-3"><a href="continuous-prediction-with-regression-trees.html#cb266-3" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x=</span>runningSplit,<span class="at">y=</span>runningSSD)) <span class="sc">+</span></span>
+<span id="cb266-4"><a href="continuous-prediction-with-regression-trees.html#cb266-4" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">y=</span><span class="st">&quot;Sum of Squared Residuals&quot;</span>,<span class="at">x=</span><span class="st">&quot;Threshold for Splitting on x&quot;</span>)</span></code></pre></div>
+<p><img src="06Discrete2Continuous_files/figure-html/unnamed-chunk-12-1.png" alt="" width="672" /></p>
+<p>Now we have our first split of these data with <span class="math inline">\(x=0\)</span>.</p>
+</div>
+<div id="describing-the-first-split" class="section level3 hasAnchor" number="7.6.5">
+<h3><span class="header-section-number">7.6.5</span> Describing the First Split<a href="continuous-prediction-with-regression-trees.html#describing-the-first-split" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>How well have we done predicting <span class="math inline">\(y\)</span> with this first split?</p>
+<div class="sourceCode" id="cb267"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb267-1"><a href="continuous-prediction-with-regression-trees.html#cb267-1" tabindex="-1"></a>y_leq0 <span class="ot">&lt;-</span> y[x<span class="sc">&lt;=</span><span class="dv">0</span>]</span>
+<span id="cb267-2"><a href="continuous-prediction-with-regression-trees.html#cb267-2" tabindex="-1"></a>y_gt0 <span class="ot">&lt;-</span> y[x<span class="sc">&gt;</span><span class="dv">0</span>]</span>
+<span id="cb267-3"><a href="continuous-prediction-with-regression-trees.html#cb267-3" tabindex="-1"></a></span>
+<span id="cb267-4"><a href="continuous-prediction-with-regression-trees.html#cb267-4" tabindex="-1"></a><span class="fu">mean</span>(y_leq0)</span></code></pre></div>
+<pre><code>## [1] 0.1065586</code></pre>
+<div class="sourceCode" id="cb269"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb269-1"><a href="continuous-prediction-with-regression-trees.html#cb269-1" tabindex="-1"></a><span class="fu">mean</span>(y_gt0)</span></code></pre></div>
+<pre><code>## [1] 0.8918577</code></pre>
+<p>Well we have a prediction for <span class="math inline">\(y\)</span> now in two leaves. Where <span class="math inline">\(x \leq 0\)</span> we get <span class="math inline">\(\hat y= 0.107\)</span> and where <span class="math inline">\(x &gt; 0\)</span> we get <span class="math inline">\(\hat y= 0.892\)</span>. But these are far from perfect. Indeed the standard error on these is pretty big. Here are the standard errors and the sample sizes.</p>
+<div class="sourceCode" id="cb271"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb271-1"><a href="continuous-prediction-with-regression-trees.html#cb271-1" tabindex="-1"></a><span class="fu">length</span>(y_leq0) <span class="co"># n of y for x&lt;=0</span></span></code></pre></div>
+<pre><code>## [1] 36</code></pre>
+<div class="sourceCode" id="cb273"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb273-1"><a href="continuous-prediction-with-regression-trees.html#cb273-1" tabindex="-1"></a><span class="fu">length</span>(y_gt0) <span class="co"># n of y for x&lt;=0</span></span></code></pre></div>
+<pre><code>## [1] 35</code></pre>
+<div class="sourceCode" id="cb275"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb275-1"><a href="continuous-prediction-with-regression-trees.html#cb275-1" tabindex="-1"></a><span class="fu">sd</span>(y_leq0)<span class="sc">/</span><span class="fu">sqrt</span>(<span class="fu">length</span>(y_leq0)) <span class="co"># se of y for x&lt;=0</span></span></code></pre></div>
+<pre><code>## [1] 0.02286209</code></pre>
+<div class="sourceCode" id="cb277"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb277-1"><a href="continuous-prediction-with-regression-trees.html#cb277-1" tabindex="-1"></a><span class="fu">sd</span>(y_gt0)<span class="sc">/</span><span class="fu">sqrt</span>(<span class="fu">length</span>(y_gt0)) <span class="co"># se of y for x&gt;0</span></span></code></pre></div>
+<pre><code>## [1] 0.02256208</code></pre>
+<p>Here is the tree in progress.</p>
+<p><img src="06Discrete2Continuous_files/figure-html/unnamed-chunk-15-1.png" alt="" width="384" /></p>
+<p>Are we done?</p>
+</div>
+<div id="another-split" class="section level3 hasAnchor" number="7.6.6">
+<h3><span class="header-section-number">7.6.6</span> Another Split?<a href="continuous-prediction-with-regression-trees.html#another-split" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>How can we improve that fit? Split again? I won’t go through it all again but let’s build another split for the left side of the tree.</p>
+<div class="sourceCode" id="cb279"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb279-1"><a href="continuous-prediction-with-regression-trees.html#cb279-1" tabindex="-1"></a>x_leq0 <span class="ot">&lt;-</span> x[x<span class="sc">&lt;=</span><span class="dv">0</span>]</span>
+<span id="cb279-2"><a href="continuous-prediction-with-regression-trees.html#cb279-2" tabindex="-1"></a>y_leq0 <span class="ot">&lt;-</span> y[x<span class="sc">&lt;=</span><span class="dv">0</span>]</span>
+<span id="cb279-3"><a href="continuous-prediction-with-regression-trees.html#cb279-3" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="fu">length</span>(x_leq0)</span>
+<span id="cb279-4"><a href="continuous-prediction-with-regression-trees.html#cb279-4" tabindex="-1"></a>runningSSD <span class="ot">&lt;-</span> <span class="fu">numeric</span>()</span>
+<span id="cb279-5"><a href="continuous-prediction-with-regression-trees.html#cb279-5" tabindex="-1"></a>runningSplit <span class="ot">&lt;-</span> <span class="fu">numeric</span>()</span>
+<span id="cb279-6"><a href="continuous-prediction-with-regression-trees.html#cb279-6" tabindex="-1"></a></span>
+<span id="cb279-7"><a href="continuous-prediction-with-regression-trees.html#cb279-7" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">4</span><span class="sc">:</span>(n<span class="dv">-4</span>)){</span>
+<span id="cb279-8"><a href="continuous-prediction-with-regression-trees.html#cb279-8" tabindex="-1"></a>  x_left <span class="ot">&lt;-</span> x_leq0[<span class="dv">1</span><span class="sc">:</span>i]</span>
+<span id="cb279-9"><a href="continuous-prediction-with-regression-trees.html#cb279-9" tabindex="-1"></a>  x_right <span class="ot">&lt;-</span> x_leq0[(i<span class="sc">+</span><span class="dv">1</span>)<span class="sc">:</span>n]</span>
+<span id="cb279-10"><a href="continuous-prediction-with-regression-trees.html#cb279-10" tabindex="-1"></a>  </span>
+<span id="cb279-11"><a href="continuous-prediction-with-regression-trees.html#cb279-11" tabindex="-1"></a>  y_left <span class="ot">&lt;-</span> y_leq0[<span class="dv">1</span><span class="sc">:</span>i]</span>
+<span id="cb279-12"><a href="continuous-prediction-with-regression-trees.html#cb279-12" tabindex="-1"></a>  y_right <span class="ot">&lt;-</span> y_leq0[(i<span class="sc">+</span><span class="dv">1</span>)<span class="sc">:</span>n]</span>
+<span id="cb279-13"><a href="continuous-prediction-with-regression-trees.html#cb279-13" tabindex="-1"></a>  </span>
+<span id="cb279-14"><a href="continuous-prediction-with-regression-trees.html#cb279-14" tabindex="-1"></a>  split4plotting <span class="ot">&lt;-</span> (<span class="fu">max</span>(x_left) <span class="sc">+</span> <span class="fu">min</span>(x_right)) <span class="sc">/</span> <span class="dv">2</span></span>
+<span id="cb279-15"><a href="continuous-prediction-with-regression-trees.html#cb279-15" tabindex="-1"></a>  </span>
+<span id="cb279-16"><a href="continuous-prediction-with-regression-trees.html#cb279-16" tabindex="-1"></a>  ybar_left <span class="ot">&lt;-</span> <span class="fu">mean</span>(y_left)</span>
+<span id="cb279-17"><a href="continuous-prediction-with-regression-trees.html#cb279-17" tabindex="-1"></a>  ybar_right <span class="ot">&lt;-</span> <span class="fu">mean</span>(y_right)</span>
+<span id="cb279-18"><a href="continuous-prediction-with-regression-trees.html#cb279-18" tabindex="-1"></a>  </span>
+<span id="cb279-19"><a href="continuous-prediction-with-regression-trees.html#cb279-19" tabindex="-1"></a>  resids_left <span class="ot">&lt;-</span> <span class="fu">sum</span>((y_left <span class="sc">-</span> ybar_left)<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb279-20"><a href="continuous-prediction-with-regression-trees.html#cb279-20" tabindex="-1"></a>  resids_right <span class="ot">&lt;-</span> <span class="fu">sum</span>((y_right <span class="sc">-</span> ybar_right)<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb279-21"><a href="continuous-prediction-with-regression-trees.html#cb279-21" tabindex="-1"></a>  </span>
+<span id="cb279-22"><a href="continuous-prediction-with-regression-trees.html#cb279-22" tabindex="-1"></a>  runningSSD[i<span class="dv">-3</span>] <span class="ot">&lt;-</span> resids_left <span class="sc">+</span> resids_right</span>
+<span id="cb279-23"><a href="continuous-prediction-with-regression-trees.html#cb279-23" tabindex="-1"></a>  runningSplit[i<span class="dv">-3</span>] <span class="ot">&lt;-</span> split4plotting</span>
+<span id="cb279-24"><a href="continuous-prediction-with-regression-trees.html#cb279-24" tabindex="-1"></a>  </span>
+<span id="cb279-25"><a href="continuous-prediction-with-regression-trees.html#cb279-25" tabindex="-1"></a>  pTmp <span class="ot">&lt;-</span> <span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb279-26"><a href="continuous-prediction-with-regression-trees.html#cb279-26" tabindex="-1"></a>    <span class="fu">geom_rect</span>(<span class="fu">aes</span>(<span class="at">xmin=</span><span class="sc">-</span><span class="cn">Inf</span>,<span class="at">xmax=</span>split4plotting,</span>
+<span id="cb279-27"><a href="continuous-prediction-with-regression-trees.html#cb279-27" tabindex="-1"></a>                  <span class="at">ymin=</span><span class="sc">-</span><span class="cn">Inf</span>,<span class="at">ymax=</span><span class="cn">Inf</span>),</span>
+<span id="cb279-28"><a href="continuous-prediction-with-regression-trees.html#cb279-28" tabindex="-1"></a>              <span class="at">fill=</span><span class="st">&quot;lightgreen&quot;</span>, <span class="at">alpha=</span><span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb279-29"><a href="continuous-prediction-with-regression-trees.html#cb279-29" tabindex="-1"></a>    <span class="fu">geom_rect</span>(<span class="fu">aes</span>(<span class="at">xmin=</span>split4plotting,<span class="at">xmax=</span><span class="cn">Inf</span>,</span>
+<span id="cb279-30"><a href="continuous-prediction-with-regression-trees.html#cb279-30" tabindex="-1"></a>                  <span class="at">ymin=</span><span class="sc">-</span><span class="cn">Inf</span>,<span class="at">ymax=</span><span class="cn">Inf</span>),</span>
+<span id="cb279-31"><a href="continuous-prediction-with-regression-trees.html#cb279-31" tabindex="-1"></a>              <span class="at">fill=</span><span class="st">&quot;lightblue&quot;</span>, <span class="at">alpha=</span><span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb279-32"><a href="continuous-prediction-with-regression-trees.html#cb279-32" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x=</span>x_left,<span class="at">y=</span>y_left),<span class="at">col=</span><span class="st">&quot;darkgreen&quot;</span>,<span class="at">size=</span><span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb279-33"><a href="continuous-prediction-with-regression-trees.html#cb279-33" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x=</span>x_right,<span class="at">y=</span>y_right),<span class="at">col=</span><span class="st">&quot;darkblue&quot;</span>,<span class="at">size=</span><span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb279-34"><a href="continuous-prediction-with-regression-trees.html#cb279-34" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">x=</span><span class="st">&quot;x&quot;</span>,<span class="at">y=</span><span class="st">&quot;y&quot;</span>) <span class="sc">+</span></span>
+<span id="cb279-35"><a href="continuous-prediction-with-regression-trees.html#cb279-35" tabindex="-1"></a>    <span class="fu">scale_y_continuous</span>(<span class="at">expand =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="fl">0.1</span>)) <span class="sc">+</span></span>
+<span id="cb279-36"><a href="continuous-prediction-with-regression-trees.html#cb279-36" tabindex="-1"></a>    <span class="fu">coord_cartesian</span>(<span class="at">ylim=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>),<span class="at">clip =</span> <span class="st">&quot;off&quot;</span>)</span>
+<span id="cb279-37"><a href="continuous-prediction-with-regression-trees.html#cb279-37" tabindex="-1"></a>  </span>
+<span id="cb279-38"><a href="continuous-prediction-with-regression-trees.html#cb279-38" tabindex="-1"></a>  pTmp <span class="ot">&lt;-</span> pTmp  <span class="sc">+</span> <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">y=</span>ybar_left,<span class="at">yend=</span>ybar_left,</span>
+<span id="cb279-39"><a href="continuous-prediction-with-regression-trees.html#cb279-39" tabindex="-1"></a>                                   <span class="at">x=</span><span class="fu">min</span>(x_left),<span class="at">xend=</span><span class="fu">max</span>(x_left)),</span>
+<span id="cb279-40"><a href="continuous-prediction-with-regression-trees.html#cb279-40" tabindex="-1"></a>                               <span class="at">color=</span><span class="st">&quot;darkgreen&quot;</span>, <span class="at">size=</span><span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb279-41"><a href="continuous-prediction-with-regression-trees.html#cb279-41" tabindex="-1"></a>    <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">y=</span>ybar_right,<span class="at">yend=</span>ybar_right,</span>
+<span id="cb279-42"><a href="continuous-prediction-with-regression-trees.html#cb279-42" tabindex="-1"></a>                     <span class="at">x=</span><span class="fu">min</span>(x_right),<span class="at">xend=</span><span class="fu">max</span>(x_right)),</span>
+<span id="cb279-43"><a href="continuous-prediction-with-regression-trees.html#cb279-43" tabindex="-1"></a>                 <span class="at">color=</span><span class="st">&quot;darkblue&quot;</span>, <span class="at">size=</span><span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb279-44"><a href="continuous-prediction-with-regression-trees.html#cb279-44" tabindex="-1"></a>    <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">y=</span>ybar_left,<span class="at">yend=</span>y_left,</span>
+<span id="cb279-45"><a href="continuous-prediction-with-regression-trees.html#cb279-45" tabindex="-1"></a>                     <span class="at">x=</span>x_left,<span class="at">xend=</span>x_left),</span>
+<span id="cb279-46"><a href="continuous-prediction-with-regression-trees.html#cb279-46" tabindex="-1"></a>                 <span class="at">color=</span><span class="st">&quot;darkgreen&quot;</span>, <span class="at">linetype=</span><span class="st">&quot;dashed&quot;</span>) <span class="sc">+</span></span>
+<span id="cb279-47"><a href="continuous-prediction-with-regression-trees.html#cb279-47" tabindex="-1"></a>    <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">y=</span>ybar_right,<span class="at">yend=</span>y_right,</span>
+<span id="cb279-48"><a href="continuous-prediction-with-regression-trees.html#cb279-48" tabindex="-1"></a>                     <span class="at">x=</span>x_right,<span class="at">xend=</span>x_right),</span>
+<span id="cb279-49"><a href="continuous-prediction-with-regression-trees.html#cb279-49" tabindex="-1"></a>                 <span class="at">color=</span><span class="st">&quot;darkblue&quot;</span>, <span class="at">linetype=</span><span class="st">&quot;dashed&quot;</span>) <span class="sc">+</span></span>
+<span id="cb279-50"><a href="continuous-prediction-with-regression-trees.html#cb279-50" tabindex="-1"></a>    <span class="fu">geom_text</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x=</span><span class="fu">mean</span>(x_left),<span class="at">y=</span><span class="dv">1</span>,</span>
+<span id="cb279-51"><a href="continuous-prediction-with-regression-trees.html#cb279-51" tabindex="-1"></a>                            <span class="at">label=</span><span class="fu">paste</span>(<span class="st">&quot;SSD=&quot;</span>,<span class="fu">round</span>(resids_left,<span class="dv">3</span>),<span class="at">sep=</span><span class="st">&quot;&quot;</span>)),</span>
+<span id="cb279-52"><a href="continuous-prediction-with-regression-trees.html#cb279-52" tabindex="-1"></a>              <span class="at">color=</span><span class="st">&quot;darkgreen&quot;</span>,<span class="at">vjust=</span><span class="sc">-</span><span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb279-53"><a href="continuous-prediction-with-regression-trees.html#cb279-53" tabindex="-1"></a>    <span class="fu">geom_text</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x=</span><span class="fu">mean</span>(x_right),<span class="at">y=</span><span class="dv">1</span>,</span>
+<span id="cb279-54"><a href="continuous-prediction-with-regression-trees.html#cb279-54" tabindex="-1"></a>                            <span class="at">label=</span><span class="fu">paste</span>(<span class="st">&quot;SSD=&quot;</span>,<span class="fu">round</span>(resids_right,<span class="dv">3</span>),<span class="at">sep=</span><span class="st">&quot;&quot;</span>)),</span>
+<span id="cb279-55"><a href="continuous-prediction-with-regression-trees.html#cb279-55" tabindex="-1"></a>              <span class="at">color=</span><span class="st">&quot;darkblue&quot;</span>,<span class="at">vjust=</span><span class="sc">-</span><span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb279-56"><a href="continuous-prediction-with-regression-trees.html#cb279-56" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">subtitle =</span> <span class="fu">paste</span>(<span class="st">&quot;Total SSD=&quot;</span>,<span class="fu">round</span>(resids_left<span class="sc">+</span>resids_right,<span class="dv">3</span>),<span class="at">sep=</span><span class="st">&quot;&quot;</span>))</span>
+<span id="cb279-57"><a href="continuous-prediction-with-regression-trees.html#cb279-57" tabindex="-1"></a>  <span class="fu">print</span>(pTmp)</span>
+<span id="cb279-58"><a href="continuous-prediction-with-regression-trees.html#cb279-58" tabindex="-1"></a>}</span></code></pre></div>
+<p><img src="06Discrete2Continuous_files/figure-html/unnamed-chunk-16-.gif" alt="" width="672" /></p>
+<p>And where should we split this time? We still pick <span class="math inline">\(x\)</span> at the minimum value of of the residuals.</p>
+<div class="sourceCode" id="cb280"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb280-1"><a href="continuous-prediction-with-regression-trees.html#cb280-1" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb280-2"><a href="continuous-prediction-with-regression-trees.html#cb280-2" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x=</span>runningSplit,<span class="at">y=</span>runningSSD)) <span class="sc">+</span> </span>
+<span id="cb280-3"><a href="continuous-prediction-with-regression-trees.html#cb280-3" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x=</span>runningSplit,<span class="at">y=</span>runningSSD)) <span class="sc">+</span></span>
+<span id="cb280-4"><a href="continuous-prediction-with-regression-trees.html#cb280-4" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">y=</span><span class="st">&quot;Sum of Squared Residuals&quot;</span>,<span class="at">x=</span><span class="st">&quot;Threshold for Splitting on x&quot;</span>)</span></code></pre></div>
+<p><img src="06Discrete2Continuous_files/figure-html/unnamed-chunk-17-1.png" alt="" width="672" /></p>
+<div class="sourceCode" id="cb281"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb281-1"><a href="continuous-prediction-with-regression-trees.html#cb281-1" tabindex="-1"></a><span class="co"># here is our new x to split on</span></span>
+<span id="cb281-2"><a href="continuous-prediction-with-regression-trees.html#cb281-2" tabindex="-1"></a>runningSplit[<span class="fu">which.min</span>(runningSSD)]</span></code></pre></div>
+<pre><code>## [1] -1.5</code></pre>
+<p>Now we have our next split at <span class="math inline">\(x = -1.5\)</span>. This would give us new predictions for <span class="math inline">\(y\)</span>. So we follow our new rules for <span class="math inline">\(y\)</span> when <span class="math inline">\(x \leq -1.5\)</span> and when <span class="math inline">\(-1.5 &lt; x \leq 0\)</span>. We get predictions (<span class="math inline">\(\hat y\)</span>) as:</p>
+<div class="sourceCode" id="cb283"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb283-1"><a href="continuous-prediction-with-regression-trees.html#cb283-1" tabindex="-1"></a>y_leq1<span class="fl">.5</span> <span class="ot">&lt;-</span> y[x <span class="sc">&lt;=</span> <span class="sc">-</span><span class="fl">1.5</span>]</span>
+<span id="cb283-2"><a href="continuous-prediction-with-regression-trees.html#cb283-2" tabindex="-1"></a><span class="fu">mean</span>(y_leq1<span class="fl">.5</span>)</span></code></pre></div>
+<pre><code>## [1] 0.04658348</code></pre>
+<div class="sourceCode" id="cb285"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb285-1"><a href="continuous-prediction-with-regression-trees.html#cb285-1" tabindex="-1"></a>y_leq0_gt1<span class="fl">.5</span> <span class="ot">&lt;-</span> y[x<span class="sc">&lt;=</span><span class="dv">0</span> <span class="sc">&amp;</span> x <span class="sc">&gt;</span> <span class="sc">-</span><span class="fl">1.5</span>]</span>
+<span id="cb285-2"><a href="continuous-prediction-with-regression-trees.html#cb285-2" tabindex="-1"></a><span class="fu">mean</span>(y_leq0_gt1<span class="fl">.5</span>)</span></code></pre></div>
+<pre><code>## [1] 0.3164714</code></pre>
+<p>The standard errors and sample size on those as:</p>
+<div class="sourceCode" id="cb287"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb287-1"><a href="continuous-prediction-with-regression-trees.html#cb287-1" tabindex="-1"></a><span class="fu">length</span>(y_leq1<span class="fl">.5</span>)</span></code></pre></div>
+<pre><code>## [1] 28</code></pre>
+<div class="sourceCode" id="cb289"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb289-1"><a href="continuous-prediction-with-regression-trees.html#cb289-1" tabindex="-1"></a><span class="fu">length</span>(y_leq0_gt1<span class="fl">.5</span>)</span></code></pre></div>
+<pre><code>## [1] 8</code></pre>
+<div class="sourceCode" id="cb291"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb291-1"><a href="continuous-prediction-with-regression-trees.html#cb291-1" tabindex="-1"></a><span class="fu">sd</span>(y_leq1<span class="fl">.5</span>)<span class="sc">/</span><span class="fu">sqrt</span>(<span class="fu">length</span>(y_leq1<span class="fl">.5</span>))</span></code></pre></div>
+<pre><code>## [1] 0.01389169</code></pre>
+<div class="sourceCode" id="cb293"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb293-1"><a href="continuous-prediction-with-regression-trees.html#cb293-1" tabindex="-1"></a><span class="fu">sd</span>(y_leq0_gt1<span class="fl">.5</span>)<span class="sc">/</span><span class="fu">sqrt</span>(<span class="fu">length</span>(y_leq0_gt1<span class="fl">.5</span>))</span></code></pre></div>
+<pre><code>## [1] 0.03258364</code></pre>
+<p>Here is a plot of the tree so far.</p>
+<p><img src="06Discrete2Continuous_files/figure-html/unnamed-chunk-20-1.png" alt="" width="384" /></p>
+</div>
+<div id="are-we-done-now" class="section level3 hasAnchor" number="7.6.7">
+<h3><span class="header-section-number">7.6.7</span> Are We Done Now?<a href="continuous-prediction-with-regression-trees.html#are-we-done-now" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Would we stop our tree growing now? Or keep going? We face the same difficulty here as we did with decision trees. How much splitting is enough? We could go on until every observation was in its own leaf. But that would certainly be overfit.</p>
+<p>The pruning of regression trees is more complicated than I want to get into with a toy example but you can watch a great video <a href="https://www.youtube.com/watch?v=D0efHEJsfHo&amp;ab_channel=StatQuestwithJoshStarmer">here</a> that explains the cost complexity penalty method for pruning. The basic idea is that we can uses tuning parameter that balances minimizing the sum of the squared residuals with the number of leaves in a tree to get a balance of signal to noise in the final tree. This happens behind the scenes for you implementations like <code>rpart</code>.</p>
+<p>Let’s look at some real data.</p>
+</div>
+</div>
+<div id="regression-tree-example-lead-levels-in-st-louis" class="section level2 hasAnchor" number="7.7">
+<h2><span class="header-section-number">7.7</span> Regression Tree Example: Lead Levels in St Louis<a href="continuous-prediction-with-regression-trees.html#regression-tree-example-lead-levels-in-st-louis" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>I’m going to show data from 106 census tracts in St. Louis, Missouri and we are going to use <code>rpart</code> to run a regression model. <a href="https://github.com/slu-soc1120/STL_HEALTH_Lead">Here</a> is the source of the data. It stems from a very sobering series of reports from Reuters on lead levels in children that you can find <a href="https://www.reuters.com/investigates/special-report/usa-lead-testing/">here</a></p>
+<p>For each census tract in these data, we have the percentage of the population that identifies as white or Black in the American Community Survey data. The data also shows the percent of the population that is in poverty and the percentage of the population that is under the age of 18 and in poverty (kids in poverty). With these data, there is also a variable named <code>pctTestsElevatedPb</code>. This is the percentage of tests performed that showed elevated lead in the blood of children. The Reuters article will tell you more about it. So a number like 0.12 means that 12% of the tests showed elevated lead. The data were collected over 2010-2015. Most of these tracts have about 1000 tests that goes into the <code>pctTestsElevatedPb</code> column. I fear the data are robust.</p>
+<p>Here we go.</p>
+<div class="sourceCode" id="cb295"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb295-1"><a href="continuous-prediction-with-regression-trees.html#cb295-1" tabindex="-1"></a>dat <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;data/STL_Pb.csv&quot;</span>)</span></code></pre></div>
+<pre><code>## Rows: 106 Columns: 5
+## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## dbl (5): pctWhite, pctBlack, pctPoverty, pctPovertyu18, pctTestsElevatedPb
+## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<div class="sourceCode" id="cb297"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb297-1"><a href="continuous-prediction-with-regression-trees.html#cb297-1" tabindex="-1"></a><span class="co"># shuffle the data</span></span>
+<span id="cb297-2"><a href="continuous-prediction-with-regression-trees.html#cb297-2" tabindex="-1"></a>dat <span class="ot">&lt;-</span> dat[<span class="fu">sample</span>(<span class="fu">nrow</span>(dat)),]</span>
+<span id="cb297-3"><a href="continuous-prediction-with-regression-trees.html#cb297-3" tabindex="-1"></a>GGally<span class="sc">::</span><span class="fu">ggpairs</span>(dat)</span></code></pre></div>
+<p><img src="06Discrete2Continuous_files/figure-html/unnamed-chunk-21-1.png" alt="" width="672" /></p>
+<p>We are going to model elevated Pb levels as a function of race and poverty in each tract. E.g., <code>pctTestsElevatedPb~pctWhite+pctBlack+pctPoverty+pctPovertyu18</code>. Before we do that, let’s break the data up into testing and training data using a random sampling of the rows.</p>
+<div class="sourceCode" id="cb298"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb298-1"><a href="continuous-prediction-with-regression-trees.html#cb298-1" tabindex="-1"></a>rows2test <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(dat),<span class="fl">0.3</span><span class="sc">*</span><span class="fu">nrow</span>(dat))</span>
+<span id="cb298-2"><a href="continuous-prediction-with-regression-trees.html#cb298-2" tabindex="-1"></a>test <span class="ot">&lt;-</span> dat[rows2test,]</span>
+<span id="cb298-3"><a href="continuous-prediction-with-regression-trees.html#cb298-3" tabindex="-1"></a>train <span class="ot">&lt;-</span> dat[<span class="sc">-</span>rows2test,]</span></code></pre></div>
+<p>With that done. Let’s build a regression tree using <code>rpart</code> and plot the tree with the <code>visTree</code> function.</p>
+<div class="sourceCode" id="cb299"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb299-1"><a href="continuous-prediction-with-regression-trees.html#cb299-1" tabindex="-1"></a>rp1 <span class="ot">&lt;-</span> <span class="fu">rpart</span>(pctTestsElevatedPb<span class="sc">~</span>.,train)</span></code></pre></div>
+<div class="sourceCode" id="cb300"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb300-1"><a href="continuous-prediction-with-regression-trees.html#cb300-1" tabindex="-1"></a><span class="fu">visTree</span>(rp1)</span></code></pre></div>
+<div id="htmlwidget-51fde8fd709e7f317de5" style="width:100%;height:600px;" class="visNetwork html-widget"></div>
+<script type="application/json" data-for="htmlwidget-51fde8fd709e7f317de5">{"x":{"nodes":{"id":[1,2,4,8,9,5,3,6,12,13,7],"label":["pctWhite","pctBlack","pctPovertyu18","0.037","0.064","0.101","pctBlack","pctPoverty","0.114","0.142","0.196"],"level":[1,2,3,4,4,3,2,3,4,4,3],"color":["#F1B8C2","#CBC999","#8DD4C1","#E6E0F8","#D6BBEC","#C087DB","#CBC999","#B4C7ED","#B975D5","#A84DC8","#8904B1"],"value":[75,42,27,10,17,15,33,24,9,15,9],"shape":["dot","dot","dot","square","square","square","dot","dot","square","square","square"],"title":["<div style=\"text-align:center;\">N : <b>100%<\/b> (75)<br>Complexity : <b>0.411<\/b><br>Mean : <b>0.105<\/b><br>Variance : <b>0.004<\/b><\/div>","<div style=\"text-align:center;\">N : <b>56%<\/b> (42)<br>Complexity : <b>0.078<\/b><br>Mean : <b>0.071<\/b><br>Variance : <b>0.002<\/b><hr class = \"rPartvisNetwork\">\n<div class =\"showOnMe2\"><div style=\"text-align:center;\"><U style=\"color:blue;\"  onmouseover=\"this.style.cursor='pointer';\" onmouseout=\"this.style.cursor='default';\">Rules<\/U><\/div>\n<div class=\"showMeRpartTTp2\" style=\"display:none;\">\n<b> pctWhite <\/b> >= 0.318<\/script><script type=\"text/javascript\">$(document).ready(function(){\n$(\".showOnMe2\").click(function(){\n$(\".showMeRpartTTp2\").toggle();\n$.sparkline_display_visible();\n});\n  });<\/script><\/div><\/div>\n\n<\/div>","<div style=\"text-align:center;\">N : <b>36%<\/b> (27)<br>Complexity : <b>0.016<\/b><br>Mean : <b>0.054<\/b><br>Variance : <b>0.001<\/b><hr class = \"rPartvisNetwork\">\n<div class =\"showOnMe2\"><div style=\"text-align:center;\"><U style=\"color:blue;\"  onmouseover=\"this.style.cursor='pointer';\" onmouseout=\"this.style.cursor='default';\">Rules<\/U><\/div>\n<div class=\"showMeRpartTTp2\" style=\"display:none;\">\n<b> pctWhite <\/b> >= 0.318<br><b> pctBlack <\/b> < 0.301<\/script><script type=\"text/javascript\">$(document).ready(function(){\n$(\".showOnMe2\").click(function(){\n$(\".showMeRpartTTp2\").toggle();\n$.sparkline_display_visible();\n});\n  });<\/script><\/div><\/div>\n\n<\/div>","<div style=\"text-align:center;\">N : <b>13.3%<\/b> (10)<br>Complexity : <b>0.01<\/b><br>Mean : <b>0.037<\/b><br>Variance : <b>0<\/b><hr class = \"rPartvisNetwork\">\n<div class =\"showOnMe2\"><div style=\"text-align:center;\"><U style=\"color:blue;\"  onmouseover=\"this.style.cursor='pointer';\" onmouseout=\"this.style.cursor='default';\">Rules<\/U><\/div>\n<div class=\"showMeRpartTTp2\" style=\"display:none;\">\n<b> pctWhite <\/b> >= 0.318<br><b> pctBlack <\/b> < 0.301<br><b> pctPovertyu18 <\/b> < 0.013<\/script><script type=\"text/javascript\">$(document).ready(function(){\n$(\".showOnMe2\").click(function(){\n$(\".showMeRpartTTp2\").toggle();\n$.sparkline_display_visible();\n});\n  });<\/script><\/div><\/div>\n\n<\/div>","<div style=\"text-align:center;\">N : <b>22.7%<\/b> (17)<br>Complexity : <b>0.01<\/b><br>Mean : <b>0.064<\/b><br>Variance : <b>0.001<\/b><hr class = \"rPartvisNetwork\">\n<div class =\"showOnMe2\"><div style=\"text-align:center;\"><U style=\"color:blue;\"  onmouseover=\"this.style.cursor='pointer';\" onmouseout=\"this.style.cursor='default';\">Rules<\/U><\/div>\n<div class=\"showMeRpartTTp2\" style=\"display:none;\">\n<b> pctWhite <\/b> >= 0.318<br><b> pctBlack <\/b> < 0.301<br><b> pctPovertyu18 <\/b> >= 0.013<\/script><script type=\"text/javascript\">$(document).ready(function(){\n$(\".showOnMe2\").click(function(){\n$(\".showMeRpartTTp2\").toggle();\n$.sparkline_display_visible();\n});\n  });<\/script><\/div><\/div>\n\n<\/div>","<div style=\"text-align:center;\">N : <b>20%<\/b> (15)<br>Complexity : <b>0.01<\/b><br>Mean : <b>0.101<\/b><br>Variance : <b>0.002<\/b><hr class = \"rPartvisNetwork\">\n<div class =\"showOnMe2\"><div style=\"text-align:center;\"><U style=\"color:blue;\"  onmouseover=\"this.style.cursor='pointer';\" onmouseout=\"this.style.cursor='default';\">Rules<\/U><\/div>\n<div class=\"showMeRpartTTp2\" style=\"display:none;\">\n<b> pctWhite <\/b> >= 0.318<br><b> pctBlack <\/b> >= 0.301<\/script><script type=\"text/javascript\">$(document).ready(function(){\n$(\".showOnMe2\").click(function(){\n$(\".showMeRpartTTp2\").toggle();\n$.sparkline_display_visible();\n});\n  });<\/script><\/div><\/div>\n\n<\/div>","<div style=\"text-align:center;\">N : <b>44%<\/b> (33)<br>Complexity : <b>0.096<\/b><br>Mean : <b>0.149<\/b><br>Variance : <b>0.003<\/b><hr class = \"rPartvisNetwork\">\n<div class =\"showOnMe2\"><div style=\"text-align:center;\"><U style=\"color:blue;\"  onmouseover=\"this.style.cursor='pointer';\" onmouseout=\"this.style.cursor='default';\">Rules<\/U><\/div>\n<div class=\"showMeRpartTTp2\" style=\"display:none;\">\n<b> pctWhite <\/b> < 0.318<\/script><script type=\"text/javascript\">$(document).ready(function(){\n$(\".showOnMe2\").click(function(){\n$(\".showMeRpartTTp2\").toggle();\n$.sparkline_display_visible();\n});\n  });<\/script><\/div><\/div>\n\n<\/div>","<div style=\"text-align:center;\">N : <b>32%<\/b> (24)<br>Complexity : <b>0.017<\/b><br>Mean : <b>0.132<\/b><br>Variance : <b>0.003<\/b><hr class = \"rPartvisNetwork\">\n<div class =\"showOnMe2\"><div style=\"text-align:center;\"><U style=\"color:blue;\"  onmouseover=\"this.style.cursor='pointer';\" onmouseout=\"this.style.cursor='default';\">Rules<\/U><\/div>\n<div class=\"showMeRpartTTp2\" style=\"display:none;\">\n<b> pctWhite <\/b> < 0.318<br><b> pctBlack <\/b> < 0.976<\/script><script type=\"text/javascript\">$(document).ready(function(){\n$(\".showOnMe2\").click(function(){\n$(\".showMeRpartTTp2\").toggle();\n$.sparkline_display_visible();\n});\n  });<\/script><\/div><\/div>\n\n<\/div>","<div style=\"text-align:center;\">N : <b>12%<\/b> (9)<br>Complexity : <b>0.01<\/b><br>Mean : <b>0.114<\/b><br>Variance : <b>0.003<\/b><hr class = \"rPartvisNetwork\">\n<div class =\"showOnMe2\"><div style=\"text-align:center;\"><U style=\"color:blue;\"  onmouseover=\"this.style.cursor='pointer';\" onmouseout=\"this.style.cursor='default';\">Rules<\/U><\/div>\n<div class=\"showMeRpartTTp2\" style=\"display:none;\">\n<b> pctWhite <\/b> < 0.318<br><b> pctBlack <\/b> < 0.976<br><b> pctPoverty <\/b> >= 0.413<\/script><script type=\"text/javascript\">$(document).ready(function(){\n$(\".showOnMe2\").click(function(){\n$(\".showMeRpartTTp2\").toggle();\n$.sparkline_display_visible();\n});\n  });<\/script><\/div><\/div>\n\n<\/div>","<div style=\"text-align:center;\">N : <b>20%<\/b> (15)<br>Complexity : <b>0.01<\/b><br>Mean : <b>0.142<\/b><br>Variance : <b>0.002<\/b><hr class = \"rPartvisNetwork\">\n<div class =\"showOnMe2\"><div style=\"text-align:center;\"><U style=\"color:blue;\"  onmouseover=\"this.style.cursor='pointer';\" onmouseout=\"this.style.cursor='default';\">Rules<\/U><\/div>\n<div class=\"showMeRpartTTp2\" style=\"display:none;\">\n<b> pctWhite <\/b> < 0.318<br><b> pctBlack <\/b> < 0.976<br><b> pctPoverty <\/b> < 0.413<\/script><script type=\"text/javascript\">$(document).ready(function(){\n$(\".showOnMe2\").click(function(){\n$(\".showMeRpartTTp2\").toggle();\n$.sparkline_display_visible();\n});\n  });<\/script><\/div><\/div>\n\n<\/div>","<div style=\"text-align:center;\">N : <b>12%<\/b> (9)<br>Complexity : <b>0.01<\/b><br>Mean : <b>0.196<\/b><br>Variance : <b>0.001<\/b><hr class = \"rPartvisNetwork\">\n<div class =\"showOnMe2\"><div style=\"text-align:center;\"><U style=\"color:blue;\"  onmouseover=\"this.style.cursor='pointer';\" onmouseout=\"this.style.cursor='default';\">Rules<\/U><\/div>\n<div class=\"showMeRpartTTp2\" style=\"display:none;\">\n<b> pctWhite <\/b> < 0.318<br><b> pctBlack <\/b> >= 0.976<\/script><script type=\"text/javascript\">$(document).ready(function(){\n$(\".showOnMe2\").click(function(){\n$(\".showMeRpartTTp2\").toggle();\n$.sparkline_display_visible();\n});\n  });<\/script><\/div><\/div>\n\n<\/div>"],"fixed":[true,true,true,true,true,true,true,true,true,true,true],"colorClust":["#BE81D9","#D2B1E8","#DCC8F0","#E6E0F8","#D6BBEC","#C087DB","#A444C5","#AE5CCD","#B975D5","#A84DC8","#8904B1"],"labelClust":[0.105,0.07099999999999999,0.054,0.037,0.064,0.101,0.149,0.132,0.114,0.142,0.196],"Leaf":[0,0,0,1,1,1,0,0,1,1,1],"font.size":[16,16,16,16,16,16,16,16,16,16,16],"scaling.min":[22.5,22.5,22.5,22.5,22.5,22.5,22.5,22.5,22.5,22.5,22.5],"scaling.max":[22.5,22.5,22.5,22.5,22.5,22.5,22.5,22.5,22.5,22.5,22.5]},"edges":{"id":["edge1","edge2","edge3","edge4","edge5","edge6","edge7","edge8","edge9","edge10"],"from":[1,2,4,4,2,1,3,6,6,3],"to":[2,4,8,9,5,3,6,12,13,7],"label":[">= 0.318","< 0.301","< 0.013",">= 0.013",">= 0.301","< 0.318","< 0.976",">= 0.413","< 0.413",">= 0.976"],"value":[42,27,10,17,15,33,24,9,15,9],"title":["<div style=\"text-align:center;\"><b>pctWhite<\/b><\/div><div style=\"text-align:center;\">>=0.318<\/div>","<div style=\"text-align:center;\"><b>pctBlack<\/b><\/div><div style=\"text-align:center;\"><0.301<\/div>","<div style=\"text-align:center;\"><b>pctPovertyu18<\/b><\/div><div style=\"text-align:center;\"><0.013<\/div>","<div style=\"text-align:center;\"><b>pctPovertyu18<\/b><\/div><div style=\"text-align:center;\">>=0.013<\/div>","<div style=\"text-align:center;\"><b>pctBlack<\/b><\/div><div style=\"text-align:center;\">>=0.301<\/div>","<div style=\"text-align:center;\"><b>pctWhite<\/b><\/div><div style=\"text-align:center;\"><0.318<\/div>","<div style=\"text-align:center;\"><b>pctBlack<\/b><\/div><div style=\"text-align:center;\"><0.976<\/div>","<div style=\"text-align:center;\"><b>pctPoverty<\/b><\/div><div style=\"text-align:center;\">>=0.413<\/div>","<div style=\"text-align:center;\"><b>pctPoverty<\/b><\/div><div style=\"text-align:center;\"><0.413<\/div>","<div style=\"text-align:center;\"><b>pctBlack<\/b><\/div><div style=\"text-align:center;\">>=0.976<\/div>"],"color":["#8181F7","#8181F7","#8181F7","#8181F7","#8181F7","#8181F7","#8181F7","#8181F7","#8181F7","#8181F7"],"font.size":[14,14,14,14,14,14,14,14,14,14],"font.align":["horizontal","horizontal","horizontal","horizontal","horizontal","horizontal","horizontal","horizontal","horizontal","horizontal"],"smooth.enabled":[true,true,true,true,true,true,true,true,true,true],"smooth.type":["cubicBezier","cubicBezier","cubicBezier","cubicBezier","cubicBezier","cubicBezier","cubicBezier","cubicBezier","cubicBezier","cubicBezier"],"smooth.roundness":[0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5]},"nodesToDataframe":true,"edgesToDataframe":true,"options":{"width":"100%","height":"100%","nodes":{"shape":"dot"},"manipulation":{"enabled":false},"layout":{"hierarchical":{"enabled":true,"direction":"UD"}},"interaction":{"dragNodes":false,"selectConnectedEdges":false,"tooltipDelay":500,"zoomSpeed":1},"edges":{"scaling":{"label":{"enabled":false}}}},"groups":null,"width":"100%","height":"600px","idselection":{"enabled":false,"style":"width: 150px; height: 26px","useLabels":true,"main":"Select by id"},"byselection":{"enabled":false,"style":"width: 150px; height: 26px","multiple":false,"hideColor":"rgba(200,200,200,0.5)","highlight":false},"main":{"text":"","style":"font-family:Georgia, Times New Roman, Times, serif;font-weight:bold;font-size:20px;text-align:center;"},"submain":{"text":"","style":"font-family:Georgia, Times New Roman, Times, serif;font-size:12px;text-align:center;"},"footer":{"text":"","style":"font-family:Georgia, Times New Roman, Times, serif;font-size:12px;text-align:center;"},"background":"rgba(0, 0, 0, 0)","highlight":{"enabled":true,"hoverNearest":false,"degree":{"from":50000,"to":0},"algorithm":"hierarchical","hideColor":"rgba(200,200,200,0.5)","labelOnly":true},"collapse":{"enabled":true,"fit":true,"resetHighlight":true,"clusterOptions":{"fixed":true,"physics":false},"keepCoord":true,"labelSuffix":"(cluster)"},"tooltipStay":300,"tooltipStyle":"position: fixed;visibility:hidden;padding: 5px;\n                      white-space: nowrap;\n                      font-family: cursive;font-size:12px;font-color:purple;background-color: #E6E6E6;\n                      border-radius: 15px;","OnceEvents":{"stabilized":"function() { \n        this.setOptions({layout:{hierarchical:false}, physics:{solver:'barnesHut', enabled:true, stabilization : false}, nodes : {physics : false, fixed : true}});\n    }"},"legend":{"width":0.1,"useGroups":false,"position":"left","ncol":1,"stepX":100,"stepY":100,"zoom":true,"nodes":{"label":["pctBlack","pctPoverty","pctPovertyu18","pctWhite"],"color":["#CBC999","#B4C7ED","#8DD4C1","#F1B8C2"],"shape":["dot","dot","dot","dot"],"size":[22,22,22,22],"Leaf":[0,0,0,0],"font.size":[16,16,16,16],"id":[10000,10001,10002,10003]},"nodesToDataframe":true},"tree":{"updateShape":true,"shapeVar":"dot","shapeY":"square","colorVar":{"variable":["pctWhite","pctBlack","pctPovertyu18","pctPoverty"],"color":["#F1B8C2","#CBC999","#8DD4C1","#B4C7ED"]},"colorY":{"colRamp":["function (x) ","roundcolor(cbind(palette[[1L]](x), palette[[2L]](x), palette[[3L]](x), ","    if (alpha) palette[[4L]](x))) * 255"],"colorTerm":["#BE81D9","#D2B1E8","#DCC8F0","#E6E0F8","#D6BBEC","#C087DB","#A444C5","#AE5CCD","#B975D5","#A84DC8","#8904B1"],"colorY":["#E6E0F8","#8904B1"],"vardecidedClust":[0.105,0.07099999999999999,0.054,0.037,0.064,0.101,0.149,0.132,0.114,0.142,0.196]}},"export":{"type":"png","css":"float:right;-webkit-border-radius: 10;\n                  -moz-border-radius: 10;\n                  border-radius: 10px;\n                  font-family: Arial;\n                  color: #ffffff;\n                  font-size: 12px;\n                  background: #090a0a;\n                  padding: 4px 8px 4px 4px;\n                  text-decoration: none;","background":"#fff","name":"network.png","label":"Export as png"}},"evals":["OnceEvents.stabilized"],"jsHooks":[]}</script>
+<p>Let’s spend some time looking at the splits. It’s sobering indeed.</p>
+<p>Now, these data are bound to be noisy. Let’s look at the skill of the <code>rpart</code> model using the testing data and plot the observed vs predicted data.</p>
+<div class="sourceCode" id="cb301"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb301-1"><a href="continuous-prediction-with-regression-trees.html#cb301-1" tabindex="-1"></a>obs <span class="ot">&lt;-</span> test<span class="sc">$</span>pctTestsElevatedPb</span>
+<span id="cb301-2"><a href="continuous-prediction-with-regression-trees.html#cb301-2" tabindex="-1"></a>pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(rp1,test)</span>
+<span id="cb301-3"><a href="continuous-prediction-with-regression-trees.html#cb301-3" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x=</span>obs,<span class="at">y=</span>pred)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb301-4"><a href="continuous-prediction-with-regression-trees.html#cb301-4" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method=</span><span class="st">&quot;lm&quot;</span>) <span class="sc">+</span></span>
+<span id="cb301-5"><a href="continuous-prediction-with-regression-trees.html#cb301-5" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x=</span><span class="st">&quot;Observed&quot;</span>,<span class="at">y=</span><span class="st">&quot;Predicted&quot;</span>)</span></code></pre></div>
+<pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
+<p><img src="06Discrete2Continuous_files/figure-html/unnamed-chunk-26-1.png" alt="" width="672" /></p>
+<div class="sourceCode" id="cb303"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb303-1"><a href="continuous-prediction-with-regression-trees.html#cb303-1" tabindex="-1"></a>rsq <span class="ot">&lt;-</span> <span class="fu">cor</span>(pred,obs)<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb303-2"><a href="continuous-prediction-with-regression-trees.html#cb303-2" tabindex="-1"></a>mae <span class="ot">&lt;-</span> <span class="fu">mean</span>(<span class="fu">abs</span>(obs <span class="sc">-</span> pred))</span>
+<span id="cb303-3"><a href="continuous-prediction-with-regression-trees.html#cb303-3" tabindex="-1"></a>rsq <span class="co"># rsq</span></span></code></pre></div>
+<pre><code>## [1] 0.3905506</code></pre>
+<div class="sourceCode" id="cb305"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb305-1"><a href="continuous-prediction-with-regression-trees.html#cb305-1" tabindex="-1"></a>mae <span class="co"># mae</span></span></code></pre></div>
+<pre><code>## [1] 0.03592384</code></pre>
+<p>First, that’s pretty good skill for out of sample estimates. These kinds of data are notoriously messy. And the plot is interesting. It’s also pretty weird looking with the predicted date in stripes on the y axis. But it makes sense when we think about it. There are only a few terminal nodes on the tree, so only a few possible different predictions of lead. It’s amazing that it explains so much of the variance.</p>
+<p>Look back at the terminal nodes on the tree plot. All those points shunted into one predicted value. It’d be cool if we could do something with all those residuals in each terminal node, huh?</p>
+</div>
+<div id="model-tree-example-lead-levels-in-st-louis" class="section level2 hasAnchor" number="7.8">
+<h2><span class="header-section-number">7.8</span> Model Tree Example: Lead Levels in St Louis<a href="continuous-prediction-with-regression-trees.html#model-tree-example-lead-levels-in-st-louis" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Well, we can investigate those residuals. That’s what model trees are all about. They are basically regression trees like <code>rpart</code> fits but they then try to clean up the end nodes by running a linear model on the data in that node. The book is quite good on this idea – see page 212. The idea is that any non-linear relationships have been beaten out of the system by the regression tree approach and we should be able to improve model performance with an additional bit of linear modeling (OLS) on the points in each terminal node. So, kind of annoyingly, regression trees don’t do regression but model trees do. Let’s investigate using <code>cubist</code> just like the book does.</p>
+<p>The <code>cubist</code> splitting and pruning criteria are different than <code>rpart</code> but the concept is the same. The model will perform a split, then run a linear model on the data in each terminal node. The algorithm grows and prunes until the model is neither too small nor too big. There is a little more info in the text (see page 212) but the under-the-hood details are beyond the scope of what we want to cover here.</p>
+<div class="sourceCode" id="cb307"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb307-1"><a href="continuous-prediction-with-regression-trees.html#cb307-1" tabindex="-1"></a>mt1 <span class="ot">&lt;-</span> <span class="fu">cubist</span>(<span class="at">x =</span> train[,<span class="sc">-</span><span class="dv">5</span>], <span class="at">y =</span> train<span class="sc">$</span>pctTestsElevatedPb)</span></code></pre></div>
+<div class="sourceCode" id="cb308"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb308-1"><a href="continuous-prediction-with-regression-trees.html#cb308-1" tabindex="-1"></a>mt1</span></code></pre></div>
+<pre><code>## 
+## Call:
+## cubist.default(x = dat[, -5], y = dat$pctTestsElevatedPb)
+## 
+## Number of samples: 106 
+## Number of predictors: 4 
+## 
+## Number of committees: 1 
+## Number of rules: 2</code></pre>
+<p>This is interesting. There are only two rules (one split) but let’s look at the rules. Note the linear model at the end of each rule.</p>
+<div class="sourceCode" id="cb310"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb310-1"><a href="continuous-prediction-with-regression-trees.html#cb310-1" tabindex="-1"></a><span class="fu">summary</span>(mt1)</span></code></pre></div>
+<pre><code>## 
+## Cubist [Release 2.07 GPL Edition]  Thu Mar  5 16:29:37 2026
+## ---------------------------------
+## 
+##     Target attribute `outcome&#39;
+## 
+## Read 106 cases (5 attributes) from undefined.data
+## 
+## Model:
+## 
+##   Rule 1: [63 cases, mean 0.07798, range 0 to 0.2209, est err 0.02630]
+## 
+##     if
+##  pctBlack &lt;= 0.6236004
+##     then
+##  outcome = 0.10745 + 0.469 pctPovertyu18 - 0.084 pctWhite
+## 
+##   Rule 2: [43 cases, mean 0.13629, range 0.0312 to 0.2328, est err 0.04255]
+## 
+##     if
+##  pctBlack &gt; 0.6236004
+##     then
+##  outcome = 0.19097 - 0.431 pctWhite - 0.226 pctPovertyu18
+## 
+## 
+## Evaluation on training data (106 cases):
+## 
+##     Average  |error|            0.03513
+##     Relative |error|               0.70
+##     Correlation coefficient        0.68
+## 
+## 
+##  Attribute usage:
+##    Conds  Model
+## 
+##    100%           pctBlack
+##           100%    pctWhite
+##           100%    pctPovertyu18
+## 
+## 
+## Time: 0.0 secs</code></pre>
+<p>We’ve divided the data using similar criteria to <code>rpart</code>. But we have a good model still.</p>
+<p>Let’s see how it fits. We can predict the model just like we can with <code>rpart</code>.</p>
+<div class="sourceCode" id="cb312"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb312-1"><a href="continuous-prediction-with-regression-trees.html#cb312-1" tabindex="-1"></a>obs <span class="ot">&lt;-</span> test<span class="sc">$</span>pctTestsElevatedPb</span>
+<span id="cb312-2"><a href="continuous-prediction-with-regression-trees.html#cb312-2" tabindex="-1"></a>pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(mt1,test[,<span class="sc">-</span><span class="dv">5</span>])</span>
+<span id="cb312-3"><a href="continuous-prediction-with-regression-trees.html#cb312-3" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">mapping=</span><span class="fu">aes</span>(<span class="at">x=</span>obs,<span class="at">y=</span>pred)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb312-4"><a href="continuous-prediction-with-regression-trees.html#cb312-4" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method=</span><span class="st">&quot;lm&quot;</span>) <span class="sc">+</span></span>
+<span id="cb312-5"><a href="continuous-prediction-with-regression-trees.html#cb312-5" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x=</span><span class="st">&quot;Observed&quot;</span>,<span class="at">y=</span><span class="st">&quot;Predicted&quot;</span>)</span></code></pre></div>
+<pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
+<p><img src="06Discrete2Continuous_files/figure-html/unnamed-chunk-32-1.png" alt="" width="672" /></p>
+<div class="sourceCode" id="cb314"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb314-1"><a href="continuous-prediction-with-regression-trees.html#cb314-1" tabindex="-1"></a>rsq <span class="ot">&lt;-</span> <span class="fu">cor</span>(pred,obs)<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb314-2"><a href="continuous-prediction-with-regression-trees.html#cb314-2" tabindex="-1"></a>mae <span class="ot">&lt;-</span> <span class="fu">mean</span>(<span class="fu">abs</span>(obs <span class="sc">-</span> pred))</span>
+<span id="cb314-3"><a href="continuous-prediction-with-regression-trees.html#cb314-3" tabindex="-1"></a>rsq <span class="co"># rsq</span></span></code></pre></div>
+<pre><code>## [1] 0.6144374</code></pre>
+<div class="sourceCode" id="cb316"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb316-1"><a href="continuous-prediction-with-regression-trees.html#cb316-1" tabindex="-1"></a>mae <span class="co"># mae</span></span></code></pre></div>
+<pre><code>## [1] 0.02723345</code></pre>
+<p>We see a nice improvement in skill on the withheld data with this approach. And it is a subtle approach. My issue with regression trees is that they basically take a continuous variable and turn the response into a category (albeit one with residuals). This approach combines the best part of brute force partitioning with the elegance of regression modeling.</p>
+</div>
+<div id="your-work-5" class="section level2 hasAnchor" number="7.9">
+<h2><span class="header-section-number">7.9</span> Your Work<a href="continuous-prediction-with-regression-trees.html#your-work-5" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>I have some data on tree growth in the tropics. The data are daily over the course of a year. The file <code>GrowthTempWater.csv</code> has four columns. The first is the date, the second is cambial growth, the third is average daily temperature and the fourth is total plant available water in soil. The last three are all unitless and range from zero to one. Lower numbers mean less growth, lower temperature, less available water. Conversely, higher numbers mean faster growth, higher temps, and more soil water. Having these be relative numbers will keep you from getting hung up on units (e.g., grams of carbon per day, degrees C, or cubic cm of water).</p>
+<div class="sourceCode" id="cb318"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb318-1"><a href="continuous-prediction-with-regression-trees.html#cb318-1" tabindex="-1"></a>dat <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;data/GrowthTempWater.csv&quot;</span>)</span></code></pre></div>
+<pre><code>## Rows: 365 Columns: 4
+## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## chr (1): Date
+## dbl (3): Growth, Temp, SoilWater
+## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<div class="sourceCode" id="cb320"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb320-1"><a href="continuous-prediction-with-regression-trees.html#cb320-1" tabindex="-1"></a>datLong <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span> <span class="fu">pivot_longer</span>(<span class="at">cols=</span><span class="sc">-</span><span class="dv">1</span>)</span>
+<span id="cb320-2"><a href="continuous-prediction-with-regression-trees.html#cb320-2" tabindex="-1"></a><span class="fu">ggplot</span>(datLong, <span class="fu">aes</span>(<span class="at">x=</span><span class="fu">as.Date</span>(Date),<span class="at">y=</span>value)) <span class="sc">+</span> </span>
+<span id="cb320-3"><a href="continuous-prediction-with-regression-trees.html#cb320-3" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb320-4"><a href="continuous-prediction-with-regression-trees.html#cb320-4" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">y=</span><span class="st">&quot;Unitless&quot;</span>) <span class="sc">+</span></span>
+<span id="cb320-5"><a href="continuous-prediction-with-regression-trees.html#cb320-5" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb320-6"><a href="continuous-prediction-with-regression-trees.html#cb320-6" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>name,<span class="at">ncol=</span><span class="dv">1</span>)</span></code></pre></div>
+<pre><code>## Warning: Removed 663 rows containing missing values or values outside the scale range
+## (`geom_line()`).</code></pre>
+<p><img src="06Discrete2Continuous_files/figure-html/unnamed-chunk-33-1.png" alt="" width="672" /></p>
+<p>Here is what I want you to do.</p>
+<ol style="list-style-type: decimal">
+<li><p>Do some data visualization and run some correlations. What is the relationship between growth, temperature, and soil water from this analysis?</p></li>
+<li><p>Model growth as function of temperature and available water with a linear model. E.g., <code>lm(Growth~Temp+SoilWater,data=dat)</code>. Describe that model. Is it a good fit?</p></li>
+<li><p>Fit the same model with <code>rpart</code>. Describe the splits. Do some plotting with <code>visTree</code>. Is it a good fit? Does is make logical sense?</p></li>
+<li><p>Give <code>cubist</code> a whirl. Plotting is more difficult of course but describe the rules. Is it a good fit?</p></li>
+<li><p>Speculate on the differences between the models and quantify their skill with R<span class="math inline">\(^2\)</span> and MAE.</p></li>
+<li><p>Explain, in words, the what’s going on here. What makes these plants grow?</p></li>
+</ol>
+<p>Two more things. First, you’ll want to be doing responsible testing and training of course. Make sure to shuffle the rows, the data are currently organized by <code>Date</code> and the <code>Date</code> shouldn’t play a role in prediction. Second, all three of these models (<code>lm</code>, <code>rpart</code>, <code>cubist</code>) can all be run in <code>caret</code> using <code>train</code> if you want to explore that for cross validation in lieu of doing train/test splits. However be warned that <code>train</code> with methods <code>rpart</code> and <code>cubist</code> will default to tuning the hyperparamters that are part of those methods (e.g., committees and neighbors for <code>cubist</code>). We are going to discuss what tuning means in a few weeks so don’t worry about it at the moment.</p>
+
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="classifying-with-decision-trees.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="neural-nets.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+  "sharing": {
+    "github": false,
+    "facebook": true,
+    "twitter": true,
+    "linkedin": false,
+    "weibo": false,
+    "instapaper": false,
+    "vk": false,
+    "whatsapp": false,
+    "all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+  },
+  "fontsettings": {
+    "theme": "white",
+    "family": "sans",
+    "size": 2
+  },
+  "edit": {
+    "link": null,
+    "text": null
+  },
+  "history": {
+    "link": null,
+    "text": null
+  },
+  "view": {
+    "link": null,
+    "text": null
+  },
+  "download": null,
+  "search": {
+    "engine": "fuse",
+    "options": null
+  },
+  "toc": {
+    "collapse": "section",
+    "scroll_highlight": true
+  }
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

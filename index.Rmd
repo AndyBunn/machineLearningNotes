@@ -84,23 +84,23 @@ The notes move through a set of core ideas in machine learning, roughly
 in this order:
 
 -   **Bootstrapping** - using resampling to estimate variability and
-    understand model stability
+understand model stability
 -   **Permutation Methods** - assessing significance and variable
-    importance through randomization
+importance through randomization
 -   **Cross Validation** - estimating predictive performance and
-    guarding against overfitting
+guarding against overfitting
 -   **k-Nearest Neighbors (kNN)** - a simple instance-based learning
-    method based on similarity
+method based on similarity
 -   **Decision Trees** - recursive partitioning for classification and
-    regression
+regression
 -   **Regression and Model Trees** - combining tree structures with
-    local regression models
+local regression models
 -   **Neural Networks** - flexible nonlinear models built from layered
-    units
+units
 -   **Eigenfaces** - a dimensionality-reduction example using principal
-    components for image recognition
+components for image recognition
 -   **Improving Model Learning** - strategies for tuning, comparing, and
-    improving predictive models
+improving predictive models
 
 Some sections build on earlier ideas (especially around model
 evaluation), but most modules can be read independently.
@@ -122,26 +122,26 @@ To follow along with the examples, you'll want a working RStudio
 project.
 
 1.  **Create a new RStudio project**\
-    Go to **File → New Project → New Directory → New Project**. Give it
-    a name (for example `machineLearning-course`) and choose where to
-    save it.
+Go to **File → New Project → New Directory → New Project**. Give it
+a name (for example `machineLearning-course`) and choose where to
+save it.
 
 2.  **Download the `data/` folder**\
-    The datasets used in the examples are available in the `data/`
-    folder of the course repository. Download that folder and place it
-    inside your project directory.
-    
+The datasets used in the examples are available in the `data/`
+folder of the course repository. Download that folder and place it
+inside your project directory.
+
 You can download the data directly from the GitHub [repo](https://github.com/AndyBunn/machineLearningNotes). The hard link to it is:
-    https://github.com/AndyBunn/machineLearningNotes/blob/main/data.zip 
+https://github.com/AndyBunn/machineLearningNotes/blob/main/data.zip 
 
 Once it's unzipped your folder structure should look something like this:
 
-    machineLearning-course/
-    ├── data/
-    │   ├── faces.csv
-    │   ├── mushroomsClean.csv
-    │   └── ...
-    └── machineLearning-course.Rproj
+machineLearning-course/
+├── data/
+│   ├── faces.csv
+│   ├── mushroomsClean.csv
+│   └── ...
+└── machineLearning-course.Rproj
 
 3.  **Refer to data files using relative paths**
 
@@ -154,8 +154,8 @@ different machines without modification. E.g., `fishcatch <- read.csv(data/fishc
 # automatically create a bib database for R packages
 knitr::write_bib(c(
   .packages(), 'tidyverse', 'caret', 'boot', 'ggridges','PNWColors',
-  'C50'), 
-  'packages.bib')
+  'C50','scales','class','plotly','rpart','Cubist','visNetwork','sparkline','neuralnet', 'nnet', 'ggthemes', 'gganimate', 'av', 'ipred', 'randomForest','gbm','ggrepel'),
+'packages.bib')
 # to build everything in docs/.
 # bookdown::render_book() 
 # to build a chapter only
