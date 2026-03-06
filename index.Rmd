@@ -215,12 +215,14 @@ https://github.com/AndyBunn/machineLearningNotes/blob/main/data.zip
 
 Once it's unzipped your folder structure should look something like this:
 
+```
 machineLearning-course/
 ├── data/
 │   ├── faces.csv
 │   ├── mushroomsClean.csv
 │   └── ...
 └── machineLearning-course.Rproj
+```
 
 3.  **Refer to data files using relative paths**
 

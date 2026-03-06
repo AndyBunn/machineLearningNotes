@@ -1150,7 +1150,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <div id="packages-2" class="section level2 hasAnchor" number="4.2">
 <h2><span class="header-section-number">4.2</span> Packages<a href="always-be-cross-validating-abcv.html#packages-2" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<div class="sourceCode" id="cb80"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb80-1"><a href="always-be-cross-validating-abcv.html#cb80-1" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code></pre></div>
+<div class="sourceCode" id="cb81"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb81-1"><a href="always-be-cross-validating-abcv.html#cb81-1" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code></pre></div>
 <pre><code>## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
 ## ✔ dplyr     1.1.4     ✔ readr     2.1.6
 ## ✔ forcats   1.0.1     ✔ stringr   1.6.0
@@ -1161,7 +1161,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 ## ✖ dplyr::filter() masks stats::filter()
 ## ✖ dplyr::lag()    masks stats::lag()
 ## ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
-<div class="sourceCode" id="cb82"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb82-1"><a href="always-be-cross-validating-abcv.html#cb82-1" tabindex="-1"></a><span class="fu">library</span>(caret)</span></code></pre></div>
+<div class="sourceCode" id="cb83"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb83-1"><a href="always-be-cross-validating-abcv.html#cb83-1" tabindex="-1"></a><span class="fu">library</span>(caret)</span></code></pre></div>
 <pre><code>## Loading required package: lattice
 ## 
 ## Attaching package: &#39;caret&#39;
@@ -1169,14 +1169,14 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 ## The following object is masked from &#39;package:purrr&#39;:
 ## 
 ##     lift</code></pre>
-<div class="sourceCode" id="cb84"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb84-1"><a href="always-be-cross-validating-abcv.html#cb84-1" tabindex="-1"></a><span class="fu">library</span>(PNWColors)</span></code></pre></div>
+<div class="sourceCode" id="cb85"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb85-1"><a href="always-be-cross-validating-abcv.html#cb85-1" tabindex="-1"></a><span class="fu">library</span>(PNWColors)</span></code></pre></div>
 </div>
 <div id="reading-2" class="section level2 hasAnchor" number="4.3">
 <h2><span class="header-section-number">4.3</span> Reading<a href="always-be-cross-validating-abcv.html#reading-2" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>Read Starmer’s chapter on crossvalidation.</p>
 <p>Starmer J. 2022. The StatQuest Illustrated Guide To Machine Learning. ISBN 979-8811583607</p>
 <p>There are an awful lot of great resources out there for learning about cross validation. I think <a href="https://towardsdatascience.com/cross-validation-a-beginners-guide-5b8ca04962cd">this intro</a> from Neale et al. covers the key points nicely.</p>
-<p>Neale C, Workman D, Dommalapati A. 2019. Cross Validation: A Beginner’s Guide. <a href="https://towardsdatascience.com/cross-validation-a-beginners-guide-5b8ca04962cd" class="uri">https://towardsdatascience.com/cross-validation-a-beginners-guide-5b8ca04962cd</a>. Accessed on 05-March-2026 21:12</p>
+<p>Neale C, Workman D, Dommalapati A. 2019. Cross Validation: A Beginner’s Guide. <a href="https://towardsdatascience.com/cross-validation-a-beginners-guide-5b8ca04962cd" class="uri">https://towardsdatascience.com/cross-validation-a-beginners-guide-5b8ca04962cd</a>. Accessed on 05-March-2026 21:22</p>
 </div>
 <div id="overfitting-and-underfitting" class="section level2 hasAnchor" number="4.4">
 <h2><span class="header-section-number">4.4</span> Overfitting and Underfitting<a href="always-be-cross-validating-abcv.html#overfitting-and-underfitting" class="anchor-section" aria-label="Anchor link to header"></a></h2>
@@ -1191,9 +1191,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="a-worked-example" class="section level2 hasAnchor" number="4.5">
 <h2><span class="header-section-number">4.5</span> A worked example<a href="always-be-cross-validating-abcv.html#a-worked-example" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>Let’s start a worked example.</p>
-<div class="sourceCode" id="cb85"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb85-1"><a href="always-be-cross-validating-abcv.html#cb85-1" tabindex="-1"></a>dat <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">&quot;data/dat_cv.csv&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb86"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb86-1"><a href="always-be-cross-validating-abcv.html#cb86-1" tabindex="-1"></a>dat <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">&quot;data/dat_cv.csv&quot;</span>)</span></code></pre></div>
 <p>We have a <code>data.frame</code> called <code>dat</code> with 50 rows and two columns: <code>x</code> and <code>y</code>. Our goal will be to divide the data into training and test subsets and then test how well we can predict <span class="math inline">\(y=f(x)\)</span>.</p>
-<div class="sourceCode" id="cb86"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb86-1"><a href="always-be-cross-validating-abcv.html#cb86-1" tabindex="-1"></a><span class="fu">summary</span>(dat)</span></code></pre></div>
+<div class="sourceCode" id="cb87"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb87-1"><a href="always-be-cross-validating-abcv.html#cb87-1" tabindex="-1"></a><span class="fu">summary</span>(dat)</span></code></pre></div>
 <pre><code>##        x                 y         
 ##  Min.   :-3.9797   Min.   : 54.41  
 ##  1st Qu.:-2.3021   1st Qu.: 83.09  
@@ -1201,7 +1201,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 ##  Mean   : 0.1211   Mean   : 99.90  
 ##  3rd Qu.: 2.4912   3rd Qu.:116.32  
 ##  Max.   : 3.6947   Max.   :150.58</code></pre>
-<div class="sourceCode" id="cb88"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb88-1"><a href="always-be-cross-validating-abcv.html#cb88-1" tabindex="-1"></a><span class="fu">head</span>(dat)</span></code></pre></div>
+<div class="sourceCode" id="cb89"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb89-1"><a href="always-be-cross-validating-abcv.html#cb89-1" tabindex="-1"></a><span class="fu">head</span>(dat)</span></code></pre></div>
 <pre><code>##            x         y
 ## 1  1.2406553 117.72119
 ## 2 -0.5935191 115.45229
@@ -1209,12 +1209,12 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 ## 4 -0.2133922 116.88047
 ## 5 -1.8396273  90.56090
 ## 6 -2.0029451  80.94719</code></pre>
-<div class="sourceCode" id="cb90"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb90-1"><a href="always-be-cross-validating-abcv.html#cb90-1" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(dat,<span class="fu">aes</span>(<span class="at">x=</span>x,<span class="at">y=</span>y)) <span class="sc">+</span> <span class="fu">geom_point</span>(<span class="at">size=</span><span class="dv">3</span>)</span>
-<span id="cb90-2"><a href="always-be-cross-validating-abcv.html#cb90-2" tabindex="-1"></a>p1</span></code></pre></div>
+<div class="sourceCode" id="cb91"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb91-1"><a href="always-be-cross-validating-abcv.html#cb91-1" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(dat,<span class="fu">aes</span>(<span class="at">x=</span>x,<span class="at">y=</span>y)) <span class="sc">+</span> <span class="fu">geom_point</span>(<span class="at">size=</span><span class="dv">3</span>)</span>
+<span id="cb91-2"><a href="always-be-cross-validating-abcv.html#cb91-2" tabindex="-1"></a>p1</span></code></pre></div>
 <p><img src="03crossValidationIntro_files/figure-html/unnamed-chunk-5-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
 <p>A first step might be to use a linear model and see how much variance we can explain. E.g.,</p>
-<div class="sourceCode" id="cb91"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb91-1"><a href="always-be-cross-validating-abcv.html#cb91-1" tabindex="-1"></a>lm1 <span class="ot">&lt;-</span> <span class="fu">lm</span>(y<span class="sc">~</span>x,<span class="at">data=</span>dat)</span>
-<span id="cb91-2"><a href="always-be-cross-validating-abcv.html#cb91-2" tabindex="-1"></a><span class="fu">summary</span>(lm1)</span></code></pre></div>
+<div class="sourceCode" id="cb92"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb92-1"><a href="always-be-cross-validating-abcv.html#cb92-1" tabindex="-1"></a>lm1 <span class="ot">&lt;-</span> <span class="fu">lm</span>(y<span class="sc">~</span>x,<span class="at">data=</span>dat)</span>
+<span id="cb92-2"><a href="always-be-cross-validating-abcv.html#cb92-2" tabindex="-1"></a><span class="fu">summary</span>(lm1)</span></code></pre></div>
 <pre><code>## 
 ## Call:
 ## lm(formula = y ~ x, data = dat)
@@ -1233,7 +1233,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 ## Residual standard error: 13.21 on 48 degrees of freedom
 ## Multiple R-squared:  0.6352, Adjusted R-squared:  0.6276 
 ## F-statistic: 83.59 on 1 and 48 DF,  p-value: 4.373e-12</code></pre>
-<div class="sourceCode" id="cb93"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb93-1"><a href="always-be-cross-validating-abcv.html#cb93-1" tabindex="-1"></a>p1 <span class="sc">+</span> <span class="fu">geom_smooth</span>(<span class="at">method=</span><span class="st">&quot;lm&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb94"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb94-1"><a href="always-be-cross-validating-abcv.html#cb94-1" tabindex="-1"></a>p1 <span class="sc">+</span> <span class="fu">geom_smooth</span>(<span class="at">method=</span><span class="st">&quot;lm&quot;</span>)</span></code></pre></div>
 <pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
 <p><img src="03crossValidationIntro_files/figure-html/unnamed-chunk-6-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
 <p>OK, the coefficient of determination (R<span class="math inline">\(^2\)</span>) for the <span class="math inline">\(y=\beta_0 + \beta_1 x\)</span> model is 0.635. That’s all well and good but recall that this is using all of the data for the model so we get a <strong>point</strong> estimate of R<span class="math inline">\(^2\)</span>. We don’t know how much that can vary with out-of-sample testing data. We can use cross validation is a really simple way to get R<span class="math inline">\(^2\)</span> as an <strong>interval</strong> estimate of expected out-of-sample predictive performance, conditional on the observed data and the chosen model. This is not a classical population parameter in the inferential statistics sense, but an estimate of how well this modeling approach is expected to perform on new data.</p>
@@ -1243,11 +1243,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p>Before we start on true cross validation let’s start with simple validation. The standard advice is (or used to be when we did statistics on legal pads) to withhold 1/3 of your data to validate your model. You could then build or <strong>train</strong> the model using the first 2/3 of the data and then have 1/3 of the samples as independent data to <strong>test</strong> the model. You’d then be able to evaluate the out-of-sample error one time.</p>
 <p><img src="assets/TrainTest.png" /></p>
 <p>Let’s train a model on 2/3 of the data and then test it on the remaining 1/3. Here is how we can randomly designate some of the points to be <strong>training</strong> and others to be <strong>testing</strong>.</p>
-<div class="sourceCode" id="cb95"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb95-1"><a href="always-be-cross-validating-abcv.html#cb95-1" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(dat)</span>
-<span id="cb95-2"><a href="always-be-cross-validating-abcv.html#cb95-2" tabindex="-1"></a>rows2test <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span>n,<span class="at">size =</span> n <span class="sc">*</span> <span class="dv">1</span><span class="sc">/</span><span class="dv">3</span>)</span>
-<span id="cb95-3"><a href="always-be-cross-validating-abcv.html#cb95-3" tabindex="-1"></a>dat<span class="sc">$</span>Test <span class="ot">&lt;-</span> <span class="cn">FALSE</span></span>
-<span id="cb95-4"><a href="always-be-cross-validating-abcv.html#cb95-4" tabindex="-1"></a>dat<span class="sc">$</span>Test[rows2test] <span class="ot">&lt;-</span> <span class="cn">TRUE</span></span>
-<span id="cb95-5"><a href="always-be-cross-validating-abcv.html#cb95-5" tabindex="-1"></a><span class="fu">head</span>(dat,<span class="dv">20</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb96"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb96-1"><a href="always-be-cross-validating-abcv.html#cb96-1" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(dat)</span>
+<span id="cb96-2"><a href="always-be-cross-validating-abcv.html#cb96-2" tabindex="-1"></a>rows2test <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span>n,<span class="at">size =</span> n <span class="sc">*</span> <span class="dv">1</span><span class="sc">/</span><span class="dv">3</span>)</span>
+<span id="cb96-3"><a href="always-be-cross-validating-abcv.html#cb96-3" tabindex="-1"></a>dat<span class="sc">$</span>Test <span class="ot">&lt;-</span> <span class="cn">FALSE</span></span>
+<span id="cb96-4"><a href="always-be-cross-validating-abcv.html#cb96-4" tabindex="-1"></a>dat<span class="sc">$</span>Test[rows2test] <span class="ot">&lt;-</span> <span class="cn">TRUE</span></span>
+<span id="cb96-5"><a href="always-be-cross-validating-abcv.html#cb96-5" tabindex="-1"></a><span class="fu">head</span>(dat,<span class="dv">20</span>)</span></code></pre></div>
 <pre><code>##             x         y  Test
 ## 1   1.2406553 117.72119 FALSE
 ## 2  -0.5935191 115.45229 FALSE
@@ -1270,22 +1270,22 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 ## 19  2.9249040  99.61774  TRUE
 ## 20 -3.5706221  55.64744 FALSE</code></pre>
 <p>Note that we have a ~1/3 the data to Test</p>
-<div class="sourceCode" id="cb97"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb97-1"><a href="always-be-cross-validating-abcv.html#cb97-1" tabindex="-1"></a><span class="fu">table</span>(dat<span class="sc">$</span>Test)</span></code></pre></div>
+<div class="sourceCode" id="cb98"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb98-1"><a href="always-be-cross-validating-abcv.html#cb98-1" tabindex="-1"></a><span class="fu">table</span>(dat<span class="sc">$</span>Test)</span></code></pre></div>
 <pre><code>## 
 ## FALSE  TRUE 
 ##    34    16</code></pre>
 <p>Here is the same plot above to visualize the split. The TRUE points will be withheld from the model building.</p>
-<div class="sourceCode" id="cb99"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb99-1"><a href="always-be-cross-validating-abcv.html#cb99-1" tabindex="-1"></a>anem7 <span class="ot">&lt;-</span> <span class="fu">pnw_palette</span>(<span class="at">name=</span><span class="st">&quot;Anemone&quot;</span>,<span class="at">n=</span><span class="dv">7</span>,<span class="at">type=</span><span class="st">&quot;discrete&quot;</span>)</span>
-<span id="cb99-2"><a href="always-be-cross-validating-abcv.html#cb99-2" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(dat,<span class="fu">aes</span>(<span class="at">x=</span>x,<span class="at">y=</span>y,<span class="at">color=</span>Test))<span class="sc">+</span> <span class="fu">geom_point</span>(<span class="at">size=</span><span class="dv">3</span>) <span class="sc">+</span></span>
-<span id="cb99-3"><a href="always-be-cross-validating-abcv.html#cb99-3" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values=</span><span class="fu">c</span>(anem7[<span class="dv">1</span>],anem7[<span class="dv">7</span>]))</span>
-<span id="cb99-4"><a href="always-be-cross-validating-abcv.html#cb99-4" tabindex="-1"></a>p1</span></code></pre></div>
+<div class="sourceCode" id="cb100"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb100-1"><a href="always-be-cross-validating-abcv.html#cb100-1" tabindex="-1"></a>anem7 <span class="ot">&lt;-</span> <span class="fu">pnw_palette</span>(<span class="at">name=</span><span class="st">&quot;Anemone&quot;</span>,<span class="at">n=</span><span class="dv">7</span>,<span class="at">type=</span><span class="st">&quot;discrete&quot;</span>)</span>
+<span id="cb100-2"><a href="always-be-cross-validating-abcv.html#cb100-2" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(dat,<span class="fu">aes</span>(<span class="at">x=</span>x,<span class="at">y=</span>y,<span class="at">color=</span>Test))<span class="sc">+</span> <span class="fu">geom_point</span>(<span class="at">size=</span><span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb100-3"><a href="always-be-cross-validating-abcv.html#cb100-3" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values=</span><span class="fu">c</span>(anem7[<span class="dv">1</span>],anem7[<span class="dv">7</span>]))</span>
+<span id="cb100-4"><a href="always-be-cross-validating-abcv.html#cb100-4" tabindex="-1"></a>p1</span></code></pre></div>
 <p><img src="03crossValidationIntro_files/figure-html/unnamed-chunk-9-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
 <p>From here we could build a model on the training data and then test it to get out-of-sample skill or error.</p>
-<div class="sourceCode" id="cb100"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb100-1"><a href="always-be-cross-validating-abcv.html#cb100-1" tabindex="-1"></a>testing <span class="ot">&lt;-</span> dat[dat<span class="sc">$</span>Test,]</span>
-<span id="cb100-2"><a href="always-be-cross-validating-abcv.html#cb100-2" tabindex="-1"></a>training <span class="ot">&lt;-</span> dat[<span class="sc">!</span>dat<span class="sc">$</span>Test,]</span>
-<span id="cb100-3"><a href="always-be-cross-validating-abcv.html#cb100-3" tabindex="-1"></a></span>
-<span id="cb100-4"><a href="always-be-cross-validating-abcv.html#cb100-4" tabindex="-1"></a>lm1 <span class="ot">&lt;-</span> <span class="fu">lm</span>(y<span class="sc">~</span>x,<span class="at">data=</span>training)</span>
-<span id="cb100-5"><a href="always-be-cross-validating-abcv.html#cb100-5" tabindex="-1"></a><span class="fu">summary</span>(lm1)</span></code></pre></div>
+<div class="sourceCode" id="cb101"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb101-1"><a href="always-be-cross-validating-abcv.html#cb101-1" tabindex="-1"></a>testing <span class="ot">&lt;-</span> dat[dat<span class="sc">$</span>Test,]</span>
+<span id="cb101-2"><a href="always-be-cross-validating-abcv.html#cb101-2" tabindex="-1"></a>training <span class="ot">&lt;-</span> dat[<span class="sc">!</span>dat<span class="sc">$</span>Test,]</span>
+<span id="cb101-3"><a href="always-be-cross-validating-abcv.html#cb101-3" tabindex="-1"></a></span>
+<span id="cb101-4"><a href="always-be-cross-validating-abcv.html#cb101-4" tabindex="-1"></a>lm1 <span class="ot">&lt;-</span> <span class="fu">lm</span>(y<span class="sc">~</span>x,<span class="at">data=</span>training)</span>
+<span id="cb101-5"><a href="always-be-cross-validating-abcv.html#cb101-5" tabindex="-1"></a><span class="fu">summary</span>(lm1)</span></code></pre></div>
 <pre><code>## 
 ## Call:
 ## lm(formula = y ~ x, data = training)
@@ -1304,8 +1304,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 ## Residual standard error: 13.86 on 32 degrees of freedom
 ## Multiple R-squared:  0.5596, Adjusted R-squared:  0.5458 
 ## F-statistic: 40.66 on 1 and 32 DF,  p-value: 3.669e-07</code></pre>
-<div class="sourceCode" id="cb102"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb102-1"><a href="always-be-cross-validating-abcv.html#cb102-1" tabindex="-1"></a>p1 <span class="sc">+</span> <span class="fu">geom_abline</span>(<span class="at">intercept =</span> <span class="fu">coef</span>(lm1)[<span class="dv">1</span>], <span class="at">slope =</span> <span class="fu">coef</span>(lm1)[<span class="dv">2</span>],</span>
-<span id="cb102-2"><a href="always-be-cross-validating-abcv.html#cb102-2" tabindex="-1"></a>                 <span class="at">color =</span> anem7[<span class="dv">1</span>])</span></code></pre></div>
+<div class="sourceCode" id="cb103"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb103-1"><a href="always-be-cross-validating-abcv.html#cb103-1" tabindex="-1"></a>p1 <span class="sc">+</span> <span class="fu">geom_abline</span>(<span class="at">intercept =</span> <span class="fu">coef</span>(lm1)[<span class="dv">1</span>], <span class="at">slope =</span> <span class="fu">coef</span>(lm1)[<span class="dv">2</span>],</span>
+<span id="cb103-2"><a href="always-be-cross-validating-abcv.html#cb103-2" tabindex="-1"></a>                 <span class="at">color =</span> anem7[<span class="dv">1</span>])</span></code></pre></div>
 <p><img src="03crossValidationIntro_files/figure-html/unnamed-chunk-10-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
 <p>We can use the training model to predict the withheld testing data. Then we will get some idea of how well the model works on this unknown data using R<span class="math inline">\(^2\)</span>. We will also calculate two other common validation statistics Mean Absolute Error (MAE) and Root Mean Squared Error (RMSE). These are very closely related.</p>
 <p><span class="math display">\[MAE= \frac{\sum_{i=1}^n |\hat y_i - y_i|}{n} \]</span>
@@ -1314,21 +1314,21 @@ where <span class="math inline">\(\hat y\)</span> is the model prediction of the
 These are both positive numbers in the units of <span class="math inline">\(y\)</span> and lowers values indicate a better fit. A value of zero (never achieved in practice) would indicate a perfect fit to the data. Which to use? You can read a little more about the differences between them <a href="https://stats.stackexchange.com/questions/48267/mean-absolute-error-or-root-mean-squared-error">here</a>. Honestly, I’m happy to let the stats geeks fight about <a href="https://en.wikipedia.org/wiki/Mean_absolute_error#Related_measures">this</a> but in general I prefer MAE because it’s simpler.</p>
 <p>Let’s look at these measures of skill (accuracy) on our withheld data.</p>
 <p>First we can add the predictions to the <code>testing</code> data.</p>
-<div class="sourceCode" id="cb103"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb103-1"><a href="always-be-cross-validating-abcv.html#cb103-1" tabindex="-1"></a>testing<span class="sc">$</span>yhat <span class="ot">&lt;-</span> <span class="fu">predict</span>(lm1,<span class="at">newdata=</span>testing)</span>
-<span id="cb103-2"><a href="always-be-cross-validating-abcv.html#cb103-2" tabindex="-1"></a><span class="fu">ggplot</span>(testing,<span class="fu">aes</span>(<span class="at">x=</span>y,<span class="at">y=</span>yhat)) <span class="sc">+</span> <span class="fu">geom_point</span>(<span class="at">size=</span><span class="dv">3</span>,<span class="at">color=</span>anem7[<span class="dv">7</span>]) <span class="sc">+</span> </span>
-<span id="cb103-3"><a href="always-be-cross-validating-abcv.html#cb103-3" tabindex="-1"></a>  <span class="fu">geom_abline</span>(<span class="at">intercept =</span> <span class="dv">0</span>, <span class="at">slope =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
-<span id="cb103-4"><a href="always-be-cross-validating-abcv.html#cb103-4" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title=</span><span class="st">&quot;Testing Data&quot;</span>,<span class="at">x=</span><span class="st">&quot;Observed&quot;</span>, <span class="at">y=</span><span class="st">&quot;Predicted&quot;</span>) <span class="sc">+</span></span>
-<span id="cb103-5"><a href="always-be-cross-validating-abcv.html#cb103-5" tabindex="-1"></a>  <span class="fu">coord_equal</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb104"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb104-1"><a href="always-be-cross-validating-abcv.html#cb104-1" tabindex="-1"></a>testing<span class="sc">$</span>yhat <span class="ot">&lt;-</span> <span class="fu">predict</span>(lm1,<span class="at">newdata=</span>testing)</span>
+<span id="cb104-2"><a href="always-be-cross-validating-abcv.html#cb104-2" tabindex="-1"></a><span class="fu">ggplot</span>(testing,<span class="fu">aes</span>(<span class="at">x=</span>y,<span class="at">y=</span>yhat)) <span class="sc">+</span> <span class="fu">geom_point</span>(<span class="at">size=</span><span class="dv">3</span>,<span class="at">color=</span>anem7[<span class="dv">7</span>]) <span class="sc">+</span> </span>
+<span id="cb104-3"><a href="always-be-cross-validating-abcv.html#cb104-3" tabindex="-1"></a>  <span class="fu">geom_abline</span>(<span class="at">intercept =</span> <span class="dv">0</span>, <span class="at">slope =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb104-4"><a href="always-be-cross-validating-abcv.html#cb104-4" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title=</span><span class="st">&quot;Testing Data&quot;</span>,<span class="at">x=</span><span class="st">&quot;Observed&quot;</span>, <span class="at">y=</span><span class="st">&quot;Predicted&quot;</span>) <span class="sc">+</span></span>
+<span id="cb104-5"><a href="always-be-cross-validating-abcv.html#cb104-5" tabindex="-1"></a>  <span class="fu">coord_equal</span>()</span></code></pre></div>
 <p><img src="03crossValidationIntro_files/figure-html/unnamed-chunk-11-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
 <p>And now get some numbers.</p>
-<div class="sourceCode" id="cb104"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb104-1"><a href="always-be-cross-validating-abcv.html#cb104-1" tabindex="-1"></a>rsq <span class="ot">&lt;-</span> <span class="fu">cor</span>(testing<span class="sc">$</span>yhat,testing<span class="sc">$</span>y)<span class="sc">^</span><span class="dv">2</span></span>
-<span id="cb104-2"><a href="always-be-cross-validating-abcv.html#cb104-2" tabindex="-1"></a>mae <span class="ot">&lt;-</span> <span class="fu">mean</span>(<span class="fu">abs</span>(testing<span class="sc">$</span>yhat <span class="sc">-</span> testing<span class="sc">$</span>y))</span>
-<span id="cb104-3"><a href="always-be-cross-validating-abcv.html#cb104-3" tabindex="-1"></a>rmse <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">mean</span>((testing<span class="sc">$</span>yhat <span class="sc">-</span> testing<span class="sc">$</span>y)<span class="sc">^</span><span class="dv">2</span>))</span>
-<span id="cb104-4"><a href="always-be-cross-validating-abcv.html#cb104-4" tabindex="-1"></a>rsq</span></code></pre></div>
+<div class="sourceCode" id="cb105"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb105-1"><a href="always-be-cross-validating-abcv.html#cb105-1" tabindex="-1"></a>rsq <span class="ot">&lt;-</span> <span class="fu">cor</span>(testing<span class="sc">$</span>yhat,testing<span class="sc">$</span>y)<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb105-2"><a href="always-be-cross-validating-abcv.html#cb105-2" tabindex="-1"></a>mae <span class="ot">&lt;-</span> <span class="fu">mean</span>(<span class="fu">abs</span>(testing<span class="sc">$</span>yhat <span class="sc">-</span> testing<span class="sc">$</span>y))</span>
+<span id="cb105-3"><a href="always-be-cross-validating-abcv.html#cb105-3" tabindex="-1"></a>rmse <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">mean</span>((testing<span class="sc">$</span>yhat <span class="sc">-</span> testing<span class="sc">$</span>y)<span class="sc">^</span><span class="dv">2</span>))</span>
+<span id="cb105-4"><a href="always-be-cross-validating-abcv.html#cb105-4" tabindex="-1"></a>rsq</span></code></pre></div>
 <pre><code>## [1] 0.7337835</code></pre>
-<div class="sourceCode" id="cb106"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb106-1"><a href="always-be-cross-validating-abcv.html#cb106-1" tabindex="-1"></a>mae</span></code></pre></div>
+<div class="sourceCode" id="cb107"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb107-1"><a href="always-be-cross-validating-abcv.html#cb107-1" tabindex="-1"></a>mae</span></code></pre></div>
 <pre><code>## [1] 10.61353</code></pre>
-<div class="sourceCode" id="cb108"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb108-1"><a href="always-be-cross-validating-abcv.html#cb108-1" tabindex="-1"></a>rmse</span></code></pre></div>
+<div class="sourceCode" id="cb109"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb109-1"><a href="always-be-cross-validating-abcv.html#cb109-1" tabindex="-1"></a>rmse</span></code></pre></div>
 <pre><code>## [1] 11.98126</code></pre>
 <p>This is great. It gave us a one time test on out-of-sample data and we plotted it and saw that the R<span class="math inline">\(^2\)</span>=0.734, the MAE=10.614, and the RMSE=11.981. An easy way to think about these is that R<span class="math inline">\(^2\)</span> provides a scale-free measure of explained variance, MAE reflects typical absolute prediction error, and RMSE penalizes large errors more strongly. See links above for details. These skill metrics are an improvement over using the entire data sat <code>dat</code> to assess the skill of our linear model because we are exposing the model to data it hasn’t seen before. But this was a one time shot and still gives us a point estimate. We have an independent skill check but no idea of how much that might vary with different testing data.</p>
 </div>
@@ -1340,17 +1340,17 @@ These are both positive numbers in the units of <span class="math inline">\(y\)<
 <p>In this method, we split the data into <span class="math inline">\(k\)</span> folds or subsets and make the training and testing splits that way. The figure above shows a 10-fold schematic (<span class="math inline">\(k=10\)</span>). With this, we’d create the folds so that each row of the data occurs in exactly one test set. So following the above, the first time we ran the comparison we’d train the model on folds 2 to 10 and test it on fold 1. The second time we ran it we’d train on folds 1, 3, 4, 5, 6, 7, 8, 9 and 10 and test it on fold 2. And so on.</p>
 <p>This gives us 10 test sets and assures us that every point gets to be in a test set once. So, we get a test set that is the same size as our training set, but is composed of out-of-sample predictions. We assign each row to its single test set randomly, to avoid any kind of systemic biases in how our data are laid out.</p>
 <p>This is one of the best and simplest ways to estimate out-of-sample error for predictive models.</p>
-<div class="sourceCode" id="cb110"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb110-1"><a href="always-be-cross-validating-abcv.html#cb110-1" tabindex="-1"></a><span class="co"># Create a new data.frame, drop the test column we added above,</span></span>
-<span id="cb110-2"><a href="always-be-cross-validating-abcv.html#cb110-2" tabindex="-1"></a><span class="co"># then randomly shuffle the data to remove any systematic ordering </span></span>
-<span id="cb110-3"><a href="always-be-cross-validating-abcv.html#cb110-3" tabindex="-1"></a><span class="co"># of the rows.</span></span>
-<span id="cb110-4"><a href="always-be-cross-validating-abcv.html#cb110-4" tabindex="-1"></a>dat2 <span class="ot">&lt;-</span> dat[,<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>]</span>
-<span id="cb110-5"><a href="always-be-cross-validating-abcv.html#cb110-5" tabindex="-1"></a>dat2 <span class="ot">&lt;-</span> dat2[<span class="fu">sample</span>(n),]</span>
-<span id="cb110-6"><a href="always-be-cross-validating-abcv.html#cb110-6" tabindex="-1"></a></span>
-<span id="cb110-7"><a href="always-be-cross-validating-abcv.html#cb110-7" tabindex="-1"></a><span class="co"># Create k equally size folds</span></span>
-<span id="cb110-8"><a href="always-be-cross-validating-abcv.html#cb110-8" tabindex="-1"></a>k <span class="ot">&lt;-</span> <span class="dv">10</span></span>
-<span id="cb110-9"><a href="always-be-cross-validating-abcv.html#cb110-9" tabindex="-1"></a>dat2<span class="sc">$</span>fold <span class="ot">&lt;-</span> <span class="fu">cut</span>(<span class="fu">seq</span>(<span class="dv">1</span>,n),<span class="at">breaks=</span>k,<span class="at">labels=</span><span class="cn">FALSE</span>)</span>
-<span id="cb110-10"><a href="always-be-cross-validating-abcv.html#cb110-10" tabindex="-1"></a><span class="co"># Take a peek -- note the fold column</span></span>
-<span id="cb110-11"><a href="always-be-cross-validating-abcv.html#cb110-11" tabindex="-1"></a><span class="fu">head</span>(dat2,<span class="dv">20</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb111"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb111-1"><a href="always-be-cross-validating-abcv.html#cb111-1" tabindex="-1"></a><span class="co"># Create a new data.frame, drop the test column we added above,</span></span>
+<span id="cb111-2"><a href="always-be-cross-validating-abcv.html#cb111-2" tabindex="-1"></a><span class="co"># then randomly shuffle the data to remove any systematic ordering </span></span>
+<span id="cb111-3"><a href="always-be-cross-validating-abcv.html#cb111-3" tabindex="-1"></a><span class="co"># of the rows.</span></span>
+<span id="cb111-4"><a href="always-be-cross-validating-abcv.html#cb111-4" tabindex="-1"></a>dat2 <span class="ot">&lt;-</span> dat[,<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>]</span>
+<span id="cb111-5"><a href="always-be-cross-validating-abcv.html#cb111-5" tabindex="-1"></a>dat2 <span class="ot">&lt;-</span> dat2[<span class="fu">sample</span>(n),]</span>
+<span id="cb111-6"><a href="always-be-cross-validating-abcv.html#cb111-6" tabindex="-1"></a></span>
+<span id="cb111-7"><a href="always-be-cross-validating-abcv.html#cb111-7" tabindex="-1"></a><span class="co"># Create k equally size folds</span></span>
+<span id="cb111-8"><a href="always-be-cross-validating-abcv.html#cb111-8" tabindex="-1"></a>k <span class="ot">&lt;-</span> <span class="dv">10</span></span>
+<span id="cb111-9"><a href="always-be-cross-validating-abcv.html#cb111-9" tabindex="-1"></a>dat2<span class="sc">$</span>fold <span class="ot">&lt;-</span> <span class="fu">cut</span>(<span class="fu">seq</span>(<span class="dv">1</span>,n),<span class="at">breaks=</span>k,<span class="at">labels=</span><span class="cn">FALSE</span>)</span>
+<span id="cb111-10"><a href="always-be-cross-validating-abcv.html#cb111-10" tabindex="-1"></a><span class="co"># Take a peek -- note the fold column</span></span>
+<span id="cb111-11"><a href="always-be-cross-validating-abcv.html#cb111-11" tabindex="-1"></a><span class="fu">head</span>(dat2,<span class="dv">20</span>)</span></code></pre></div>
 <pre><code>##             x         y fold
 ## 7  -3.2974312  71.07423    1
 ## 46  2.1110922  99.82447    1
@@ -1372,63 +1372,63 @@ These are both positive numbers in the units of <span class="math inline">\(y\)<
 ## 37 -3.9797427  63.43873    4
 ## 44 -2.4018186  82.82204    4
 ## 31 -0.8836568  78.60771    4</code></pre>
-<div class="sourceCode" id="cb112"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb112-1"><a href="always-be-cross-validating-abcv.html#cb112-1" tabindex="-1"></a><span class="co"># plot</span></span>
-<span id="cb112-2"><a href="always-be-cross-validating-abcv.html#cb112-2" tabindex="-1"></a><span class="fu">ggplot</span>(dat2,<span class="fu">aes</span>(<span class="at">x=</span>x,<span class="at">y=</span>y,<span class="at">color=</span><span class="fu">factor</span>(fold))) <span class="sc">+</span> </span>
-<span id="cb112-3"><a href="always-be-cross-validating-abcv.html#cb112-3" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size=</span><span class="dv">3</span>) <span class="sc">+</span></span>
-<span id="cb112-4"><a href="always-be-cross-validating-abcv.html#cb112-4" tabindex="-1"></a>  <span class="fu">scale_color_viridis_d</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb113"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb113-1"><a href="always-be-cross-validating-abcv.html#cb113-1" tabindex="-1"></a><span class="co"># plot</span></span>
+<span id="cb113-2"><a href="always-be-cross-validating-abcv.html#cb113-2" tabindex="-1"></a><span class="fu">ggplot</span>(dat2,<span class="fu">aes</span>(<span class="at">x=</span>x,<span class="at">y=</span>y,<span class="at">color=</span><span class="fu">factor</span>(fold))) <span class="sc">+</span> </span>
+<span id="cb113-3"><a href="always-be-cross-validating-abcv.html#cb113-3" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size=</span><span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb113-4"><a href="always-be-cross-validating-abcv.html#cb113-4" tabindex="-1"></a>  <span class="fu">scale_color_viridis_d</span>()</span></code></pre></div>
 <p><img src="03crossValidationIntro_files/figure-html/unnamed-chunk-13-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
 <p>Because the assignment of rows to folds is random, the results of k-fold cross validation will vary slightly each time it is run. In practice, cross validation is often repeated multiple times with different random fold assignments to stabilize estimates of out-of-sample performance. See below for a quick diatribe on repeating k-fold.</p>
 <p>Here is a better look at just fold 1:</p>
-<div class="sourceCode" id="cb113"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb113-1"><a href="always-be-cross-validating-abcv.html#cb113-1" tabindex="-1"></a>dat2 <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">fold1Only =</span> <span class="fu">ifelse</span>(fold<span class="sc">==</span><span class="dv">1</span>,<span class="st">&quot;Fold one&quot;</span>,<span class="st">&quot;All other folds&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb113-2"><a href="always-be-cross-validating-abcv.html#cb113-2" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span>x,<span class="at">y=</span>y,<span class="at">color=</span>fold1Only)) <span class="sc">+</span> </span>
-<span id="cb113-3"><a href="always-be-cross-validating-abcv.html#cb113-3" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size=</span><span class="dv">3</span>,<span class="at">alpha=</span><span class="fl">0.8</span>) <span class="sc">+</span></span>
-<span id="cb113-4"><a href="always-be-cross-validating-abcv.html#cb113-4" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">&quot;grey60&quot;</span>,<span class="st">&quot;darkblue&quot;</span>)) <span class="sc">+</span></span>
-<span id="cb113-5"><a href="always-be-cross-validating-abcv.html#cb113-5" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb114"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb114-1"><a href="always-be-cross-validating-abcv.html#cb114-1" tabindex="-1"></a>dat2 <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">fold1Only =</span> <span class="fu">ifelse</span>(fold<span class="sc">==</span><span class="dv">1</span>,<span class="st">&quot;Fold one&quot;</span>,<span class="st">&quot;All other folds&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb114-2"><a href="always-be-cross-validating-abcv.html#cb114-2" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span>x,<span class="at">y=</span>y,<span class="at">color=</span>fold1Only)) <span class="sc">+</span> </span>
+<span id="cb114-3"><a href="always-be-cross-validating-abcv.html#cb114-3" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size=</span><span class="dv">3</span>,<span class="at">alpha=</span><span class="fl">0.8</span>) <span class="sc">+</span></span>
+<span id="cb114-4"><a href="always-be-cross-validating-abcv.html#cb114-4" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">&quot;grey60&quot;</span>,<span class="st">&quot;darkblue&quot;</span>)) <span class="sc">+</span></span>
+<span id="cb114-5"><a href="always-be-cross-validating-abcv.html#cb114-5" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div>
 <p><img src="03crossValidationIntro_files/figure-html/unnamed-chunk-14-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
 <p>With that new variable <code>fold</code> we can do a proper cross validation.</p>
-<div class="sourceCode" id="cb114"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb114-1"><a href="always-be-cross-validating-abcv.html#cb114-1" tabindex="-1"></a><span class="co"># object to store results</span></span>
-<span id="cb114-2"><a href="always-be-cross-validating-abcv.html#cb114-2" tabindex="-1"></a>lm1Results <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">rsq=</span><span class="fu">rep</span>(<span class="cn">NA</span>,k), </span>
-<span id="cb114-3"><a href="always-be-cross-validating-abcv.html#cb114-3" tabindex="-1"></a>                         <span class="at">mae=</span><span class="fu">rep</span>(<span class="cn">NA</span>,k),</span>
-<span id="cb114-4"><a href="always-be-cross-validating-abcv.html#cb114-4" tabindex="-1"></a>                         <span class="at">rmse=</span><span class="fu">rep</span>(<span class="cn">NA</span>,k))</span>
-<span id="cb114-5"><a href="always-be-cross-validating-abcv.html#cb114-5" tabindex="-1"></a></span>
-<span id="cb114-6"><a href="always-be-cross-validating-abcv.html#cb114-6" tabindex="-1"></a><span class="co"># loop through each fold</span></span>
-<span id="cb114-7"><a href="always-be-cross-validating-abcv.html#cb114-7" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>k){</span>
-<span id="cb114-8"><a href="always-be-cross-validating-abcv.html#cb114-8" tabindex="-1"></a>  testing <span class="ot">&lt;-</span> dat2[dat2<span class="sc">$</span>fold<span class="sc">==</span>i,]</span>
-<span id="cb114-9"><a href="always-be-cross-validating-abcv.html#cb114-9" tabindex="-1"></a>  training <span class="ot">&lt;-</span> dat2[dat2<span class="sc">$</span>fold<span class="sc">!=</span>i,]</span>
-<span id="cb114-10"><a href="always-be-cross-validating-abcv.html#cb114-10" tabindex="-1"></a>  </span>
-<span id="cb114-11"><a href="always-be-cross-validating-abcv.html#cb114-11" tabindex="-1"></a>  lm1 <span class="ot">&lt;-</span> <span class="fu">lm</span>(y<span class="sc">~</span>x,<span class="at">data=</span>training)</span>
-<span id="cb114-12"><a href="always-be-cross-validating-abcv.html#cb114-12" tabindex="-1"></a>  testing<span class="sc">$</span>yhat <span class="ot">&lt;-</span> <span class="fu">predict</span>(lm1,<span class="at">newdata=</span>testing)</span>
-<span id="cb114-13"><a href="always-be-cross-validating-abcv.html#cb114-13" tabindex="-1"></a>  lm1Results<span class="sc">$</span>rsq[i] <span class="ot">&lt;-</span> <span class="fu">cor</span>(testing<span class="sc">$</span>yhat,testing<span class="sc">$</span>y)<span class="sc">^</span><span class="dv">2</span></span>
-<span id="cb114-14"><a href="always-be-cross-validating-abcv.html#cb114-14" tabindex="-1"></a>  lm1Results<span class="sc">$</span>mae[i] <span class="ot">&lt;-</span> <span class="fu">mean</span>(<span class="fu">abs</span>(testing<span class="sc">$</span>yhat <span class="sc">-</span> testing<span class="sc">$</span>y))</span>
-<span id="cb114-15"><a href="always-be-cross-validating-abcv.html#cb114-15" tabindex="-1"></a>  lm1Results<span class="sc">$</span>rmse[i] <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">mean</span>((testing<span class="sc">$</span>yhat <span class="sc">-</span> testing<span class="sc">$</span>y)<span class="sc">^</span><span class="dv">2</span>))</span>
-<span id="cb114-16"><a href="always-be-cross-validating-abcv.html#cb114-16" tabindex="-1"></a>}</span>
-<span id="cb114-17"><a href="always-be-cross-validating-abcv.html#cb114-17" tabindex="-1"></a><span class="co"># Here is the mean rsq for lm1 </span></span>
-<span id="cb114-18"><a href="always-be-cross-validating-abcv.html#cb114-18" tabindex="-1"></a><span class="fu">mean</span>(lm1Results<span class="sc">$</span>rsq)</span></code></pre></div>
+<div class="sourceCode" id="cb115"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb115-1"><a href="always-be-cross-validating-abcv.html#cb115-1" tabindex="-1"></a><span class="co"># object to store results</span></span>
+<span id="cb115-2"><a href="always-be-cross-validating-abcv.html#cb115-2" tabindex="-1"></a>lm1Results <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">rsq=</span><span class="fu">rep</span>(<span class="cn">NA</span>,k), </span>
+<span id="cb115-3"><a href="always-be-cross-validating-abcv.html#cb115-3" tabindex="-1"></a>                         <span class="at">mae=</span><span class="fu">rep</span>(<span class="cn">NA</span>,k),</span>
+<span id="cb115-4"><a href="always-be-cross-validating-abcv.html#cb115-4" tabindex="-1"></a>                         <span class="at">rmse=</span><span class="fu">rep</span>(<span class="cn">NA</span>,k))</span>
+<span id="cb115-5"><a href="always-be-cross-validating-abcv.html#cb115-5" tabindex="-1"></a></span>
+<span id="cb115-6"><a href="always-be-cross-validating-abcv.html#cb115-6" tabindex="-1"></a><span class="co"># loop through each fold</span></span>
+<span id="cb115-7"><a href="always-be-cross-validating-abcv.html#cb115-7" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>k){</span>
+<span id="cb115-8"><a href="always-be-cross-validating-abcv.html#cb115-8" tabindex="-1"></a>  testing <span class="ot">&lt;-</span> dat2[dat2<span class="sc">$</span>fold<span class="sc">==</span>i,]</span>
+<span id="cb115-9"><a href="always-be-cross-validating-abcv.html#cb115-9" tabindex="-1"></a>  training <span class="ot">&lt;-</span> dat2[dat2<span class="sc">$</span>fold<span class="sc">!=</span>i,]</span>
+<span id="cb115-10"><a href="always-be-cross-validating-abcv.html#cb115-10" tabindex="-1"></a>  </span>
+<span id="cb115-11"><a href="always-be-cross-validating-abcv.html#cb115-11" tabindex="-1"></a>  lm1 <span class="ot">&lt;-</span> <span class="fu">lm</span>(y<span class="sc">~</span>x,<span class="at">data=</span>training)</span>
+<span id="cb115-12"><a href="always-be-cross-validating-abcv.html#cb115-12" tabindex="-1"></a>  testing<span class="sc">$</span>yhat <span class="ot">&lt;-</span> <span class="fu">predict</span>(lm1,<span class="at">newdata=</span>testing)</span>
+<span id="cb115-13"><a href="always-be-cross-validating-abcv.html#cb115-13" tabindex="-1"></a>  lm1Results<span class="sc">$</span>rsq[i] <span class="ot">&lt;-</span> <span class="fu">cor</span>(testing<span class="sc">$</span>yhat,testing<span class="sc">$</span>y)<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb115-14"><a href="always-be-cross-validating-abcv.html#cb115-14" tabindex="-1"></a>  lm1Results<span class="sc">$</span>mae[i] <span class="ot">&lt;-</span> <span class="fu">mean</span>(<span class="fu">abs</span>(testing<span class="sc">$</span>yhat <span class="sc">-</span> testing<span class="sc">$</span>y))</span>
+<span id="cb115-15"><a href="always-be-cross-validating-abcv.html#cb115-15" tabindex="-1"></a>  lm1Results<span class="sc">$</span>rmse[i] <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">mean</span>((testing<span class="sc">$</span>yhat <span class="sc">-</span> testing<span class="sc">$</span>y)<span class="sc">^</span><span class="dv">2</span>))</span>
+<span id="cb115-16"><a href="always-be-cross-validating-abcv.html#cb115-16" tabindex="-1"></a>}</span>
+<span id="cb115-17"><a href="always-be-cross-validating-abcv.html#cb115-17" tabindex="-1"></a><span class="co"># Here is the mean rsq for lm1 </span></span>
+<span id="cb115-18"><a href="always-be-cross-validating-abcv.html#cb115-18" tabindex="-1"></a><span class="fu">mean</span>(lm1Results<span class="sc">$</span>rsq)</span></code></pre></div>
 <pre><code>## [1] 0.6429923</code></pre>
-<div class="sourceCode" id="cb116"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb116-1"><a href="always-be-cross-validating-abcv.html#cb116-1" tabindex="-1"></a><span class="co"># and the SE on that mean</span></span>
-<span id="cb116-2"><a href="always-be-cross-validating-abcv.html#cb116-2" tabindex="-1"></a><span class="fu">sd</span>(lm1Results<span class="sc">$</span>rsq)<span class="sc">/</span><span class="fu">sqrt</span>(k)</span></code></pre></div>
+<div class="sourceCode" id="cb117"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb117-1"><a href="always-be-cross-validating-abcv.html#cb117-1" tabindex="-1"></a><span class="co"># and the SE on that mean</span></span>
+<span id="cb117-2"><a href="always-be-cross-validating-abcv.html#cb117-2" tabindex="-1"></a><span class="fu">sd</span>(lm1Results<span class="sc">$</span>rsq)<span class="sc">/</span><span class="fu">sqrt</span>(k)</span></code></pre></div>
 <pre><code>## [1] 0.095515</code></pre>
 <p>Note that we have <code>k</code> instances of the metrics. Here are all the <span class="math inline">\(R^2\)</span> values</p>
-<div class="sourceCode" id="cb118"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb118-1"><a href="always-be-cross-validating-abcv.html#cb118-1" tabindex="-1"></a><span class="fu">ggplot</span>(lm1Results, <span class="fu">aes</span>(<span class="at">x =</span> <span class="st">&quot;&quot;</span>, <span class="at">y =</span> rsq)) <span class="sc">+</span></span>
-<span id="cb118-2"><a href="always-be-cross-validating-abcv.html#cb118-2" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>(</span>
-<span id="cb118-3"><a href="always-be-cross-validating-abcv.html#cb118-3" tabindex="-1"></a>    <span class="at">width =</span> <span class="fl">0.25</span>,</span>
-<span id="cb118-4"><a href="always-be-cross-validating-abcv.html#cb118-4" tabindex="-1"></a>    <span class="at">fill =</span> anem7[<span class="dv">2</span>],</span>
-<span id="cb118-5"><a href="always-be-cross-validating-abcv.html#cb118-5" tabindex="-1"></a>    <span class="at">outlier.shape =</span> <span class="cn">NA</span></span>
-<span id="cb118-6"><a href="always-be-cross-validating-abcv.html#cb118-6" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb118-7"><a href="always-be-cross-validating-abcv.html#cb118-7" tabindex="-1"></a>  <span class="fu">geom_jitter</span>(</span>
-<span id="cb118-8"><a href="always-be-cross-validating-abcv.html#cb118-8" tabindex="-1"></a>    <span class="at">width =</span> <span class="fl">0.08</span>,</span>
-<span id="cb118-9"><a href="always-be-cross-validating-abcv.html#cb118-9" tabindex="-1"></a>    <span class="at">size =</span> <span class="dv">4</span>, <span class="at">alpha=</span><span class="fl">0.8</span>,</span>
-<span id="cb118-10"><a href="always-be-cross-validating-abcv.html#cb118-10" tabindex="-1"></a>    <span class="at">color =</span> anem7[<span class="dv">7</span>]</span>
-<span id="cb118-11"><a href="always-be-cross-validating-abcv.html#cb118-11" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb118-12"><a href="always-be-cross-validating-abcv.html#cb118-12" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb118-13"><a href="always-be-cross-validating-abcv.html#cb118-13" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">&quot;Cross-validated R² across folds&quot;</span>,</span>
-<span id="cb118-14"><a href="always-be-cross-validating-abcv.html#cb118-14" tabindex="-1"></a>    <span class="at">x =</span> <span class="cn">NULL</span>,</span>
-<span id="cb118-15"><a href="always-be-cross-validating-abcv.html#cb118-15" tabindex="-1"></a>    <span class="at">y =</span> <span class="fu">expression</span>(R<span class="sc">^</span><span class="dv">2</span>)</span>
-<span id="cb118-16"><a href="always-be-cross-validating-abcv.html#cb118-16" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb118-17"><a href="always-be-cross-validating-abcv.html#cb118-17" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">13</span>) <span class="sc">+</span></span>
-<span id="cb118-18"><a href="always-be-cross-validating-abcv.html#cb118-18" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
-<span id="cb118-19"><a href="always-be-cross-validating-abcv.html#cb118-19" tabindex="-1"></a>    <span class="at">panel.grid.minor =</span> <span class="fu">element_blank</span>()</span>
-<span id="cb118-20"><a href="always-be-cross-validating-abcv.html#cb118-20" tabindex="-1"></a>  )</span></code></pre></div>
+<div class="sourceCode" id="cb119"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb119-1"><a href="always-be-cross-validating-abcv.html#cb119-1" tabindex="-1"></a><span class="fu">ggplot</span>(lm1Results, <span class="fu">aes</span>(<span class="at">x =</span> <span class="st">&quot;&quot;</span>, <span class="at">y =</span> rsq)) <span class="sc">+</span></span>
+<span id="cb119-2"><a href="always-be-cross-validating-abcv.html#cb119-2" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>(</span>
+<span id="cb119-3"><a href="always-be-cross-validating-abcv.html#cb119-3" tabindex="-1"></a>    <span class="at">width =</span> <span class="fl">0.25</span>,</span>
+<span id="cb119-4"><a href="always-be-cross-validating-abcv.html#cb119-4" tabindex="-1"></a>    <span class="at">fill =</span> anem7[<span class="dv">2</span>],</span>
+<span id="cb119-5"><a href="always-be-cross-validating-abcv.html#cb119-5" tabindex="-1"></a>    <span class="at">outlier.shape =</span> <span class="cn">NA</span></span>
+<span id="cb119-6"><a href="always-be-cross-validating-abcv.html#cb119-6" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb119-7"><a href="always-be-cross-validating-abcv.html#cb119-7" tabindex="-1"></a>  <span class="fu">geom_jitter</span>(</span>
+<span id="cb119-8"><a href="always-be-cross-validating-abcv.html#cb119-8" tabindex="-1"></a>    <span class="at">width =</span> <span class="fl">0.08</span>,</span>
+<span id="cb119-9"><a href="always-be-cross-validating-abcv.html#cb119-9" tabindex="-1"></a>    <span class="at">size =</span> <span class="dv">4</span>, <span class="at">alpha=</span><span class="fl">0.8</span>,</span>
+<span id="cb119-10"><a href="always-be-cross-validating-abcv.html#cb119-10" tabindex="-1"></a>    <span class="at">color =</span> anem7[<span class="dv">7</span>]</span>
+<span id="cb119-11"><a href="always-be-cross-validating-abcv.html#cb119-11" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb119-12"><a href="always-be-cross-validating-abcv.html#cb119-12" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb119-13"><a href="always-be-cross-validating-abcv.html#cb119-13" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">&quot;Cross-validated R² across folds&quot;</span>,</span>
+<span id="cb119-14"><a href="always-be-cross-validating-abcv.html#cb119-14" tabindex="-1"></a>    <span class="at">x =</span> <span class="cn">NULL</span>,</span>
+<span id="cb119-15"><a href="always-be-cross-validating-abcv.html#cb119-15" tabindex="-1"></a>    <span class="at">y =</span> <span class="fu">expression</span>(R<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb119-16"><a href="always-be-cross-validating-abcv.html#cb119-16" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb119-17"><a href="always-be-cross-validating-abcv.html#cb119-17" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">13</span>) <span class="sc">+</span></span>
+<span id="cb119-18"><a href="always-be-cross-validating-abcv.html#cb119-18" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb119-19"><a href="always-be-cross-validating-abcv.html#cb119-19" tabindex="-1"></a>    <span class="at">panel.grid.minor =</span> <span class="fu">element_blank</span>()</span>
+<span id="cb119-20"><a href="always-be-cross-validating-abcv.html#cb119-20" tabindex="-1"></a>  )</span></code></pre></div>
 <p><img src="03crossValidationIntro_files/figure-html/unnamed-chunk-16-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
 <p>Each point represents the out-of-sample R<span class="math inline">\(^2\)</span> from a single cross-validation fold, while the boxplot summarizes the distribution of predictive performance across folds, highlighting the variability introduced by different training and test splits.</p>
 <p>We now have an interval estimate and can say that using 10-fold cross validation the mean for R<span class="math inline">\(^2\)</span> is 0.643 along with the standard error of that mean as 0.096. Similarly, we can say the MAE is 10.799 with a standard error of 1.005. This is calculated using held-out test folds samples and a far better estimate of R<span class="math inline">\(^2\)</span> and MAE than we started with before cross validation. Because the folds are not independent of one another, this standard error should be viewed as an approximate measure of variability across folds rather than a formal inferential standard error.</p>
@@ -1442,23 +1442,23 @@ These are both positive numbers in the units of <span class="math inline">\(y\)<
 <div id="doing-loocv" class="section level2 hasAnchor" number="4.8">
 <h2><span class="header-section-number">4.8</span> Doing LOOCV?<a href="always-be-cross-validating-abcv.html#doing-loocv" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>Leave one out cross validation (LOOCV) is an extreme form of k-fold where <span class="math inline">\(k=n\)</span>. That is one observation is left out each time. So, if in k-fold we estimate the performance of a model trained on a subset that uses <span class="math inline">\(100 \frac{k-1}{k}\)</span> percent of the available data, in LOOCV we’d use <span class="math inline">\(100 \frac{n-1}{n}\)</span> of the data to build the model. This can be prohibitively expensive for large data sets but is simple enough with the toy data above.</p>
-<div class="sourceCode" id="cb119"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb119-1"><a href="always-be-cross-validating-abcv.html#cb119-1" tabindex="-1"></a>loocvResults <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">y=</span><span class="fu">rep</span>(<span class="cn">NA</span>,n), <span class="at">yhat=</span><span class="fu">rep</span>(<span class="cn">NA</span>,n ))</span>
-<span id="cb119-2"><a href="always-be-cross-validating-abcv.html#cb119-2" tabindex="-1"></a></span>
-<span id="cb119-3"><a href="always-be-cross-validating-abcv.html#cb119-3" tabindex="-1"></a><span class="co"># loop n times and leave one out each time</span></span>
-<span id="cb119-4"><a href="always-be-cross-validating-abcv.html#cb119-4" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>n){</span>
-<span id="cb119-5"><a href="always-be-cross-validating-abcv.html#cb119-5" tabindex="-1"></a>  testing <span class="ot">&lt;-</span> dat[i,]</span>
-<span id="cb119-6"><a href="always-be-cross-validating-abcv.html#cb119-6" tabindex="-1"></a>  training <span class="ot">&lt;-</span> dat[<span class="sc">-</span>i,]</span>
-<span id="cb119-7"><a href="always-be-cross-validating-abcv.html#cb119-7" tabindex="-1"></a>  </span>
-<span id="cb119-8"><a href="always-be-cross-validating-abcv.html#cb119-8" tabindex="-1"></a>  lm1 <span class="ot">&lt;-</span> <span class="fu">lm</span>(y<span class="sc">~</span>x,<span class="at">data=</span>training)</span>
-<span id="cb119-9"><a href="always-be-cross-validating-abcv.html#cb119-9" tabindex="-1"></a>  testing<span class="sc">$</span>yhat <span class="ot">&lt;-</span> <span class="fu">predict</span>(lm1,<span class="at">newdata=</span>testing)</span>
-<span id="cb119-10"><a href="always-be-cross-validating-abcv.html#cb119-10" tabindex="-1"></a>  loocvResults<span class="sc">$</span>y[i] <span class="ot">&lt;-</span> testing<span class="sc">$</span>y</span>
-<span id="cb119-11"><a href="always-be-cross-validating-abcv.html#cb119-11" tabindex="-1"></a>  loocvResults<span class="sc">$</span>yhat[i] <span class="ot">&lt;-</span> testing<span class="sc">$</span>yhat</span>
-<span id="cb119-12"><a href="always-be-cross-validating-abcv.html#cb119-12" tabindex="-1"></a>}</span>
-<span id="cb119-13"><a href="always-be-cross-validating-abcv.html#cb119-13" tabindex="-1"></a><span class="co">#rsq2</span></span>
-<span id="cb119-14"><a href="always-be-cross-validating-abcv.html#cb119-14" tabindex="-1"></a><span class="fu">cor</span>(loocvResults<span class="sc">$</span>yhat,loocvResults<span class="sc">$</span>y)<span class="sc">^</span><span class="dv">2</span></span></code></pre></div>
+<div class="sourceCode" id="cb120"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb120-1"><a href="always-be-cross-validating-abcv.html#cb120-1" tabindex="-1"></a>loocvResults <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">y=</span><span class="fu">rep</span>(<span class="cn">NA</span>,n), <span class="at">yhat=</span><span class="fu">rep</span>(<span class="cn">NA</span>,n ))</span>
+<span id="cb120-2"><a href="always-be-cross-validating-abcv.html#cb120-2" tabindex="-1"></a></span>
+<span id="cb120-3"><a href="always-be-cross-validating-abcv.html#cb120-3" tabindex="-1"></a><span class="co"># loop n times and leave one out each time</span></span>
+<span id="cb120-4"><a href="always-be-cross-validating-abcv.html#cb120-4" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>n){</span>
+<span id="cb120-5"><a href="always-be-cross-validating-abcv.html#cb120-5" tabindex="-1"></a>  testing <span class="ot">&lt;-</span> dat[i,]</span>
+<span id="cb120-6"><a href="always-be-cross-validating-abcv.html#cb120-6" tabindex="-1"></a>  training <span class="ot">&lt;-</span> dat[<span class="sc">-</span>i,]</span>
+<span id="cb120-7"><a href="always-be-cross-validating-abcv.html#cb120-7" tabindex="-1"></a>  </span>
+<span id="cb120-8"><a href="always-be-cross-validating-abcv.html#cb120-8" tabindex="-1"></a>  lm1 <span class="ot">&lt;-</span> <span class="fu">lm</span>(y<span class="sc">~</span>x,<span class="at">data=</span>training)</span>
+<span id="cb120-9"><a href="always-be-cross-validating-abcv.html#cb120-9" tabindex="-1"></a>  testing<span class="sc">$</span>yhat <span class="ot">&lt;-</span> <span class="fu">predict</span>(lm1,<span class="at">newdata=</span>testing)</span>
+<span id="cb120-10"><a href="always-be-cross-validating-abcv.html#cb120-10" tabindex="-1"></a>  loocvResults<span class="sc">$</span>y[i] <span class="ot">&lt;-</span> testing<span class="sc">$</span>y</span>
+<span id="cb120-11"><a href="always-be-cross-validating-abcv.html#cb120-11" tabindex="-1"></a>  loocvResults<span class="sc">$</span>yhat[i] <span class="ot">&lt;-</span> testing<span class="sc">$</span>yhat</span>
+<span id="cb120-12"><a href="always-be-cross-validating-abcv.html#cb120-12" tabindex="-1"></a>}</span>
+<span id="cb120-13"><a href="always-be-cross-validating-abcv.html#cb120-13" tabindex="-1"></a><span class="co">#rsq2</span></span>
+<span id="cb120-14"><a href="always-be-cross-validating-abcv.html#cb120-14" tabindex="-1"></a><span class="fu">cor</span>(loocvResults<span class="sc">$</span>yhat,loocvResults<span class="sc">$</span>y)<span class="sc">^</span><span class="dv">2</span></span></code></pre></div>
 <pre><code>## [1] 0.6037989</code></pre>
-<div class="sourceCode" id="cb121"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb121-1"><a href="always-be-cross-validating-abcv.html#cb121-1" tabindex="-1"></a><span class="co">#mae</span></span>
-<span id="cb121-2"><a href="always-be-cross-validating-abcv.html#cb121-2" tabindex="-1"></a><span class="fu">mean</span>(<span class="fu">abs</span>(loocvResults<span class="sc">$</span>yhat <span class="sc">-</span> loocvResults<span class="sc">$</span>y))</span></code></pre></div>
+<div class="sourceCode" id="cb122"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb122-1"><a href="always-be-cross-validating-abcv.html#cb122-1" tabindex="-1"></a><span class="co">#mae</span></span>
+<span id="cb122-2"><a href="always-be-cross-validating-abcv.html#cb122-2" tabindex="-1"></a><span class="fu">mean</span>(<span class="fu">abs</span>(loocvResults<span class="sc">$</span>yhat <span class="sc">-</span> loocvResults<span class="sc">$</span>y))</span></code></pre></div>
 <pre><code>## [1] 10.71293</code></pre>
 <p>The reading discusses a bit about when LOOCV is preferable to k-fold in terms of variance and bias in the results. And you can find loads more discussion about it if you look. E.g., <a href="https://stats.stackexchange.com/questions/61783/bias-and-variance-in-leave-one-out-vs-k-fold-cross-validation/357749#357749">here</a> and <a href="https://stats.stackexchange.com/questions/280665/variance-of-k-fold-cross-validation-estimates-as-fk-what-is-the-role-of">here</a>. I’m not conversant enough with the arguments to make an argument one way or another but in my experience the differences are small in resampling methods in general.</p>
 </div>
@@ -1470,17 +1470,17 @@ These are both positive numbers in the units of <span class="math inline">\(y\)<
 <h2><span class="header-section-number">4.10</span> <code>caret</code>: Classification And REgression Training<a href="always-be-cross-validating-abcv.html#caret-classification-and-regression-training" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>At the moment the <code>caret</code> package is the go-to resource for improving prediction from classification and regression models. <a href="http://topepo.github.io/caret/index.html">This is an excellent intro to it</a>. The strength of the <code>caret</code> implementation is that any almost algorithm with a <code>predict</code> method can be wrapped up and used in a really slick cross validation schema that includes model tuning and comparing different models. There are literally 100’s of models you can use. <a href="http://topepo.github.io/caret/models-clustered-by-tag-similarity.html">Here is a visualization of them</a>.</p>
 <p>As a really simple example of <code>caret</code> I’ll show how we can use <code>caret</code> for repeated k-fold cross validation on the toy data <span class="math inline">\(y=f(x)\)</span> that we started with and compare a Generalized Linear Model (<code>glm</code>) to a Generalized Additive Model using Splines (<code>gamSpline</code>) which allows for the response function to be non linear.</p>
-<div class="sourceCode" id="cb123"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb123-1"><a href="always-be-cross-validating-abcv.html#cb123-1" tabindex="-1"></a><span class="fu">library</span>(caret)</span>
-<span id="cb123-2"><a href="always-be-cross-validating-abcv.html#cb123-2" tabindex="-1"></a><span class="do">## 10-fold CV with 10 repeats</span></span>
-<span id="cb123-3"><a href="always-be-cross-validating-abcv.html#cb123-3" tabindex="-1"></a>fitControl <span class="ot">&lt;-</span> <span class="fu">trainControl</span>(</span>
-<span id="cb123-4"><a href="always-be-cross-validating-abcv.html#cb123-4" tabindex="-1"></a>  <span class="at">method =</span> <span class="st">&quot;repeatedcv&quot;</span>,</span>
-<span id="cb123-5"><a href="always-be-cross-validating-abcv.html#cb123-5" tabindex="-1"></a>  <span class="at">number =</span> <span class="dv">10</span>,</span>
-<span id="cb123-6"><a href="always-be-cross-validating-abcv.html#cb123-6" tabindex="-1"></a>  <span class="at">repeats =</span> <span class="dv">10</span>)</span>
-<span id="cb123-7"><a href="always-be-cross-validating-abcv.html#cb123-7" tabindex="-1"></a></span>
-<span id="cb123-8"><a href="always-be-cross-validating-abcv.html#cb123-8" tabindex="-1"></a>glm1 <span class="ot">&lt;-</span> <span class="fu">train</span>(y <span class="sc">~</span> x, <span class="at">data =</span> dat, </span>
-<span id="cb123-9"><a href="always-be-cross-validating-abcv.html#cb123-9" tabindex="-1"></a>              <span class="at">method =</span> <span class="st">&quot;glm&quot;</span>, </span>
-<span id="cb123-10"><a href="always-be-cross-validating-abcv.html#cb123-10" tabindex="-1"></a>              <span class="at">trControl =</span> fitControl)</span>
-<span id="cb123-11"><a href="always-be-cross-validating-abcv.html#cb123-11" tabindex="-1"></a>glm1</span></code></pre></div>
+<div class="sourceCode" id="cb124"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb124-1"><a href="always-be-cross-validating-abcv.html#cb124-1" tabindex="-1"></a><span class="fu">library</span>(caret)</span>
+<span id="cb124-2"><a href="always-be-cross-validating-abcv.html#cb124-2" tabindex="-1"></a><span class="do">## 10-fold CV with 10 repeats</span></span>
+<span id="cb124-3"><a href="always-be-cross-validating-abcv.html#cb124-3" tabindex="-1"></a>fitControl <span class="ot">&lt;-</span> <span class="fu">trainControl</span>(</span>
+<span id="cb124-4"><a href="always-be-cross-validating-abcv.html#cb124-4" tabindex="-1"></a>  <span class="at">method =</span> <span class="st">&quot;repeatedcv&quot;</span>,</span>
+<span id="cb124-5"><a href="always-be-cross-validating-abcv.html#cb124-5" tabindex="-1"></a>  <span class="at">number =</span> <span class="dv">10</span>,</span>
+<span id="cb124-6"><a href="always-be-cross-validating-abcv.html#cb124-6" tabindex="-1"></a>  <span class="at">repeats =</span> <span class="dv">10</span>)</span>
+<span id="cb124-7"><a href="always-be-cross-validating-abcv.html#cb124-7" tabindex="-1"></a></span>
+<span id="cb124-8"><a href="always-be-cross-validating-abcv.html#cb124-8" tabindex="-1"></a>glm1 <span class="ot">&lt;-</span> <span class="fu">train</span>(y <span class="sc">~</span> x, <span class="at">data =</span> dat, </span>
+<span id="cb124-9"><a href="always-be-cross-validating-abcv.html#cb124-9" tabindex="-1"></a>              <span class="at">method =</span> <span class="st">&quot;glm&quot;</span>, </span>
+<span id="cb124-10"><a href="always-be-cross-validating-abcv.html#cb124-10" tabindex="-1"></a>              <span class="at">trControl =</span> fitControl)</span>
+<span id="cb124-11"><a href="always-be-cross-validating-abcv.html#cb124-11" tabindex="-1"></a>glm1</span></code></pre></div>
 <pre><code>## Generalized Linear Model 
 ## 
 ## 50 samples
@@ -1493,13 +1493,13 @@ These are both positive numbers in the units of <span class="math inline">\(y\)<
 ## 
 ##   RMSE      Rsquared   MAE     
 ##   12.86057  0.6944658  10.56652</code></pre>
-<div class="sourceCode" id="cb125"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb125-1"><a href="always-be-cross-validating-abcv.html#cb125-1" tabindex="-1"></a><span class="co"># Note that if you run this, you might be prompted </span></span>
-<span id="cb125-2"><a href="always-be-cross-validating-abcv.html#cb125-2" tabindex="-1"></a><span class="co"># to install the `gam` library.</span></span>
-<span id="cb125-3"><a href="always-be-cross-validating-abcv.html#cb125-3" tabindex="-1"></a><span class="co"># install.packages(&quot;gam&quot;)</span></span>
-<span id="cb125-4"><a href="always-be-cross-validating-abcv.html#cb125-4" tabindex="-1"></a>gam1 <span class="ot">&lt;-</span> <span class="fu">train</span>(y <span class="sc">~</span> x, <span class="at">data =</span> dat2, </span>
-<span id="cb125-5"><a href="always-be-cross-validating-abcv.html#cb125-5" tabindex="-1"></a>              <span class="at">method =</span> <span class="st">&quot;gamSpline&quot;</span>, </span>
-<span id="cb125-6"><a href="always-be-cross-validating-abcv.html#cb125-6" tabindex="-1"></a>              <span class="at">trControl =</span> fitControl)</span>
-<span id="cb125-7"><a href="always-be-cross-validating-abcv.html#cb125-7" tabindex="-1"></a>gam1</span></code></pre></div>
+<div class="sourceCode" id="cb126"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb126-1"><a href="always-be-cross-validating-abcv.html#cb126-1" tabindex="-1"></a><span class="co"># Note that if you run this, you might be prompted </span></span>
+<span id="cb126-2"><a href="always-be-cross-validating-abcv.html#cb126-2" tabindex="-1"></a><span class="co"># to install the `gam` library.</span></span>
+<span id="cb126-3"><a href="always-be-cross-validating-abcv.html#cb126-3" tabindex="-1"></a><span class="co"># install.packages(&quot;gam&quot;)</span></span>
+<span id="cb126-4"><a href="always-be-cross-validating-abcv.html#cb126-4" tabindex="-1"></a>gam1 <span class="ot">&lt;-</span> <span class="fu">train</span>(y <span class="sc">~</span> x, <span class="at">data =</span> dat2, </span>
+<span id="cb126-5"><a href="always-be-cross-validating-abcv.html#cb126-5" tabindex="-1"></a>              <span class="at">method =</span> <span class="st">&quot;gamSpline&quot;</span>, </span>
+<span id="cb126-6"><a href="always-be-cross-validating-abcv.html#cb126-6" tabindex="-1"></a>              <span class="at">trControl =</span> fitControl)</span>
+<span id="cb126-7"><a href="always-be-cross-validating-abcv.html#cb126-7" tabindex="-1"></a>gam1</span></code></pre></div>
 <pre><code>## Generalized Additive Model using Splines 
 ## 
 ## 50 samples
@@ -1518,13 +1518,13 @@ These are both positive numbers in the units of <span class="math inline">\(y\)<
 ## RMSE was used to select the optimal model using the smallest value.
 ## The final value used for the model was df = 3.</code></pre>
 <p>The cross validated GAM outperforms the linear model. And if we look at the predicted function we can indeed see the non-linear response from the GAM fit.</p>
-<div class="sourceCode" id="cb127"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb127-1"><a href="always-be-cross-validating-abcv.html#cb127-1" tabindex="-1"></a>newDat <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">x=</span><span class="fu">seq</span>(<span class="sc">-</span><span class="dv">4</span>,<span class="dv">4</span>,<span class="at">by=</span><span class="fl">0.1</span>))</span>
-<span id="cb127-2"><a href="always-be-cross-validating-abcv.html#cb127-2" tabindex="-1"></a>newDat<span class="sc">$</span>yhat <span class="ot">&lt;-</span> <span class="fu">predict</span>(gam1,<span class="at">newdata =</span> newDat)</span>
-<span id="cb127-3"><a href="always-be-cross-validating-abcv.html#cb127-3" tabindex="-1"></a></span>
-<span id="cb127-4"><a href="always-be-cross-validating-abcv.html#cb127-4" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span> </span>
-<span id="cb127-5"><a href="always-be-cross-validating-abcv.html#cb127-5" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> dat,<span class="fu">aes</span>(<span class="at">x=</span>x,<span class="at">y=</span>y),<span class="at">size=</span><span class="dv">3</span>,</span>
-<span id="cb127-6"><a href="always-be-cross-validating-abcv.html#cb127-6" tabindex="-1"></a>             <span class="at">shape=</span><span class="dv">21</span>,<span class="at">fill=</span><span class="st">&quot;darkred&quot;</span>,<span class="at">alpha=</span><span class="fl">0.7</span>) <span class="sc">+</span> </span>
-<span id="cb127-7"><a href="always-be-cross-validating-abcv.html#cb127-7" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> newDat,<span class="fu">aes</span>(<span class="at">x=</span>x,<span class="at">y=</span>yhat),<span class="at">linewidth=</span><span class="fl">1.1</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb128"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb128-1"><a href="always-be-cross-validating-abcv.html#cb128-1" tabindex="-1"></a>newDat <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">x=</span><span class="fu">seq</span>(<span class="sc">-</span><span class="dv">4</span>,<span class="dv">4</span>,<span class="at">by=</span><span class="fl">0.1</span>))</span>
+<span id="cb128-2"><a href="always-be-cross-validating-abcv.html#cb128-2" tabindex="-1"></a>newDat<span class="sc">$</span>yhat <span class="ot">&lt;-</span> <span class="fu">predict</span>(gam1,<span class="at">newdata =</span> newDat)</span>
+<span id="cb128-3"><a href="always-be-cross-validating-abcv.html#cb128-3" tabindex="-1"></a></span>
+<span id="cb128-4"><a href="always-be-cross-validating-abcv.html#cb128-4" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb128-5"><a href="always-be-cross-validating-abcv.html#cb128-5" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> dat,<span class="fu">aes</span>(<span class="at">x=</span>x,<span class="at">y=</span>y),<span class="at">size=</span><span class="dv">3</span>,</span>
+<span id="cb128-6"><a href="always-be-cross-validating-abcv.html#cb128-6" tabindex="-1"></a>             <span class="at">shape=</span><span class="dv">21</span>,<span class="at">fill=</span><span class="st">&quot;darkred&quot;</span>,<span class="at">alpha=</span><span class="fl">0.7</span>) <span class="sc">+</span> </span>
+<span id="cb128-7"><a href="always-be-cross-validating-abcv.html#cb128-7" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> newDat,<span class="fu">aes</span>(<span class="at">x=</span>x,<span class="at">y=</span>yhat),<span class="at">linewidth=</span><span class="fl">1.1</span>)</span></code></pre></div>
 <p><img src="03crossValidationIntro_files/figure-html/unnamed-chunk-19-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
 <p>Because of the cross validation, we can be at least somewhat confident that this model isn’t overfit and that the black line does describe <span class="math inline">\(y=f(x)\)</span>. Note that I essentially choose the <code>gamSpline</code> at random from the 100’s of possible prediction methods. If I were really interested in these data (like for a thesis), I’d spend a lot more time learning which methods work best with the data and especially how they might work well (or not) with the underlying processes.</p>
 </div>
@@ -1541,16 +1541,16 @@ These are both positive numbers in the units of <span class="math inline">\(y\)<
 <div id="your-work-2" class="section level2 hasAnchor" number="4.12">
 <h2><span class="header-section-number">4.12</span> Your Work<a href="always-be-cross-validating-abcv.html#your-work-2" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>Let’s use the adorable penguin data from the <a href="https://allisonhorst.github.io/palmerpenguins/">Palmer Penguin library</a>. And let’s do something simple like ask if we can predict body mass (<span class="math inline">\(y\)</span>) as a function of bill length (<span class="math inline">\(x_1\)</span>) and species (<span class="math inline">\(x_2\)</span>).</p>
-<div class="sourceCode" id="cb128"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb128-1"><a href="always-be-cross-validating-abcv.html#cb128-1" tabindex="-1"></a><span class="fu">data</span>(penguins)</span>
-<span id="cb128-2"><a href="always-be-cross-validating-abcv.html#cb128-2" tabindex="-1"></a>penguins <span class="ot">&lt;-</span> penguins <span class="sc">%&gt;%</span> <span class="fu">na.omit</span>()</span>
-<span id="cb128-3"><a href="always-be-cross-validating-abcv.html#cb128-3" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data=</span>penguins,<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x=</span>bill_len, <span class="at">y=</span>body_mass,<span class="at">color=</span>species)) <span class="sc">+</span></span>
-<span id="cb128-4"><a href="always-be-cross-validating-abcv.html#cb128-4" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">geom_smooth</span>(<span class="at">method=</span><span class="st">&quot;lm&quot;</span>) <span class="sc">+</span></span>
-<span id="cb128-5"><a href="always-be-cross-validating-abcv.html#cb128-5" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x=</span><span class="st">&quot;Bill length (mm)&quot;</span>, <span class="at">y=</span><span class="st">&quot;Body mass (g)&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb129"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb129-1"><a href="always-be-cross-validating-abcv.html#cb129-1" tabindex="-1"></a><span class="fu">data</span>(penguins)</span>
+<span id="cb129-2"><a href="always-be-cross-validating-abcv.html#cb129-2" tabindex="-1"></a>penguins <span class="ot">&lt;-</span> penguins <span class="sc">%&gt;%</span> <span class="fu">na.omit</span>()</span>
+<span id="cb129-3"><a href="always-be-cross-validating-abcv.html#cb129-3" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data=</span>penguins,<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x=</span>bill_len, <span class="at">y=</span>body_mass,<span class="at">color=</span>species)) <span class="sc">+</span></span>
+<span id="cb129-4"><a href="always-be-cross-validating-abcv.html#cb129-4" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">geom_smooth</span>(<span class="at">method=</span><span class="st">&quot;lm&quot;</span>) <span class="sc">+</span></span>
+<span id="cb129-5"><a href="always-be-cross-validating-abcv.html#cb129-5" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x=</span><span class="st">&quot;Bill length (mm)&quot;</span>, <span class="at">y=</span><span class="st">&quot;Body mass (g)&quot;</span>)</span></code></pre></div>
 <pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
 <p><img src="03crossValidationIntro_files/figure-html/unnamed-chunk-20-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
 <p>Here is a non-validated model using all the data.</p>
-<div class="sourceCode" id="cb130"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb130-1"><a href="always-be-cross-validating-abcv.html#cb130-1" tabindex="-1"></a>lmMass <span class="ot">&lt;-</span> <span class="fu">lm</span>(body_mass <span class="sc">~</span> bill_len <span class="sc">+</span> species , <span class="at">data =</span> penguins)</span>
-<span id="cb130-2"><a href="always-be-cross-validating-abcv.html#cb130-2" tabindex="-1"></a><span class="fu">summary</span>(lmMass)</span></code></pre></div>
+<div class="sourceCode" id="cb131"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb131-1"><a href="always-be-cross-validating-abcv.html#cb131-1" tabindex="-1"></a>lmMass <span class="ot">&lt;-</span> <span class="fu">lm</span>(body_mass <span class="sc">~</span> bill_len <span class="sc">+</span> species , <span class="at">data =</span> penguins)</span>
+<span id="cb131-2"><a href="always-be-cross-validating-abcv.html#cb131-2" tabindex="-1"></a><span class="fu">summary</span>(lmMass)</span></code></pre></div>
 <pre><code>## 
 ## Call:
 ## lm(formula = body_mass ~ bill_len + species, data = penguins)
