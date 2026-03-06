@@ -911,11 +911,15 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <ul class="summary">
 <li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Welcome</a>
 <ul>
-<li class="chapter" data-level="1.1" data-path="index.html"><a href="index.html#how-to-use-these-notes"><i class="fa fa-check"></i><b>1.1</b> How to Use These Notes</a></li>
-<li class="chapter" data-level="1.2" data-path="index.html"><a href="index.html#whats-in-these-notes"><i class="fa fa-check"></i><b>1.2</b> What’s in These Notes</a></li>
-<li class="chapter" data-level="1.3" data-path="index.html"><a href="index.html#technical-setup"><i class="fa fa-check"></i><b>1.3</b> Technical Setup</a>
+<li class="chapter" data-level="1.1" data-path="index.html"><a href="index.html#why-this-course"><i class="fa fa-check"></i><b>1.1</b> Why This Course?</a></li>
+<li class="chapter" data-level="1.2" data-path="index.html"><a href="index.html#what-makes-this-approach-different"><i class="fa fa-check"></i><b>1.2</b> What Makes This Approach Different?</a></li>
+<li class="chapter" data-level="1.3" data-path="index.html"><a href="index.html#how-to-use-these-notes"><i class="fa fa-check"></i><b>1.3</b> How to Use These Notes</a></li>
+<li class="chapter" data-level="1.4" data-path="index.html"><a href="index.html#whats-in-these-notes"><i class="fa fa-check"></i><b>1.4</b> What’s in These Notes</a></li>
+<li class="chapter" data-level="1.5" data-path="index.html"><a href="index.html#a-note-on-r-and-coding"><i class="fa fa-check"></i><b>1.5</b> A Note on R and Coding</a></li>
+<li class="chapter" data-level="1.6" data-path="index.html"><a href="index.html#what-to-expect-of-yourself"><i class="fa fa-check"></i><b>1.6</b> What to Expect of Yourself</a></li>
+<li class="chapter" data-level="1.7" data-path="index.html"><a href="index.html#technical-setup"><i class="fa fa-check"></i><b>1.7</b> Technical Setup</a>
 <ul>
-<li class="chapter" data-level="1.3.1" data-path="index.html"><a href="index.html#project-structure"><i class="fa fa-check"></i><b>1.3.1</b> Project Structure</a></li>
+<li class="chapter" data-level="1.7.1" data-path="index.html"><a href="index.html#project-structure"><i class="fa fa-check"></i><b>1.7.1</b> Project Structure</a></li>
 </ul></li>
 </ul></li>
 <li class="chapter" data-level="2" data-path="bootstrapping.html"><a href="bootstrapping.html"><i class="fa fa-check"></i><b>2</b> Bootstrapping</a>
@@ -1175,8 +1179,53 @@ started, enough detail to run experiments, and enough context to
 interpret what the algorithms are doing.</p>
 <p><em>This is a living document - feedback and corrections are always
 welcome.</em></p>
-<div id="how-to-use-these-notes" class="section level2 hasAnchor" number="1.1">
-<h2><span class="header-section-number">1.1</span> How to Use These Notes<a href="index.html#how-to-use-these-notes" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div id="why-this-course" class="section level2 hasAnchor" number="1.1">
+<h2><span class="header-section-number">1.1</span> Why This Course?<a href="index.html#why-this-course" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Environmental scientists increasingly encounter data problems that sit
+outside the comfortable territory of classical statistics. You have more
+predictors than observations. Your response variable has a weird
+distribution. The relationships you care about are nonlinear and
+riddled with interactions. The question isn’t whether a coefficient is
+significant — it’s whether a model can predict something useful in new
+data.</p>
+<p>Machine learning methods were developed largely for exactly these
+problems. They are flexible, empirical, and built around prediction
+rather than inference. That doesn’t make them better than classical
+methods — it makes them different tools for different jobs. Part of what
+this course is about is developing the judgment to know which tool is
+appropriate, and the habits of mind to use any of them carefully.</p>
+<p>There is also a practical reality: machine learning is everywhere in
+environmental science now. Remote sensing, species distribution
+modeling, climate downscaling, ecological forecasting — these fields
+have absorbed ML methods rapidly, and the pace is not slowing down.
+Being able to read, evaluate, and implement these methods is
+increasingly part of what it means to be a working environmental
+scientist.</p>
+</div>
+<div id="what-makes-this-approach-different" class="section level2 hasAnchor" number="1.2">
+<h2><span class="header-section-number">1.2</span> What Makes This Approach Different?<a href="index.html#what-makes-this-approach-different" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>These notes begin before the algorithms. The first three modules —
+bootstrapping, permutation testing, and cross-validation — are not
+machine learning methods in the traditional sense. They are the
+foundation for evaluating any model, ML or otherwise. Before we build a
+neural network or a random forest, we need to understand what it means
+for a model to generalize, how to detect overfitting, and why the way
+you evaluate a model matters as much as the model itself.</p>
+<p>This sequencing is intentional. A lot of ML instruction skips straight
+to the algorithms and leaves evaluation as an afterthought. Here it
+comes first, because a model you can’t properly evaluate is a model you
+can’t trust.</p>
+<p>The methods that follow — kNN, decision trees, regression trees, neural
+networks, ensemble methods, and dimensionality reduction — are
+introduced in roughly increasing order of complexity and opacity. We
+start with methods where you can see exactly what the algorithm is
+doing, and we build toward the “black box” methods where prediction
+skill comes at the cost of interpretability. That tension — between
+understanding and performance — is one of the central themes of the
+course.</p>
+</div>
+<div id="how-to-use-these-notes" class="section level2 hasAnchor" number="1.3">
+<h2><span class="header-section-number">1.3</span> How to Use These Notes<a href="index.html#how-to-use-these-notes" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>These notes are designed to be used alongside the studio sessions. Each
 module introduces an idea and then explores it through examples and
 small experiments. The goal is not just to see how an algorithm works,
@@ -1191,8 +1240,8 @@ related to model evaluation (bootstrapping, permutation tests, and cross
 validation). But most sections can be read somewhat independently if you
 are looking for a specific method.</p>
 </div>
-<div id="whats-in-these-notes" class="section level2 hasAnchor" number="1.2">
-<h2><span class="header-section-number">1.2</span> What’s in These Notes<a href="index.html#whats-in-these-notes" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div id="whats-in-these-notes" class="section level2 hasAnchor" number="1.4">
+<h2><span class="header-section-number">1.4</span> What’s in These Notes<a href="index.html#whats-in-these-notes" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>The notes move through a set of core ideas in machine learning, roughly
 in this order:</p>
 <ul>
@@ -1218,15 +1267,43 @@ improving predictive models</li>
 <p>Some sections build on earlier ideas (especially around model
 evaluation), but most modules can be read independently.</p>
 </div>
-<div id="technical-setup" class="section level2 hasAnchor" number="1.3">
-<h2><span class="header-section-number">1.3</span> Technical Setup<a href="index.html#technical-setup" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div id="a-note-on-r-and-coding" class="section level2 hasAnchor" number="1.5">
+<h2><span class="header-section-number">1.5</span> A Note on R and Coding<a href="index.html#a-note-on-r-and-coding" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>All examples in these notes are written in R. You don’t need to be an
+expert R programmer to follow along, but you should be comfortable
+reading code, running it, and modifying it. The best way to use these
+notes is not to read them passively — it’s to open RStudio alongside
+them, run every example, and then break it. Change a parameter. Swap in
+a different dataset. See what happens.</p>
+<p>You’ll also notice that the code here is not always the most elegant or
+concise. That’s mostly on purpose. Clear, readable code is more useful
+for learning than clever one-liners. Once you understand what a
+function is doing, you can optimize; while you’re learning, legibility
+matters more.</p>
+</div>
+<div id="what-to-expect-of-yourself" class="section level2 hasAnchor" number="1.6">
+<h2><span class="header-section-number">1.6</span> What to Expect of Yourself<a href="index.html#what-to-expect-of-yourself" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>These notes assume you are willing to be confused for a while. Some of
+the methods covered here took decades to develop and have entire
+textbooks devoted to them. We are covering them in single modules. That
+means we are necessarily simplifying, skipping derivations, and
+focusing on intuition over rigor. That is a reasonable trade-off for a
+studio course, but it means you should hold your understanding loosely
+and be prepared to go deeper when a method matters for your own work.</p>
+<p>The goal by the end is not to have memorized a set of algorithms. It’s
+to have enough experience with how these methods behave — what they’re
+sensitive to, what they assume, how they fail — that you can use them
+responsibly and evaluate whether someone else has used them responsibly.</p>
+</div>
+<div id="technical-setup" class="section level2 hasAnchor" number="1.7">
+<h2><span class="header-section-number">1.7</span> Technical Setup<a href="index.html#technical-setup" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>This document was written in Markdown using the <strong>bookdown</strong> package and
 built with <strong>R version 4.5.2</strong>. You should be reasonably up
 to date on your versions of R, RStudio, and relevant packages. You can
 update your packages by running:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="index.html#cb1-1" tabindex="-1"></a><span class="fu">update.packages</span>()</span></code></pre></div>
-<div id="project-structure" class="section level3 hasAnchor" number="1.3.1">
-<h3><span class="header-section-number">1.3.1</span> Project Structure<a href="index.html#project-structure" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div id="project-structure" class="section level3 hasAnchor" number="1.7.1">
+<h3><span class="header-section-number">1.7.1</span> Project Structure<a href="index.html#project-structure" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>To follow along with the examples, you’ll want a working RStudio
 project.</p>
 <ol style="list-style-type: decimal">
@@ -1242,12 +1319,12 @@ inside your project directory.</p></li>
 <p>You can download the data directly from the GitHub <a href="https://github.com/AndyBunn/machineLearningNotes">repo</a>. The hard link to it is:
 <a href="https://github.com/AndyBunn/machineLearningNotes/blob/main/data.zip" class="uri">https://github.com/AndyBunn/machineLearningNotes/blob/main/data.zip</a></p>
 <p>Once it’s unzipped your folder structure should look something like this:</p>
-<pre><code>machineLearning-course/
+<p>machineLearning-course/
 ├── data/
-│   ├── faces.csv
-│   ├── mushroomsClean.csv
-│   └── ...
-└── machineLearning-course.Rproj</code></pre>
+│ ├── faces.csv
+│ ├── mushroomsClean.csv
+│ └── …
+└── machineLearning-course.Rproj</p>
 <ol start="3" style="list-style-type: decimal">
 <li><strong>Refer to data files using relative paths</strong></li>
 </ol>

@@ -60,6 +60,55 @@ interpret what the algorithms are doing.
 *This is a living document - feedback and corrections are always
 welcome.*
 
+## Why This Course?
+
+Environmental scientists increasingly encounter data problems that sit
+outside the comfortable territory of classical statistics. You have more
+predictors than observations. Your response variable has a weird
+distribution. The relationships you care about are nonlinear and
+riddled with interactions. The question isn't whether a coefficient is
+significant — it's whether a model can predict something useful in new
+data.
+
+Machine learning methods were developed largely for exactly these
+problems. They are flexible, empirical, and built around prediction
+rather than inference. That doesn't make them better than classical
+methods — it makes them different tools for different jobs. Part of what
+this course is about is developing the judgment to know which tool is
+appropriate, and the habits of mind to use any of them carefully.
+
+There is also a practical reality: machine learning is everywhere in
+environmental science now. Remote sensing, species distribution
+modeling, climate downscaling, ecological forecasting — these fields
+have absorbed ML methods rapidly, and the pace is not slowing down.
+Being able to read, evaluate, and implement these methods is
+increasingly part of what it means to be a working environmental
+scientist.
+
+## What Makes This Approach Different?
+
+These notes begin before the algorithms. The first three modules —
+bootstrapping, permutation testing, and cross-validation — are not
+machine learning methods in the traditional sense. They are the
+foundation for evaluating any model, ML or otherwise. Before we build a
+neural network or a random forest, we need to understand what it means
+for a model to generalize, how to detect overfitting, and why the way
+you evaluate a model matters as much as the model itself.
+
+This sequencing is intentional. A lot of ML instruction skips straight
+to the algorithms and leaves evaluation as an afterthought. Here it
+comes first, because a model you can't properly evaluate is a model you
+can't trust.
+
+The methods that follow — kNN, decision trees, regression trees, neural
+networks, ensemble methods, and dimensionality reduction — are
+introduced in roughly increasing order of complexity and opacity. We
+start with methods where you can see exactly what the algorithm is
+doing, and we build toward the "black box" methods where prediction
+skill comes at the cost of interpretability. That tension — between
+understanding and performance — is one of the central themes of the
+course.
+
 ## How to Use These Notes
 
 These notes are designed to be used alongside the studio sessions. Each
@@ -84,26 +133,56 @@ The notes move through a set of core ideas in machine learning, roughly
 in this order:
 
 -   **Bootstrapping** - using resampling to estimate variability and
-    understand model stability
+understand model stability
 -   **Permutation Methods** - assessing significance and variable
-    importance through randomization
+importance through randomization
 -   **Cross Validation** - estimating predictive performance and
-    guarding against overfitting
+guarding against overfitting
 -   **k-Nearest Neighbors (kNN)** - a simple instance-based learning
-    method based on similarity
+method based on similarity
 -   **Decision Trees** - recursive partitioning for classification and
-    regression
+regression
 -   **Regression and Model Trees** - combining tree structures with
-    local regression models
+local regression models
 -   **Neural Networks** - flexible nonlinear models built from layered
-    units
+units
 -   **Eigenfaces** - a dimensionality-reduction example using principal
-    components for image recognition
+components for image recognition
 -   **Improving Model Learning** - strategies for tuning, comparing, and
-    improving predictive models
+improving predictive models
 
 Some sections build on earlier ideas (especially around model
 evaluation), but most modules can be read independently.
+
+## A Note on R and Coding
+
+All examples in these notes are written in R. You don't need to be an
+expert R programmer to follow along, but you should be comfortable
+reading code, running it, and modifying it. The best way to use these
+notes is not to read them passively — it's to open RStudio alongside
+them, run every example, and then break it. Change a parameter. Swap in
+a different dataset. See what happens.
+
+You'll also notice that the code here is not always the most elegant or
+concise. That's mostly on purpose. Clear, readable code is more useful
+for learning than clever one-liners. Once you understand what a
+function is doing, you can optimize; while you're learning, legibility
+matters more.
+
+## What to Expect of Yourself
+
+These notes assume you are willing to be confused for a while. Some of
+the methods covered here took decades to develop and have entire
+textbooks devoted to them. We are covering them in single modules. That
+means we are necessarily simplifying, skipping derivations, and
+focusing on intuition over rigor. That is a reasonable trade-off for a
+studio course, but it means you should hold your understanding loosely
+and be prepared to go deeper when a method matters for your own work.
+
+The goal by the end is not to have memorized a set of algorithms. It's
+to have enough experience with how these methods behave — what they're
+sensitive to, what they assume, how they fail — that you can use them
+responsibly and evaluate whether someone else has used them responsibly.
 
 ## Technical Setup
 
@@ -122,26 +201,26 @@ To follow along with the examples, you'll want a working RStudio
 project.
 
 1.  **Create a new RStudio project**\
-    Go to **File → New Project → New Directory → New Project**. Give it
-    a name (for example `machineLearning-course`) and choose where to
-    save it.
+Go to **File → New Project → New Directory → New Project**. Give it
+a name (for example `machineLearning-course`) and choose where to
+save it.
 
 2.  **Download the `data/` folder**\
-    The datasets used in the examples are available in the `data/`
-    folder of the course repository. Download that folder and place it
-    inside your project directory.
-    
+The datasets used in the examples are available in the `data/`
+folder of the course repository. Download that folder and place it
+inside your project directory.
+
 You can download the data directly from the GitHub [repo](https://github.com/AndyBunn/machineLearningNotes). The hard link to it is:
-    https://github.com/AndyBunn/machineLearningNotes/blob/main/data.zip 
+https://github.com/AndyBunn/machineLearningNotes/blob/main/data.zip 
 
 Once it's unzipped your folder structure should look something like this:
 
-    machineLearning-course/
-    ├── data/
-    │   ├── faces.csv
-    │   ├── mushroomsClean.csv
-    │   └── ...
-    └── machineLearning-course.Rproj
+machineLearning-course/
+├── data/
+│   ├── faces.csv
+│   ├── mushroomsClean.csv
+│   └── ...
+└── machineLearning-course.Rproj
 
 3.  **Refer to data files using relative paths**
 

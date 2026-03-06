@@ -1,6 +1,10 @@
 welcome
+why-this-course
+what-makes-this-approach-different
 how-to-use-these-notes
 whats-in-these-notes
+a-note-on-r-and-coding
+what-to-expect-of-yourself
 technical-setup
 project-structure
 bootstrapping
