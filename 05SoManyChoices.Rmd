@@ -1,0 +1,420 @@
+# Classifying with Decision Trees
+
+
+```{r,echo=FALSE}
+set.seed(365)
+```
+
+## Big Idea
+Predicting categorical class membership is one of two big areas of machine learning (the other being predicting a continuous response -- e.g., regression). Decision trees make rules that isolate each class in the data. These rules come from partitioning the data over and over to get the purest splits possible. It's a computationally intensive method but its very effective and very appealing and intuitive. And unlike kNN the tree that is produced can help shed light on processes or mechanisms that create the patterns. kNN predicts without producing a model you can inspect. Trees give you an explicit, inspectable model.
+
+
+## Packages
+```{r}
+library(tidyverse)
+library(C50)
+library(caret)
+```
+
+## Reading
+Chapter 5: Divide and Conquer -- Classification Using Decision Trees and Rules in Machine Learning with R: Expert techniques for predictive modeling, 3rd Edition.
+
+For this reading focus on pages 125-135. We are going to cover the C5.0 algorithm in this module. You might want to skim the rest but learning this algorithm is good for our purposes here. There are roughly a zillion ways to make decision trees and I want you to get the idea of how they are applied. We will look under the hood at the C5.0 algorithm but not wade through the gory details of the others.
+
+Chapter 10: Decision Trees!!! in The StatQuest Illustrated Guide to Machine Learning!!! Focus on part one.
+
+## Growing and Pruning
+You have the idea from the reading that there are two jobs that take place when making a decision tree. First, you grow the tree by partitioning the data according to some splitting algorithm. That's what we will focus on here. The "problem" with these algorithms is that they are very effective at partitioning data and prone to overfitting. That is, they can accurately classify a training data set but make so many fine splits that the data aren't generalizable to testing data. So the trees have to be pruned by some set of rules to make them more generally applicable. Just like a garden or an orchard, you cultivate growth and then have to weed and prune to get what you want.
+
+We will focus mostly on the growing of the trees in this module.
+
+## Entropy and Information Gain
+The reading is a blend of nitty gritty details about classification and big picture concepts on how and why trees are useful. There is a lot of ink spent on the ideas of entropy and information gain. For our decision tree splits we are going to make splits on variables that create an orderly partitioning of the data based on entropy and information gain.
+
+I'll be frank here. If you want to hum the details of the splitting and skip to the example at the bottom go ahead. I think working through this is valuable but sometimes you have to know when it's OK to skim and this is one of those times. You can use decision trees and not fully understand the entropy splitting. But it's cool and pretty simple!
+
+With that said...
+
+Entropy is something you've mostly encountered before in terms of the second law of thermodynamics where you might have been taught to think about it as disorder. That's a good metaphor. In terms of information theory, entropy quantifies the amount of knowledge we have about a given set of things. Higher entropy means less certainty about class membership. So for a classification problem like classifying a species of a fish, "knowledge" means how certain we are of what species we would draw at random from the set. Entropy is inversely related to knowledge: the more knowledge we have, the lower the entropy. When we have an equal chance of choosing one species over another (pike vs bream) entropy is high. If we were pretty sure we'd choose pike and not smelt, entropy would be low. With regards to classification, entropy is a measure of purity. [This is a nice YouTube video](https://www.youtube.com/watch?v=9r7FIXEAGvs&feature=emb_logo&ab_channel=LuisSerrano) that walks through the derivation and application of entropy in information theory.
+
+We will use entropy in order to make decisions about which partitions of the data will give us a good classification.  Information gain can determine which variable to split on by measuring how much information a feature (variable) gives us about a class (target). The idea is to reduce the entropy of our original data pool by segmenting it into smaller pools. If we have several variables to choose from, we pick the one that reduces entropy the most and segment (or split) on that one. 
+
+We will walk through these with an example.
+
+## Toy Example
+For an example I'll show you some data that looks at whether a wildfire warning was issued based on the sky condition (sunny, overcast, rain) the temperature (hot, mild, cool), the humidity (high, low, normal) and the wind conditions (strong, weak, etc). We are going to try to classify what conditions lead to a fire warning being issued.
+
+```{r,message=FALSE,echo=FALSE}
+dat <- read_csv("data/fire.csv")
+dat <- dat %>% mutate(across(where(is_character),as_factor))
+DT::datatable(dat,options = list(pageLength = 14))
+```
+
+Do some sorting on various columns and start to build a decision tree in your head. Which variables are the most important do you think?
+
+### Entropy
+Let's calculate entropy ($S$) with following the formula:
+
+$$ S = \sum_{i=1}^{c}-p_i \times \log_2(p_i)$$
+where $c$ is the number of classes and $p$ is the proportion of cases in class $i$ (e.g., `FireWarning` has two classes: "Yes" and "No").
+
+Looking at the `FireWarning` column we can see that there are 8 instances of "Yes" and 6 instances of "No". Or about 57% "Yes" and 43% "No". This is pretty balanced, so we know going in that the entropy level is high (it'll be near one, right? See Figure 5.6 in the reading).
+
+$$ S = -p_{Yes} \times \log_2(p_{Yes}) - p_{No} \times log_2(p_{No})$$
+$$ S = -\frac{8}{14} \times \log_2(\frac{8}{14}) - \frac{6}{14} \times \log_2(\frac{6}{14})$$
+Here is how can calculate it "by hand" in R.
+
+```{r}
+pYes <- 8/14
+pNo <- 6/14
+-1 * pYes * log2(pYes) - pNo * log2(pNo)
+```
+
+Slightly more elegantly with a few variables.
+
+```{r}
+n <- length(dat$FireWarning)
+pYes <- sum(dat$FireWarning=="Yes") / n
+pNo <- sum(dat$FireWarning=="No") / n
+-1 * pYes * log2(pYes) - pNo * log2(pNo)
+```
+
+And here is how we can implement it using tidy syntax for any factor.
+
+```{r}
+dat %>% count(FireWarning) %>% 
+  mutate(prop = n / sum(n)) %>%
+  summarise(S = sum(-1 * prop * log2(prop))) %>% pull(S)
+```
+
+We are going to be calculating entropy many times with different subsets of the data, so let's make the calculation into a function and still use tidy syntax.
+
+```{r}
+entropy <- function(data, target) {
+  data %>% count( {{target}} ) %>% 
+    mutate(prop = n / sum(n)) %>%
+    summarise(S = sum(-1 * prop * log2(prop))) %>%  
+    pull(S)
+}
+```
+
+Let's use the function.
+
+```{r}
+dat %>% entropy(FireWarning)
+dat %>% entropy(SkyCondition)
+```
+
+### Getting to Information Gain
+Let's go from entropy to information gain (IG).
+
+Here is the information gain when we look at the change in homogeneity if we split `FireWarning` by the sky condition (`SkyCondition`). This is the change of the original entropy we calculated above for `FireWarning` (`r round(dat %>% entropy(FireWarning),3)`) subtracted from the entropy resulting from splitting on `SkyCondition`. The only wrinkle is that we have to weight the entropy by the proportion of the records falling into that position.
+
+```{r, message=FALSE}
+S1 <- dat %>% entropy(FireWarning)
+S_by_SkyCondition <- dat %>% group_by(SkyCondition) %>% 
+  entropy(FireWarning)
+# get weights as proportions
+n_SkyCondition <- dat %>% count(across(SkyCondition))  %>% pull(n)
+prop_SkyCondition <- n_SkyCondition / sum(n_SkyCondition)
+S2 <- sum(prop_SkyCondition*S_by_SkyCondition) 
+#compute IG
+S1-S2
+```
+
+Let's walk through how that is calculated. First we have `S1`. That is the same entropy we calculated above for `FireWarning`. 
+
+$$ S_1 = -\frac{8}{14} \times \log_2(\frac{8}{14}) - \frac{6}{14} \times \log_2(\frac{6}{14}) = 0.985$$
+Now to get `S2` we will use the same entropy formula but multiply by some weights when we are done. First, let's look at how `FireWarning` breaks down by `SkyCondition`. Go back up to the table above and sort first by `FireWarning` and then by `SkyCondition`. For overcast conditions there are six days and four have fire warnings. So we would get the entropy for this subset of the data as:
+
+```{r,echo=FALSE,eval=FALSE}
+pYes <- 4/6
+pNo <- 2/6
+-1 * pYes * log2(pYes) - pNo * log2(pNo)
+```
+
+$$ S_{Overcast} = -\frac{4}{6} \times \log_2(\frac{4}{6}) - \frac{2}{6} \times \log_2(\frac{2}{6}) = 0.918$$ 
+
+Rainy days are even easier. There are no fire warnings on the three rainy days so we know that the entropy is zero (look at the formula if you need reassurance!)
+
+```{r,echo=FALSE,eval=FALSE}
+pYes <- 0/3
+pNo <- 3/3
+-1 * pYes * log2(pYes) - pNo * log2(pNo)
+```
+
+
+$$ S_{Rain} = -\frac{0}{3} \times \log_2(\frac{0}{3}) - \frac{3}{3} \times \log_2(\frac{3}{3}) = 0$$ 
+And for sunny days? There are five and four of them have fire warnings.
+```{r,echo=FALSE,eval=FALSE}
+pYes <- 4/5
+pNo <- 1/5
+-1 * pYes * log2(pYes) - pNo * log2(pNo)
+```
+
+$$ S_{Sun} = -\frac{4}{5} \times \log_2(\frac{4}{5}) - \frac{1}{5} \times \log_2(\frac{1}{5}) = 0.722$$ 
+Take a look at the object `S_by_SkyCondition` that we calculated above and we will see those numbers.
+
+```{r}
+S_by_SkyCondition
+```
+
+Because the denominator in each of those equations differs by the number of observations we have to weight each of those entropy values before we sum them. The weight is the proportion that each one contributes to the whole. There are 14 days and six of them are sunny? The entropy value for sunny days will be weighted by $6/14=0.423$. These weights are in `prop_SkyCondition`.
+
+```{r}
+prop_SkyCondition
+```
+
+The final entropy then for this case is
+
+```{r}
+sum(prop_SkyCondition * S_by_SkyCondition)
+```
+
+and the information gain is the reduction in entropy as $S_1 - S_2$.
+
+```{r}
+S1-S2
+```
+
+### Deciding on a Split
+The feature (variable) used for the first split is going to be whichever one maximizes the information gain. Because we are going to have to do this a lot, here is a function to get information gain.
+
+```{r}
+IG <- function(data,target,feature){
+  # parent (target) entropy aka s1
+  s1 <- data %>% entropy( {{target}})
+  # feature entropy (target entropy by each feature )
+  sTmp <- data %>% group_by( {{feature}} ) %>% entropy( {{target}} )
+  # number in each feature
+  n_feature <- data %>% count(across( {{feature}} ))  %>% pull(n)
+  # proportion (frequency) in each feature for weights
+  p_feature <- n_feature / sum(n_feature)
+  s2 <- sum(p_feature*sTmp)
+  #compute IG
+  s1-s2
+}
+```
+
+We can use it for each feature.
+
+```{r,message=FALSE}
+dat %>% IG(target = FireWarning, feature = SkyCondition)
+dat %>% IG(target = FireWarning, feature = Temp)
+dat %>% IG(target = FireWarning, feature = Humidity)
+dat %>% IG(target = FireWarning, feature = Wind)
+```
+
+Given this we have our first split on `SkyCondition`. Here is the state of the classification at this point.
+
+```{r}
+dat %>% group_by(SkyCondition) %>% 
+  count(FireWarning)
+```
+
+And a plot.
+
+```{r fig.width=3, fig.height=3,echo=FALSE}
+library(png)
+library(grid)
+img <- readPNG("assets/fireSplit1.png")
+grid.raster(img)
+```
+
+Note that rain is a pure node. There is no need to keep going down that path. So let's look at how we can split the `Sun` node.
+
+```{r, message=FALSE}
+dat %>% filter(SkyCondition == "Sun") %>% 
+  IG(target = FireWarning, feature = Temp)
+dat %>% filter(SkyCondition == "Sun") %>% 
+  IG(target = FireWarning, feature = Humidity)
+dat %>% filter(SkyCondition == "Sun") %>% 
+  IG(target = FireWarning, feature = Wind)
+```
+
+For the next split, `Temp` has the highest gain.
+
+```{r}
+dat %>% filter(SkyCondition == "Sun") %>% group_by(Temp) %>% 
+  count(FireWarning)
+```
+```{r fig.width=3, fig.height=3,echo=FALSE}
+img <- readPNG("assets/fireSplit2.png")
+grid.raster(img)
+```
+
+
+For the next split, we'd go to overcast skies.
+
+```{r, message=FALSE}
+dat %>% filter(SkyCondition == "Overcast") %>% 
+  IG(target = FireWarning, feature = Temp)
+dat %>% filter(SkyCondition == "Overcast") %>% 
+  IG(target = FireWarning, feature = Humidity)
+dat %>% filter(SkyCondition == "Overcast") %>% 
+  IG(target = FireWarning, feature = Wind)
+```
+Based on the information gain, for overcast skies we'd split on `Wind` next. 
+
+```{r}
+dat %>% filter(SkyCondition == "Overcast") %>% group_by(Wind) %>% 
+  count(FireWarning)
+```
+```{r fig.width=3, fig.height=3,echo=FALSE}
+img <- readPNG("assets/fireSplit3.png")
+grid.raster(img)
+```
+
+And we are done! We now have a perfect classifier. Fire warnings are issued on sunny, hot days and overcast, windy days. That classified our `Yes` data perfectly and the `No` data came out perfectly too. No fire warnings issues on rainy days or overcast days with weak wind. Good job information gain!
+
+This classifier is pretty clearly a way oversimplified example, right? It's perfect and simple and just unambiguous. This never happens with real-world data. There is no need to prune this tree, or think about stopping rules, etc. But what we did above is just what the C5.0 algorithm does when assigning splits. 
+
+```{r, eval=FALSE, echo=FALSE}
+# getting C5.0 to brute force the tree as above
+treeModel <- C5.0(FireWarning~.,data=dat,
+                  control = C5.0Control(subset = FALSE,
+                                        minCases=1,
+                                        noGlobalPruning=TRUE))
+summary(treeModel)
+```
+
+### Information Gain Splits on Continuous Data
+The data above are all categorical. But we can use information gain for continuous data too. In kind of a sneaky way. The algorithm just bins the continuous data (e.g., using `cut`) to make it categorical and goes from there. It kind of seems like cheating I know! But like we've said before, ML is often clever rather than smart.
+
+## A Real Example
+
+### Go Fish
+We classified the fish data from last week. Remember? Let's imagine a world where there was a good reason to classify the species based on variables you could extract from images -- e.g., length, width, height. This is a classic kind of machine learning and big data scenario. Can the machine find patterns in a data cloud that we couldn't determine *a priori*? Can the machine do this in a way that is generalizable to a test data set?
+
+```{r}
+fish <- read_csv("data/fishcatch.csv")
+fishFiltered <- fish %>% select(-std_name, -weight_g, -sex) %>%
+  drop_na() %>%
+  mutate(common_name = factor(common_name))
+head(fishFiltered)
+```
+
+Before classifying, I'd encourage you to open this up in Rstudio by clicking on it and spend some time sorting and looking at the data. Can you see a way to classifying by species? The last time we fussed with these data we just tried to classify the three most common species. Can you figure out the pattern for all of them?
+
+```{r,message=FALSE}
+library(plotly)
+plot_ly(fishFiltered, 
+        x = ~length_nose2tail_end_cm,
+        y = ~height_cm,
+        z = ~width_cm, 
+        color = ~common_name) %>%
+  add_markers() %>% 
+  layout(scene = list(xaxis = list(title = 'Length'),
+                      yaxis = list(title = 'Height'),
+                      zaxis = list(title = 'Width'))) %>%
+  layout(showlegend = FALSE)
+```
+
+
+### Fish Finder
+In `fishFiltered' we have seven species to predict and seven variables that we can measure non-invasively. Can we predict the species from these (often highly correlated) variables?
+
+Note that the predictor variables are continuous, so the algorithm will have to bin them all in a clever way.
+
+```{r}
+treeModel <- C5.0(common_name~., data=fishFiltered)
+summary(treeModel) 
+```
+
+Wow. The algorithm did a fantastic job. The accuracy is very good, as is the confusion matrix. Note how the tree split off the two bream species right away using  the height to length ratio (bream are pretty tall relative to their length I guess) and then separated the silver bream from the common bream by the total length variable. Let's visualize this first and second split in the tree.
+
+Also, this is important, unlike kNN we see which variables are useful here which gives us understanding of the system. It's not a blind classifier.
+
+```{r}
+ggplot() +
+  geom_point(data=fishFiltered,
+             mapping = aes(x=height2length_pct,
+                           y=length_nose2tail_end_cm,
+                           color=common_name)) +
+  geom_vline(xintercept=31.6) + geom_hline(yintercept=29.4) + 
+  annotate("rect", xmin = -Inf, xmax = 31.6, ymin = -Inf, ymax = Inf,
+           alpha = 0.5,fill = "grey") +
+  labs(x="Height to Length (%)",y="Nose to Tail Length (cm)")
+```
+
+That does an admirable job of pulling out the two bream species. The next split continues along these lines deftly separating smelt from pike.
+
+```{r}
+ggplot() +
+  geom_point(data=fishFiltered,
+             mapping = aes(x=height2length_pct,
+                           y=length_nose2tail_end_cm,
+                           color=common_name)) +
+  geom_vline(xintercept=18.9) + geom_hline(yintercept=21.5) + 
+  annotate("rect", xmin = 18.9, xmax = Inf, ymin = -Inf, ymax = Inf,
+           alpha = 0.5,fill = "grey") +
+  labs(x="Height to Length (%)",y="Nose to Tail Length (cm)")
+```
+After that? The mess in the middle requires a different approach trying to pull apart species with a `height2length_pct` more than 18.9 and  less than 31.6. The tree gets pretty deep. Is it overfit? 
+
+### Visualizing the Tree
+The plotting support for `C5.0` is not great. You can use the default plot option but it's a little clunky. The code is below for the whole tree and then a subtree but I'm not including them here because they are too big and ugly. Run them if you like.
+
+```{r,eval=FALSE}
+## Not shown
+plot(treeModel)
+plot(treeModel,subtree = 2)
+```
+
+There are some amazing visualizations out there for decision trees. E.g., [visNetwork](https://datastorm-open.github.io/visNetwork/) and [collapsibleTree](https://adeelk93.github.io/collapsibleTree/) but none of those packages use the `C5.0` objects natively. I could figure out how to coerce it all if I spent some time on it but I haven't gotten around to it yet. When we start using `rpart` in the next module I'll show you some cool visualizations.
+
+### Train and Test
+Let's apply a training and testing data set to see how well the model works on an independent data set.
+
+```{r}
+n <- nrow(fishFiltered)
+rows2test <- sample(n,0.3*n)
+testing <- fishFiltered[rows2test,]
+training <- fishFiltered[-rows2test,]
+
+treeModel <- C5.0(common_name~.,data=training)
+
+fits <- predict(treeModel,testing)
+confusionMatrix(fits,testing$common_name)
+```
+
+How did this algorithm do with a testing sample? There are a few more wrinkles but quite well overall. Let's look at it.
+
+In this confusion matrix, the overall accuracy is about 79%, which is far higher than the No Information Rate (NIR) of roughly 30%, indicating that the model is doing substantially better than always predicting the most common species (perch). The Kappa value (~0.73) supports this, showing strong agreement beyond chance despite class imbalance. However, class-level performance varies widely. Some species, such as pike and smelt, are classified perfectly in this test set, while others show clear problems. In particular, the model never predicts ide at all, giving a sensitivity of 0 for that class despite nonzero prevalence, and roach also has low sensitivity with many misclassified as perch or ide. Specificity is high for nearly all classes, meaning the model is generally good at ruling out species, but this comes at the cost of missing certain classes entirely. It is also important to remember that this matrix comes from a single train/test split; a truly cross-validated model would provide a more reliable picture of performance and class-specific uncertainty across many resampled splits.
+
+## Your Work
+
+Let's get some new data. This is a subset of the mushroom data found at the [UCI Machine Learning Repository](https://archive.ics.uci.edu/ml/datasets/mushroom). I've cleaned it up and made the labels more readable. Go ahead and read it in and look at it a bit.
+
+```{r, message=FALSE}
+mushrooms <- read_csv("data/mushroomsClean.csv")
+mushrooms <- mushrooms %>% mutate(across(where(is_character),as_factor))
+head(mushrooms)
+```
+
+Can you predict whether or not a mushroom is edible using the C5.0 algorithm? You can throw the kitchen sink at it with something like `toxicity~.` or build a model with variables you think would be best. Importantly, would you eat a mushroom it classifies as edible? The cost of confusing a smelt for a pike seems small. How can you judge the cost of making a mistake here? You can try to fuss with the `costs` argument if you want.
+
+In the example above with the fish, we saw how we can understand the system a bit. E.g., we can get an idea about how different fish have different shapes that relate to ways of making a living. But the mushroom covariates are all pretty opaque to me. What does gill spacing or the number of rings "mean"? In ML problems are often solved without understanding mechanism. That's unsatisfying but if it works, does it matter?     
+
+Make sure you do some testing and training. You can go full cross validation with `caret` of course but that is up to you. I'm going to save the discussion around boosting and the growing of "random forests" for the second to last module on meta learning. We will get there, don't you worry.
+
+```{r,eval=F,echo=F}
+
+costMatrix <- matrix(c(0.5,0.5,0,1),nrow = 2,ncol = 2)
+colnames(costMatrix) <- c("poison","edible")
+rownames(costMatrix) <- c("poison","edible")
+treeModel <- C5.0(toxicity~.,data=mushrooms,costs=costMatrix)
+summary(treeModel)
+
+n <- nrow(mushrooms)
+rows2test <- sample(n,0.5*n)
+testing <- mushrooms[rows2test,]
+training <- mushrooms[-rows2test,]
+
+treeModel <- C5.0(toxicity~.,data=training)
+fits <- predict(treeModel,testing)
+confusionMatrix(fits,testing$toxicity)
+```
+
+
+

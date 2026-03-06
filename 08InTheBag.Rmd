@@ -1,0 +1,486 @@
+# Improving Model Performance
+
+
+```{r, setup, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE,fig.align="center")
+```
+
+## Big Idea: Many Models Beat One Model
+
+Many machine learning algorithms are unstable. Small changes in the training data can lead to very different models. Decision trees are a classic example: change a few rows and the first split can change completely.
+
+Ensemble methods address this problem by building many models and combining them.
+
+Instead of trusting one model, we let a crowd of models vote.
+
+Three common ensemble strategies are:
+
+* **Bagging (Bootstrap Aggregating)** – train many models on bootstrap samples of the data and average their predictions.
+* **Boosting** – train models sequentially so that each new model focuses on correcting the errors of the previous one.
+* **Stacking** – combine predictions from multiple model types using a meta-model.
+
+In this module we focus mostly on bagging, which leads directly to one of the most widely used algorithms in machine learning: random forests.
+
+### Why Bagging Works Well for Trees
+
+Decision trees have high variance. If we train the same tree algorithm on slightly different samples of the data we often get very different trees.
+
+That variability hurts prediction performance.
+
+Bagging fixes this by:
+
+1. Drawing many bootstrap samples from the training data.
+2. Fitting a tree to each sample.
+3. Combining predictions across all trees (majority vote for classification).
+
+Each individual tree may be noisy, but the average of many trees is usually more stable and more accurate.
+
+This is the same idea behind the "wisdom of crowds."
+
+## Packages
+```{r}
+library(tidyverse) # for general use
+library(rpart) # for decision trees
+library(visNetwork) # for plotting DT
+library(ipred) # for bagging
+library(randomForest) # for rf
+library(caret) # and to tune the rf
+library(gbm) # for boosting
+```
+
+## Reading
+Chapter 11: Improving Model Performance in Machine Learning with R: Expert techniques for predictive modeling, 3rd Edition. Link on Canvas.
+
+## Decision Tree to Bagging to Tuning
+I'm going to show you four different approaches to the same classification problem. The first is a straight decision tree with `rpart`. The second is a "forest" of bagged trees. The third is a full "random forest." And finally, we can tune the random forest approach. At each step we will look at performance on withheld testing data. 
+
+### The Modeling Ladder
+
+We will build models of increasing complexity:
+
+| Method | Idea |
+|------|------|
+| Decision Tree (`rpart`) | One tree fit to the data |
+| Bagging | Many trees trained on bootstrap samples |
+| Random Forest | Bagging + random feature selection |
+| Tuned Random Forest | Random forest with hyperparameters optimized |
+
+Each step generally reduces variance and improves prediction accuracy.
+
+### Fish Your Wish
+Let's go back to the fish data we used in the initial kNN module. Go back and take a look if you don't remember. I'll read the data in, filter it a bit, drop the `NA` values, and make the common name a factor.
+
+```{r}
+fish <- read_csv("data/fishcatch.csv")
+fishFiltered <- fish %>% select(-std_name, -sex) %>%
+  drop_na() %>%
+  mutate(common_name = factor(common_name))
+```
+
+### Train and Test
+
+Because we are working with a reasonably large dataset (for our purposes), we'll split the data for training and testing.
+
+Instead of randomly sampling rows, we use `createDataPartition()` from `caret`, which performs a stratified split. This keeps the proportion of each fish species roughly the same in both the training and testing sets.
+
+```{r}
+set.seed(3) # for reproducibility 
+rows2test <- createDataPartition(fishFiltered$common_name, 
+                                 p = 1/2, 
+                                 list = FALSE)[,1]
+
+testingFish  <- fishFiltered[rows2test, ]
+trainingFish <- fishFiltered[-rows2test, ]
+```
+
+### Straight Decision Tree
+Here is the simplest version of this classification task. I'll use `rpart` here. This is conceptually the same as using `C50` which we used in the decision tree. I want you to be aware that `rpart` is used commonly for classification as well as regression. Some of the details about how the splitting criteria are setup is different from `C50` but it's very similar. And `rpart` plays nicely with the `visTree` function which is nice. 
+
+```{r}
+rpartModel <- rpart(common_name~.,
+                    data=trainingFish)
+visTree(rpartModel)
+```
+
+One of the things to beware of is that this is the last graphical tree you'll see as we move forward. Because we are going to on to forests of trees, there is no easy visualization with other methods. Instead we interpret via performance metrics like accuarcy and kappa.
+
+And here is the confusion matrix on the testing data.
+
+```{r}
+obs <- testingFish$common_name
+pred <- predict(rpartModel,testingFish, type = "class")
+rpartCM <- confusionMatrix(data = pred, reference = obs)
+rpartCM
+```
+
+### Bagging
+
+Bagging stands for Bootstrap Aggregating.
+
+The algorithm works like this:
+
+1. Draw a bootstrap sample from the training data.
+2. Train a decision tree on that sample.
+3. Repeat this many times (often hundreds).
+4. Combine predictions across trees.
+
+Because each tree sees a slightly different dataset, the trees differ from each other. When we aggregate their predictions, random noise tends to cancel out.
+
+The result is usually lower variance and better predictive performance than a single tree.
+
+Now we will do a bootstrap aggregate of the same classification task with the `bagging` function. We will use 100 separate bootstrap replications (so 100 different trees).
+
+```{r}
+baggedModel <- bagging(common_name~., 
+                       data=trainingFish,
+                       nbagg = 100,
+                       coob = TRUE)
+baggedModel
+```
+
+And the confusion matrix on the testing data. Same testing and training split, right?
+
+```{r}
+pred <- predict(baggedModel,testingFish)
+baggedCM <- confusionMatrix(data = pred, reference = obs)
+baggedCM
+```
+#### Reminder: Why is bootstrapping OK?
+You might sometimes feel like bootstrapping is cheating. We are repeatedly sampling from the same dataset, so it can feel like we are just reusing the same information.
+
+The important idea is that our dataset is not the population. It is only a sample from a much larger population of possible observations.
+
+Bootstrapping treats the observed dataset as the best available approximation of that population. By sampling from it with replacement, we create many slightly different datasets that mimic the variability we might see if we repeatedly sampled from the real population.
+
+Each bootstrap dataset contains:
+- some observations multiple times
+- some observations not at all
+
+Those small differences are enough to produce slightly different models.
+
+Bagging takes advantage of this. Instead of trusting one model trained on one dataset, we train many models on many bootstrap versions of the data and combine their predictions.
+
+The goal is not to create new information. The goal is to expose how sensitive the model is to small changes in the data and stabilize the predictions by averaging across many models.
+
+### Random Forest (aka randomForest, aka rF)
+And now we will pull in the big algorithm. The `randomForest` approach is pretty ubiquitous in ML now. Make sure to read this section in the text and [watch the StatQuest guy explain it all](https://www.youtube.com/watch?v=J4Wdy0Wc_xQ&ab_channel=StatQuestwithJoshStarmer).
+
+Random forests build on bagging but add an additional layer of randomness.
+
+In bagging:
+- every tree can consider all predictor variables when choosing a split.
+
+In random forests:
+- each split only considers a random subset of predictors.
+
+Why do this?
+
+If one predictor is very strong, bagged trees will tend to split on it first every time. This makes the trees highly correlated.
+
+Random forests force trees to explore different predictors, making the trees less correlated, which improves the ensemble when we average them.
+
+#### Bagging vs Random Forest? 
+Both methods train many trees on bootstrap samples. In bagging, every split can consider all predictors. In a random forest, each split considers only a random subset of predictors (mtry). This reduces correlation among trees and usually improves prediction. Or a simple way I think about it is that  bagging uses different rows from the data and random forest uses different rows and different columns.
+
+Let's grow a random forest of 100 trees.
+
+```{r}
+rfModel <- randomForest(common_name~.,
+                        ntree = 100,
+                        data=trainingFish)
+rfModel
+```
+
+And the confusion matrix on the testing data.
+
+```{r}
+pred <- predict(rfModel,testingFish)
+rfCM <- confusionMatrix(data = pred, reference = obs)
+rfCM
+```
+
+### A Tuned Random Forest
+The main tuning parameter in a random forest is `mtry`, the number of predictors randomly considered at each split.
+
+Small values increase tree diversity but may weaken individual trees. Larger values make trees more similar.
+
+Cross-validation helps find a good balance.
+
+So let's try to tune this model.
+
+```{r}
+cvScheme <- trainControl(method = "repeatedcv",
+                         number=5,repeats = 20)
+rfTuningGrid <- data.frame(mtry = 2:6)
+
+rfTuned <- train(common_name~.,
+                 data=trainingFish,
+                 method="rf",
+                 trControl = cvScheme,
+                 tuneGrid = rfTuningGrid)
+rfTuned
+```
+
+And the confusion matrix on the testing data.
+
+```{r}
+pred <- predict(rfTuned,testingFish)
+rfTunedCM <- confusionMatrix(data = pred, reference = obs)
+rfTunedCM
+```
+
+### Skill
+While there is lots and lots of information in each of the confusion matrices, here is what most folks think is the bottom line for classification skill.
+
+We will focus on two summary metrics:
+
+* **Accuracy** – proportion of correct predictions
+* **Kappa** – improvement over random guessing
+
+Higher values indicate better classification performance.
+
+```{r}
+rbind(rpart=rpartCM$overall[1:2],
+      bagging=baggedCM$overall[1:2],
+      randomForest = rfCM$overall[1:2],
+      tunedRandomForest = rfTunedCM$overall[1:2])
+```
+
+
+## Takeaway
+
+Decision trees are easy to understand but often unstable.
+
+Bagging stabilizes trees by averaging across many bootstrap samples.
+
+Random forests go one step further by forcing trees to explore different predictors, producing a strong and reliable ensemble.
+
+## But where is the tree?
+
+If you trained a single decision tree earlier in the course, you could draw it.  
+There was one model and it had a visible structure.
+
+Bagging and random forests are different.
+
+Instead of fitting one tree, these methods fit many trees. Often hundreds.
+
+Each tree is trained on:
+- a bootstrap sample of the rows, and
+- (for random forests) a random subset of predictors when choosing splits.
+
+We can look at variable importance with something like `varImp(rfTuned)` to get an idea of what the critical drivers are but forests are much more opaque than individual trees in terms of inference.
+
+### How can they predict new data?
+
+You might notice something odd: each tree only sees a bootstrap sample of the training data. Some observations are left out. So how can the model make predictions for new data?
+
+The important thing to understand is that a decision tree does not memorize rows. It just learns rules about predictor values.
+
+For example a tree might learn rules like:
+
+```
+if length < 25 → perch
+if length ≥ 25 and height < 12 → roach
+if length ≥ 25 and height ≥ 12 → bream
+```
+
+Those rules apply to any observation with those predictor values, whether or not that observation appeared in the bootstrap sample.
+
+So when we make a prediction for a new data point:
+
+1. The observation is sent down every tree in the ensemble.
+2. Each tree produces a prediction.
+3. The predictions are combined.
+
+For classification:
+- trees vote, and the majority class wins.
+
+For regression:
+- predictions are averaged.
+
+### Which trees are used?
+
+All of them.
+
+If the model contains 500 trees, the new observation is run through all 500 trees, and their predictions are aggregated.
+
+The individual trees are usually noisy and not very interesting on their own. The strength of bagging and random forests comes from the combined prediction of many trees.
+
+## Your Work
+Let's assume that you are hip to the general idea of how `rpart` is doing its classification. Remember it works like the C5.0 algorithm with some differences in how many samples are required for a split. But it's essentially the same as C5.0.
+
+For each bullet below write a paragraph, or so, explaining to your peer reviewer:
+
+* How `bagging` differs from the straight `rpart` approach,
+
+* How `randomForest` differs from `bagging` and,
+
+* How the `caret` approach using `train` differs from `randomForest`.
+
+Next, try something nutty: Go find a model we have never used. Start by looking [here](https://topepo.github.io/caret/models-clustered-by-tag-similarity.html). Pick either a classification or a dual-use model (can be used for classification or regression) and run it on the fish data. 
+
+For instance here is a "Model Averaged Neural Network" without paying any attention to the tuning or cross validation.
+
+```{r}
+avNNetModel <- train(common_name~.,data=trainingFish,
+                     method="avNNet",
+                     preProcess = "range", # recall that NN need preprocessing!
+                     trace = FALSE) # makes it quiet
+avNNetModel
+pred <- predict(avNNetModel,testingFish)
+avNNetCM <- confusionMatrix(data = pred, reference = obs)
+avNNetCM
+```
+
+Skill is meh.
+
+What if we wanted to tune it? We can see what parameters are available via `modelLookup("avNNet")`
+
+```{r}
+modelLookup("avNNet")
+```
+
+This tells us that there are three tweaks we can make to try to improve performance: `size`, `decay`, and `bag`. What are reasonable values for those? I have no idea! But looking at the help for `avNNet` tells us that it calls `nnet`. By looking at those I was able to make an initial stab at figuring it out. I'm still not sure if these are in the right range for this algorithm frankly but it's a start. Oh and I'll cross validate it too.
+
+Warning. This will take awhile to run.
+
+```{r, eval = FALSE}
+avNNetTuningGrid <- expand.grid(bag = c(TRUE,FALSE),
+                                decay = seq(0,0.01,by=0.005),
+                                size = c(1,3,5,10,20))
+
+avNNetModelTuned <- train(common_name~.,data=trainingFish,
+                     method="avNNet",
+                     preProcess = "range",
+                     trControl = cvScheme,
+                     tuneGrid = avNNetTuningGrid,
+                     trace = FALSE)
+avNNetModelTuned
+
+pred <- predict(avNNetModelTuned,testingFish)
+avNNetTunedCM <- confusionMatrix(data = pred, reference = obs)
+
+avNNetTunedCM
+```
+
+This worked well on the testing data.
+
+What monstrous algorithm did you unleash on the data? A kNN variant? A SVM? Neural network? Multivariate Adaptive Regression Spline? Model Tree? Radial Basis Function? Self-Organizing Map? Did it work well on the testing data? Do you have any idea what it does? How did you tune it?
+
+## Postscript: Boosting and Stacking
+
+### Boosting
+I've given you a lot above! But I'd be remiss if I didn't crack the door open for boosting which is a very common technique.
+
+Bagging and random forests build many independent trees and combine their predictions.
+
+Boosting takes a different approach.
+
+Instead of training trees independently, boosting builds trees sequentially. Each new tree focuses on correcting the errors made by the previous trees.
+
+The idea is simple:
+
+1. Fit a small tree to the data.
+2. Identify where that tree makes mistakes.
+3. Fit another tree that focuses on those mistakes.
+4. Repeat many times.
+
+The final prediction combines the contribution of all trees.
+
+#### A helpful way to think about boosting
+
+Bagging and random forests rely on the wisdom of crowds. Many independent trees vote.
+
+Boosting is more like an iterative improvement process. Each tree tries to fix the remaining errors.
+
+#### Weak learners
+
+Boosting typically uses very small trees, sometimes called *weak learners*. These trees might be:
+
+- shallow
+- simple
+- not very accurate on their own
+
+But when hundreds of them are added together, the combined model can become very powerful.
+
+#### How predictions work
+
+Even though trees are built sequentially, predictions still use all trees in the model.
+
+For regression:
+- predictions are added together across trees.
+
+For classification:
+- trees contribute weighted votes that are combined into a final prediction.
+
+#### The key difference from bagging and random forests
+
+Bagging and random forests:
+- trees are built independently
+- trees reduce variance
+
+Boosting:
+- trees are built sequentially
+- trees reduce bias by correcting errors
+
+Because of this, boosting models can often outperform random forests, but they are usually more sensitive to tuning. 
+
+Here is an untuned boosting attempt.
+
+```{r}
+gbmCaret <- train(common_name~.,
+                  data=trainingFish,
+                  method="gbm",
+                  trControl = cvScheme,
+                  verbose = FALSE) # makes it quiet
+gbmCaret
+
+pred <- predict(gbmCaret,testingFish)
+gbmCaretCM <- confusionMatrix(data = pred, reference = obs)
+gbmCaretCM
+```
+
+To tune this you can look fire up `modelLookup("gbm")` and then build a tuning grid. Note that this code will take awhile to run.
+
+```{r, eval=FALSE}
+gbmTuningGrid <- expand.grid(
+  n.trees = c(300, 600, 1000),
+  interaction.depth = c(1, 2, 3),
+  shrinkage = c(0.025, 0.05, 0.1),
+  n.minobsinnode = c(5, 10)
+)
+
+gbmCaretTuned <- train(common_name~.,
+                  data=trainingFish,
+                  method="gbm",
+                  trControl = cvScheme, 
+                  tuneGrid = gbmTuningGrid,
+                  verbose = FALSE)
+
+gbmCaretTuned
+
+pred <- predict(gbmCaretTuned,testingFish)
+gbmCaretTunedCM <- confusionMatrix(data = pred, reference = obs)
+gbmCaretTunedCM
+```
+
+## Stacking (briefly)
+
+Bagging, random forests, and boosting combine many versions of the same kind of model (trees) in different ways.
+
+Stacking is different: it combines different model types.
+
+The idea:
+
+1. Train several base models (for example: a random forest, a boosted tree model, and a k-nearest neighbors model).
+2. Use cross-validation to generate out-of-sample predictions from each base model.
+3. Train a meta-model that learns how to combine those predictions into a final prediction.
+
+So the meta-model is not learning from the original predictors directly. It is learning from the predictions of other models.
+
+Two important cautions:
+
+- Stacking only makes sense if the base models make different kinds of mistakes. If they all fail on the same observations, stacking won’t help.
+- You have to generate meta-model training data using out-of-sample predictions (typically from cross-validation), otherwise stacking can overfit badly.
+
+We are not doing stacking in this module, but it is a common approach in machine learning competitions and in applied work when you want to squeeze out a bit more predictive performance.

@@ -1,0 +1,261 @@
+# Neural Nets
+
+```{r,echo=FALSE}
+set.seed(365)
+```
+
+```{r, setup, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE,fig.align="center")
+```
+
+## Big Idea
+There are algorithms for doing prediction that are often called "[black boxes](https://en.wikipedia.org/wiki/Black_box)." This means that the input data go in one side and predictions come out of the other side and the analyst doesn't know what happened inside of the box. Neural networks are one of the classic black-box algorithms. They are harder (but not impossible) to understand compared to the other methods we've been using but can have tremendous prediction skill and as such are used widely.
+
+## Packages
+```{r}
+library(tidyverse)
+library(neuralnet)
+library(lubridate)
+library(rpart)
+library(visNetwork)
+```
+
+## Reading
+Chapter 7: Black Box Methods -- Neural Networks and Support Vector Machines in Machine Learning with R: Expert techniques for predictive modeling, 3rd Edition. Link on Canvas.
+
+We are just going to cover neural networks in this module. So you can read the first half of the chapter. I'll let you tackle SVM on your own.
+
+Chapter 12: Neural Networks!!! in The StatQuest Illustrated Guide to Machine Learning!!!
+
+## Punting
+Do you, dear reader, have the brain power to understand what happens in a neural network? Yes. Absolutely. Is it worth us spending the hours needed to cover all we'd need to cover to make the black box a transparent box? No. Should we split the difference and spend hours with the initial steps of the math and still not really understand the process anyways? I don't think so. So what do we do? I think we read the text, look at a few videos, and use neural networks carefully. 
+
+
+First,  [this silly five minute video](https://www.youtube.com/watch?v=bfmFfD2RIcg&ab_channel=Simplilearn) is pretty good with the idea of building a network and then using front propagation and back propagation to tune the network. That's all in the first four minutes actually. 
+
+Second, do the reading and don't just jump to the example. It's pretty straight forward and at a good level for our purposes.
+
+Third, the most in depth thing I think you should look at is the [StatQuest video](https://www.youtube.com/watch?v=CqOfi41LfDw&ab_channel=StatQuestwithJoshStarmer) (also linked from Canvas). I think it is worth watching all the way through to give you an idea of the architecture of a neural network. That's just the first of four videos -- I watched them all and they are excellent but might be more than you want to tackle. I definitely agree with the StatQuest guy. I like "Big Fancy Squiggle Fitting Machines" as a name more than "Neural Networks."
+
+## Example: Here Comes the Sun
+Let's go ahead and implement a neural network using `neuralnet` and do so using some data on solar radiation (sunlight) and weather. 
+
+Here is the scenario: You are also considering putting solar panels on your house and wondering what kind of power you might get out of them. You have a weather station in your yard that has been collecting data every five minutes on sunlight, temperature, wind, etc. for the past four months. You figure you can use that as test data to model what kind of power output you might get from your new solar panels. 
+
+Here are the data. The units, in case you are curious are watts per square meter for Radiation, Temperature is in degrees Fahrenheit, Humidity is in percent, Barometric pressure is in inches of Hg, and Wind speed is in miles per hour.
+
+```{r}
+solar <- readRDS("data/solarPrediction.rds")
+```
+
+Ok. This is only four months of data but it's still a lot with observations every five minutes. Let's look at a random week.
+
+```{r}
+aWeek <- solar %>% 
+  filter(DateTime > ymd("2016-12-16") & DateTime < ymd("2016-12-23"))
+
+aWeekLong <- aWeek %>% select(DateTime,Radiation,
+                              Temperature,Humidity,
+                              Pressure) %>%
+  pivot_longer(cols = -DateTime)
+ggplot(aWeekLong, aes(x=DateTime,y=value)) + geom_line() +
+  facet_wrap(~name,scales="free",ncol = 2) +
+  labs(x=element_blank(),y=element_blank()) +
+  theme_minimal()
+```
+
+Ok. If you wanted to know if your solar array would be able to power your home, you'd be able to model radiation with weather data. You could look at historical weather info to then decide how big your array should be. And you could look at weather forecasts for the week to figure out if you could invite people over to charge their Tesla Trucks.
+
+But, let's clean up the data some. There is too much for us to use in class. We can convert the data to daily resolution. When we do that, we can change the radiation from W/m$^2$/5 min to something marginally more useful like kWh/m$^2$/day. We can then take the fine-scale weather data and calculate all kinds of summary statistics. E.g., min daily temperature, the range of daily wind speeds, the standard deviation of pressure. Because neural nets are pretty resilient to correlated predictors and because I'm not sure what variables are going to be important I'm just going to throw a bunch of variables at the problem. This makes the scientist in me a little squeamish but if I just want a good prediction...
+
+Here we go.
+
+```{r}
+solarDay <- solar %>% 
+  group_by(Date = date(DateTime)) %>% 
+  summarise(kWh_m2 = sum(Radiation * 60 * 5) * 2.77778e-7,
+            avgTemperature = mean(Temperature),
+            minTemperature = min(Temperature),
+            maxTemperature = max(Temperature),
+            sdTemperature = sd(Temperature),
+            rangeTemperature = maxTemperature-minTemperature,
+            avgPressure = mean(Pressure),
+            minPressure = min(Pressure),
+            maxPressure = max(Pressure),
+            sdPressure = sd(Pressure),
+            rangePressure = maxPressure-minPressure,
+            avgHumidity = mean(Humidity),
+            minHumidity = min(Humidity),
+            maxHumidity = max(Humidity),
+            sdPHumidity = sd(Humidity),
+            rangeHumidity = maxHumidity-minHumidity,
+            avgSpeed = mean(Speed),
+            minSpeed = min(Speed),
+            maxSpeed = max(Speed),
+            sdPSpeed = sd(Speed),
+            rangeSpeed = maxSpeed-minSpeed,
+            dayLengthHrs = as.numeric(((max(TimeSunSet)-min(TimeSunRise))/60/60)))
+```
+
+That's a silly number of predictors. But let's look at a few.
+
+```{r}
+# make a few variables long for plotting
+solarDayLong <- solarDay %>% 
+  select(Date,kWh_m2,
+         avgTemperature,avgHumidity,
+         avgPressure) %>%
+  pivot_longer(cols = -Date)
+
+ggplot(solarDayLong, aes(x=Date,y=value)) + geom_line() +
+  facet_wrap(~name,scales="free",ncol = 2) +
+  labs(x=NULL,y=NULL) +
+  theme_minimal()
+```
+
+## Train and Test
+We start our model building, as usual, with a data split. I'm going to ask you to do a full cross validation with `caret` later but let's start small.
+
+```{r}
+# Set the seed for reproducibility
+set.seed(5321) 
+
+# We won't need the date for prediction. 
+solarDay$Date <- NULL
+
+# Make the splits
+rows2test <- sample(nrow(solarDay),nrow(solarDay)*0.3)
+testing <- solarDay[rows2test,]
+training <- solarDay[-rows2test,]
+```
+
+## Regression Tree
+Before we go nuts with the black box, let's look at a regression tree and see how it does with these data. This does give us an idea of what variables are important.
+
+```{r}
+rp1 <- rpart(formula = kWh_m2~.,
+             data = training)
+visTree(rp1)
+obs <- testing$kWh_m2
+pred <- predict(rp1,testing)
+
+rsq <- cor(pred,obs)^2
+mae <- mean(abs(obs - pred))
+rsq
+mae
+```
+
+First. Weird tree, huh? Are those tghe variables you would have thought were important? Second. The fit isn't great. The skill on withheld data is `r round(rsq * 100,2)`%. And `r round(mae,2)` seems like a lot of error given that the mean daily kWh/m$^2$ value is `r round(mean(solarDay$kWh_m2),2)`. This is clearly a hard regression problem.
+
+## Big Fancy Squiggle Fitting Machine aka Neural Network
+Here we go with a neural net. First we rescale the data so that all the values range from zero to one. Then we apply a neural net model on the same testing and training splits.
+
+```{r}
+solarDayRescale <- solarDay %>%
+  mutate(across(everything(), scales::rescale))
+
+testing <- solarDayRescale[rows2test,]
+training <- solarDayRescale[-rows2test,]
+
+# Start with five hidden neurons
+nn1 <- neuralnet(formula = kWh_m2~.,
+                 data = training,
+                 hidden = 5)
+```
+
+Here is the plot. Not so helpful really.
+
+```{r fig.width=6, fig.height=6,echo=FALSE}
+library(png)
+library(grid)
+img <- readPNG("assets/nn1_Plot.png")
+grid.raster(img)
+```
+
+Here are a few things about it though:
+
+* The input data (predictors) are on the left. These are nodes.
+* The black arrows show the connections and numbers are the weights. Kinda think about those like slope terms in a linear model. 
+* The blue lines are the bias weights which shifts the activation function. It's kind of like the intercept tern in a linear model.
+* The middle nodes are the hidden nodes. Here we have one layer of five hidden nodes. The `neuralnet` function we used allows for up to three hidden layers.
+* On the right is the output node of the final prediction.
+
+
+Let's see how it does.
+
+```{r}
+obs <- testing$kWh_m2
+pred <- predict(nn1,testing)[,1] 
+# the [,1]? The predict function for nn objects 
+# returns a 1-column matrix. Annoying.
+
+rsq <- cor(pred,obs)^2
+mae <- mean(abs(obs - pred))
+rsq
+mae
+```
+
+Wow. Out of the gate, we've doubled our predictive power at `r round(rsq * 100,2)`%. But since `r round(mae,2)` is a scaled number, we will have to get it back into the original units of kWh/m$^2$/day to interpret it.  
+
+```{r}
+unscale <- function(x){
+  (x * max(solarDay$kWh_m2)) - 
+    (min(solarDay$kWh_m2) + min(solarDay$kWh_m2))
+}
+unscale(mae)
+```
+
+So here with very little effort we have dramatically improved our model. The fit is much better.
+
+Can we do more?
+
+## Your Work
+Rather than give you a new data set. I want you to do some  neural network modeling in `caret` on these data. And make some effort to tune it. Some of you are already `caret` enthusiasts and some have shied away from it. Time to get everybody on board with `train`, and its arguments `trainControl`,and `tuneGrid`. And try out more than one `method`.
+
+There are two dozen different neural network implementations that caret knows about. Look them over [here](https://topepo.github.io/caret/train-models-by-tag.html#neural-network). The go from Bayesian Regularized Neural Networks (`method = "brnn"`) to Stacked AutoEncoder Deep Neural Network (`method = "dnn"`). What are those? I don't really know other than they are neural net implementations. The model we've used above is simply `method = "neuralnet"`. You can see what the tuneable parameters are via `modelLookup`. E.g., `modelLookup(model = "neuralnet")` tells you that there are three parameters that you can tune (i.e., `layer1`, `layer2`, `layer3`). Those are the numbers of neurons in the hidden layers. Beware! You can easily make a tuning grid that has many permutations. Say you wanted to test between 1 and 3 neurons in each layer:
+
+```{r}
+exampleTuningGrid <- expand.grid(layer1=c(1,3,5),
+                                 layer2=1:3,
+                                 layer3=c(3,5,7))
+```
+
+That has $3^3=27$ possible configurations. If you ran that model with 10-fold cross validation you'd be running 270 neural nets. Do that with 10 repeats? 2700 neural nets. It gets hectic fast even on a tiny data set like this.
+
+I want you to fuss around with `caret` and do some tuning because next week's penultimate module is on ways to improve model performance and this kind of tuning with cross validation is at the root of it all.
+
+So try at least one neural net algorithm and do a little tuning. What kind of skill can you get on these data?
+
+Easiest to run `train` with the rescaled data set (`solarDayRescale`). Since you'll be doing cross validation there is no need to specify a training and test data split by hand. 
+
+```{r,eval=FALSE,echo=FALSE,message=FALSE,warning=FALSE}
+library(caret)
+
+solarGrid <- expand.grid(layer1=c(1,2,3),
+                         layer2=c(0,1,3,5),
+                         layer3=c(0,1,3,7))
+
+solarControl <- trainControl(method = "repeatedcv",
+                             number = 5,
+                             repeats = 5)
+nn1 <- train(kWh_m2~.,
+             data = solarDayRescale,
+             method = "neuralnet",
+             tuneGrid=solarGrid,
+             trControl = solarControl)
+nn1
+
+
+solarGrid <- expand.grid(size=6:10,
+                         decay = seq(0,0.004,by=0.0001))
+
+nn2 <- train(kWh_m2~.,
+             data = solarDayRescale,
+             method = "nnet",
+             tuneGrid=solarGrid,
+             trControl = solarControl,
+             trace = FALSE)
+nn2
+
+
+```

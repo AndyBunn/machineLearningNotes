@@ -1,0 +1,152 @@
+# Aside: Animate a NN
+
+```{r setup, include=FALSE}
+set.seed(155) #151
+```
+
+## Libraries
+```{r libs,warning=FALSE}
+library(tidyverse)
+library(nnet)
+library(ggthemes)
+library(gganimate)
+library(av)
+
+```
+
+## The Data
+Here is a quick demo of how a neural network successively iterates to improve fit. We will create a simple sine wave and then ask a neural net to try to predict it. We will animate that process by saving the prediction at each iteration. 
+
+Here is the function and the data to fit.
+
+```{r the function}
+n <- 400
+dat <- tibble(x = seq(0,n),
+              y = sin(2 * pi / 100 * seq(0,n)))
+dat %>% ggplot(mapping = aes(x=x,y=y)) +
+  geom_line(color="#fbe4c6", alpha=0.7) +
+  labs(x=element_blank(),y=element_blank()) + 
+  theme_hc(style = 'darkunica') +
+  theme(legend.position = "none",
+        text=element_text(size=12))
+```
+
+## Predicting
+
+We will use a single-hidden-layer neural network to fit to the data. We do some cumbersome looping in order to save the predictions from each iteration. If the fit is really really good (r > 0.999) the loop will quit. With this simple sine function, that criteria is usually met.
+
+```{r run nnet,warning=FALSE}
+nIter <- 100
+fits <- as_tibble(matrix(0,nrow=length(dat$x),ncol=nIter))
+gof <- tibble(Iter = 1:nIter, Correlation = numeric(nIter), RMSE = numeric(nIter)) 
+for(i in 1:nIter){
+  if(i==1) {
+    # because i=1 we start without weights
+    nn <- nnet(dat$x, dat$y, size=10, maxit=i-1, linout=TRUE, trace = FALSE)
+  }
+  else {
+    # use prior weights to start the nnet once they exist (i>1)
+    nn <- nnet(dat$x, dat$y, size=10, maxit=i-1, linout=TRUE, trace = FALSE, Wts = nn$wts)
+  }
+  yhat <- predict(nn)[,1]
+  fits[,i] <- yhat
+  gof$Correlation[i] <- cor(dat$y,yhat)
+  gof$RMSE[i] <- sqrt(mean((dat$y-yhat)^2))
+  # if fits are ~perfect, stop
+  if(gof$Correlation[i] > 0.9995) { break }
+}
+# trim fits if loop stopped early
+fits <- fits[,1:i]
+fits2 <- as_tibble(cbind(dat$x,fits)) 
+names(fits2)[1] <- "x"
+names(fits2)[-1] <- formatC(1:i,digits = 1,flag=0)
+gof <- gof[1:i,]
+tail(gof)
+```
+
+Above, the loop reached `r i` iterations before the fit was essentially perfect. Let's see all the predictions.
+
+```{r plot,warning=FALSE}
+fits2 <- fits2 %>% 
+  pivot_longer(cols=-1,names_to = "IterChar", values_to = "yhat") %>%
+  mutate(Iter = as.numeric(IterChar))
+
+p1 <- ggplot(fits2,aes(x=x,y=yhat,color=IterChar)) +
+  # original data
+  geom_line(data=dat,aes(x=x,y=y),inherit.aes = FALSE, 
+            color="#fbe4c6", alpha=0.7) +
+  # nn fits
+  geom_line() + 
+  scale_color_manual(values=PNWColors::pnw_palette("Spring",i)) +
+  labs(x=NULL,y=NULL) +
+  theme_hc(style = 'darkunica') +
+  theme(legend.position = "none",
+        text=element_text(size=12))
+p1
+```
+
+And the evolution of the RMSE and the correlation (r).
+
+```{r get gof}
+gof2 <- gof %>% pivot_longer(cols = -1)    
+p2 <- ggplot(gof2,aes(x=Iter,y=value,color=Iter)) +
+  geom_point() + geom_line() +
+  scale_color_gradientn(colors=PNWColors::pnw_palette("Spring",i)) +
+  labs(x="Iteration",y=NULL) +
+  facet_wrap(~name) +
+  theme_hc(style = 'darkunica') +
+  theme(legend.position = "none",
+        text=element_text(size=12))
+p2
+```
+
+## Animate
+And now we can animate it all.
+
+```{r first anim, eval = TRUE}
+anim1 <- p1 + 
+  labs(title = 'Iteration: {floor(frame_time)}') +
+  transition_time(Iter)
+
+animate(anim1, duration = i, detail = 1, 
+        height = 5, width = 5, units = "in", res=250,
+        renderer = ffmpeg_renderer(format = "webm"))
+
+```
+
+
+```{r save gif, echo=FALSE, eval=TRUE}
+anim1_gif <- animate(anim1, 
+                     height = 5, width = 5, units = "in", res=250,
+                     renderer = magick_renderer(),
+                     start_pause=10, end_pause = 10)
+anim_save("nnFits_anim.gif",animation=anim1_gif)
+```
+
+And below is a combo of the fits and the skill in a GIF. Note that combining the two plots to have it all work side by side is a little more complicated than I'd like it to be and we have to use the `magick` library. See [here](https://github.com/thomasp85/gganimate/wiki/Animation-Composition). I hid the code because it's yucky and confusing.
+
+```{r make gifs and append, eval = TRUE, echo = FALSE, message = FALSE, warning = FALSE}
+library(magick)
+
+anim2 <- p2 + labs(x = NULL) + 
+  transition_reveal(Iter)
+
+# changed renderer to improve quality
+anim1_gif <- animate(anim1,
+                     height = 5, width = 5, units = "in", res=250,
+                     renderer = magick_renderer())
+anim2_gif <- animate(anim2,
+                     height = 5, width = 5, units = "in", res=250,
+                     renderer = magick_renderer()) 
+
+combined_gif <- image_append(c(anim1_gif[1], anim2_gif[1]))
+nFrames <- dim(image_info(anim1_gif))[1]
+for(j in 2:nFrames){
+  tmp <- image_append(c(anim1_gif[j], anim2_gif[j]))
+  combined_gif <- c(combined_gif, tmp)
+}
+anim_save("nnPreds_Skill_Anim.gif",animation=combined_gif)
+combined_gif
+```
+
+

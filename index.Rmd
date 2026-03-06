@@ -4,7 +4,7 @@ author: "Andy Bunn"
 date: "`r format(Sys.time(), '%d-%B-%Y')`"
 description: "Machine learning notes and exercises for ESCI 506"
 documentclass: book
-bibliography: [packages.bib,otherRefs.bib]
+bibliography: [packages.bib]
 #csl: global-change-biology.csl
 biblio-style: apalike
 link-citations: yes
@@ -130,8 +130,11 @@ project.
     The datasets used in the examples are available in the `data/`
     folder of the course repository. Download that folder and place it
     inside your project directory.
+    
+You can download the data directly from the GitHub [repo](https://github.com/AndyBunn/machineLearningNotes). The hard link to it is:
+    https://github.com/AndyBunn/machineLearningNotes/blob/main/data.zip 
 
-Your folder structure should look something like this:
+Once it's unzipped your folder structure should look something like this:
 
     machineLearning-course/
     ├── data/
@@ -142,16 +145,19 @@ Your folder structure should look something like this:
 
 3.  **Refer to data files using relative paths**
 
-In your code, use paths like `"data/faces.csv"` rather than full file
+In your code, use paths like `"data/fishcatch.csv"` rather than full file
 paths. This keeps the code portable and ensures that it will run on
-different machines without modification.
+different machines without modification. E.g., `fishcatch <- read.csv(data/fishcatch.csv`.
 
 
 ```{r include=FALSE}
 # automatically create a bib database for R packages
 knitr::write_bib(c(
-  .packages(), 'tidyverse', 'caret', 'boot', 'ggridges','PNWColors'), 
+  .packages(), 'tidyverse', 'caret', 'boot', 'ggridges','PNWColors',
+  'C50'), 
   'packages.bib')
 # to build everything in docs/.
 # bookdown::render_book() 
+# to build a chapter only
+# bookdown::preview_chapter("05SoManyChoices.Rmd")
 ```

@@ -1,0 +1,15 @@
+﻿Day,FireWarning,SkyCondition,Temp,Humidity,Wind
+D01,Yes,Sun,Hot,High,Strong
+D02,Yes,Sun,Hot,Low,Strong
+D03,Yes,Overcast,Hot,Low,Strong
+D04,No,Rain,Mild,High,Weak
+D05,Yes,Overcast,Mild,Low,Strong
+D06,No,Rain,Cool,Normal,Strong
+D07,Yes,Overcast,Cool,Normal,Strong
+D08,Yes,Sun,Hot,Low,Strong
+D09,Yes,Sun,Hot,Low,Weak
+D10,No,Rain,Mild,Normal,Weak
+D11,No,Sun,Mild,Low,Strong
+D12,No,Overcast,Mild,High,Weak
+D13,No,Overcast,Hot,Normal,Weak
+D14,Yes,Overcast,Mild,Low,Strong
