@@ -8,11 +8,11 @@ The data science approach to testing is so much easier than the way you have bee
 ## Reading
 Read through [this wonderful explanation](http://www.jwilber.me/permutationtest) of permutation tests using adorable alpacas. To go into a little more depth, read Allen Downey's fantastic posts [There is only one test!](http://allendowney.blogspot.com/2011/05/there-is-only-one-test.html) and  [There is still only one test](http://allendowney.blogspot.com/2016/06/there-is-still-only-one-test.html)
 
-Wilber J. 2019. THE PERMUTATION TEST: A Visual Explanation of Statistical Testing. https://www.jwilber.me/permutationtest/ Accessed 05-March-2026 21:22.
+Wilber J. 2019. THE PERMUTATION TEST: A Visual Explanation of Statistical Testing. https://www.jwilber.me/permutationtest/ Accessed 06-March-2026 11:37.
 
-Downey A. 2016. There is still only one test. http://allendowney.blogspot.com/2011/05/there-is-only-one-test.html  Accessed 05-March-2026 21:22.
+Downey A. 2016. There is still only one test. http://allendowney.blogspot.com/2011/05/there-is-only-one-test.html  Accessed 06-March-2026 11:37.
 
-Downey A. 2011. There is only one test! http://allendowney.blogspot.com/2011/05/there-is-only-one-test.html Accessed 05-March-2026 21:22.
+Downey A. 2011. There is only one test! http://allendowney.blogspot.com/2011/05/there-is-only-one-test.html Accessed 06-March-2026 11:37.
 
 
 ## Methods as Historical Artifacts
@@ -74,6 +74,8 @@ require(ggridges)
 ```
 ## Loading required package: ggridges
 ```
+
+I'll use a mix of tidy syntax and base syntax so we'll want `tidyverse`[@R-tidyverse]. We will also use `boot`[@R-ggridges] for some fun plots.
 
 ## Alpaca sim
 Let's implement it. We start with the data of course. We have 24 alpacas and assigned them evenly into treatment and control groups. The alpacas that got the fancy shampoo with be in Group 1 and the control animals are in Group 2. After some time period, we measured the resulting wool quality. I'm not sure what the units are and it doesn't really matter -- we will call it Wool Quality. Given the Note that I didn't copy the data exactly as it is on Wilber's because they used a random number generator to make the groups. But this example is very close to the original.

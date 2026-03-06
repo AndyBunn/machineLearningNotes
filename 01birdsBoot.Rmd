@@ -52,6 +52,8 @@ library(tidyverse)
 library(boot)
 ```
 
+I'll use a mix of tidy syntax and base syntax so we'll want `tidyverse`[@R-tidyverse]. We will also use `boot`[@R-boot] later on.
+
 ## A Worked Example: Bootstrapping a Mean
 
 We start with the simplest possible case: estimating the uncertainty of a mean by repeatedly sampling the observed data with replacement. This is the core idea of the bootstrap. Everything that follows is just variation on this theme.

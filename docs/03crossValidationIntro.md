@@ -46,14 +46,16 @@ library(caret)
 library(PNWColors)
 ```
 
+As usual we'll want `tidyverse`[@R-tidyverse]. The big workhorse for cross validation is the `caret`[@R-caret] library. And we'd be remiss if we didn't use Jake Lawlor's great `PNWColors`[@R-PNWColors] resource.
+
 ## Reading
-Read Starmer's chapter on crossvalidation.
+Read Starmer's chapter on cross validation.
 
 Starmer J. 2022. The StatQuest Illustrated Guide To Machine Learning. ISBN 979-8811583607
 
 There are an awful lot of great resources out there for learning about cross validation. I think [this intro](https://towardsdatascience.com/cross-validation-a-beginners-guide-5b8ca04962cd) from Neale et al. covers the key points nicely.
 
-Neale C, Workman D, Dommalapati A. 2019. Cross Validation: A Beginner’s Guide. https://towardsdatascience.com/cross-validation-a-beginners-guide-5b8ca04962cd. Accessed on 05-March-2026 21:22
+Neale C, Workman D, Dommalapati A. 2019. Cross Validation: A Beginner’s Guide. https://towardsdatascience.com/cross-validation-a-beginners-guide-5b8ca04962cd. Accessed on 06-March-2026 11:37
 
 
 ## Overfitting and Underfitting

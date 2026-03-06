@@ -10,11 +10,14 @@ Predicting a continuous response is one of two big areas of machine learning (th
 ## Packages
 ```{r}
 library(tidyverse)
+library(caret)
 library(rpart)
 library(Cubist)
 library(visNetwork)
-library(sparkline) # visNetwork might need this
+library(sparkline) # visNetwork might need this loaded
 ```
+
+As usual we'll want `tidyverse`[@R-tidyverse] and `caret`[@R-caret] for cross validation. The main function for the regression tree we will be using is in `C50`[@R-rpart], the model tree is in `Cubist`[@R-Cubist]. And some fun visualization in `visNetwork`[@R-visNetwork] and `sparkline`[@R-sparkline].
 
 ## Reading
 Chapter 6: Forecasting Numeric Data -- Classification Using Decision Trees and Rules in Machine Learning with R: Expert techniques for predictive modeling, 3rd Edition. Link on Canvas.

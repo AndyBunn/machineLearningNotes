@@ -40,13 +40,16 @@ This is the same idea behind the "wisdom of crowds."
 ## Packages
 ```{r}
 library(tidyverse) # for general use
+library(caret) # and to tune the rf
 library(rpart) # for decision trees
 library(visNetwork) # for plotting DT
 library(ipred) # for bagging
 library(randomForest) # for rf
-library(caret) # and to tune the rf
 library(gbm) # for boosting
 ```
+
+As usual we'll want `tidyverse`[@R-tidyverse]. The big workhorse for cross validation is the `caret`[@R-caret] library. And the a lot of other packages since we are covering a lot of algorithms: `rpart`[@R-rpart], `visNetwork`[@R-visNetwork], `ipred`[@R-ipred], `randomForest`[@R-randomForest], `gbm`[@R-gbm].
+
 
 ## Reading
 Chapter 11: Improving Model Performance in Machine Learning with R: Expert techniques for predictive modeling, 3rd Edition. Link on Canvas.

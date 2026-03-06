@@ -1,7 +1,7 @@
 --- 
 title: "Machine Learning for Environmental Science: Notes for ESCI 506"
 author: "Andy Bunn"
-date: "05-March-2026"
+date: "06-March-2026"
 description: "Machine learning notes and exercises for ESCI 506"
 documentclass: book
 bibliography: [packages.bib]
@@ -24,172 +24,69 @@ output:
 
 # Welcome
 
-This document is a compilation of notes, examples, and exercises
-developed for our Machine Learning Studio. Rather than follow a
-traditional textbook, the course takes a modular, hands-on approach to
-understanding how learning algorithms work and how to evaluate them.
-Each section introduces a method or concept and then works through
-examples in R, with an emphasis on interpretation, experimentation, and
-practical use.
+This is a collection of notes, examples, and exercises for our Machine Learning Studio. We don't follow a traditional textbook. Instead, we work through ideas module by module, implement them in R, and try to build real intuition about how these methods behave.
 
-You'll find annotated code, worked examples, and commentary throughout -
-some informal, some technical - all aimed at helping you *build and
-evaluate models*, not just read about them. The examples draw from a mix
-of environmental and general datasets, but the focus of the course is
-less on any particular domain and more on understanding how learning
-algorithms behave: how they generalize, how they fail, and how their
-performance can be improved.
+You'll find annotated code, worked examples, and commentary throughout. Some of it is informal, some of it is technical. All of it is aimed at helping you *build and evaluate models*, not just read about them.
 
-From time to time I'll refer you to textbooks, papers, or online
-resources that develop the theory more formally. Those serve as
-complements to these notes rather than replacements. The goal here is to
-develop intuition about how these methods work by implementing them,
-testing them, and seeing what happens.
+From time to time I'll point you toward textbooks, papers, or videos that go deeper into the theory. Those are complements to these notes, not replacements. The goal here is to develop intuition by doing: implementing methods, testing them, and seeing what happens when things go right — and when they don't.
 
-The tone of these notes is meant to be accessible, pragmatic, and
-occasionally opinionated. You'll see suggestions, cautions, and side
-comments about common pitfalls, trade-offs, and practical decisions that
-come up when working with machine learning methods.
+These notes are opinionated. You'll see suggestions, cautions, and the occasional strong take on common pitfalls and trade-offs. That's on purpose.
 
-This is not meant to be a comprehensive text on machine learning.
-Instead it is a working guide for the methods we explore in the studio.
-Think of it as a field guide to model learning: enough structure to get
-started, enough detail to run experiments, and enough context to
-interpret what the algorithms are doing.
-
-*This is a living document - feedback and corrections are always
-welcome.*
+*This is a living document — feedback and corrections are always welcome.*
 
 ## Why This Course?
 
-Environmental scientists increasingly encounter data problems that sit
-outside the comfortable territory of classical statistics. You have more
-predictors than observations. Your response variable has a weird
-distribution. The relationships you care about are nonlinear and
-riddled with interactions. The question isn't whether a coefficient is
-significant — it's whether a model can predict something useful in new
-data.
+Environmental scientists increasingly run into data problems that classical statistics wasn't built for. More predictors than observations. Weird response distributions. Nonlinear relationships riddled with interactions. The question isn't whether a coefficient is significant — it's whether a model can predict something useful in new data.
 
-Machine learning methods were developed largely for exactly these
-problems. They are flexible, empirical, and built around prediction
-rather than inference. That doesn't make them better than classical
-methods — it makes them different tools for different jobs. Part of what
-this course is about is developing the judgment to know which tool is
-appropriate, and the habits of mind to use any of them carefully.
+Machine learning methods were developed for exactly these problems. They're flexible, empirical, and built around prediction rather than inference. That doesn't make them better than classical methods. It makes them different tools for different jobs. Part of what this course is about is developing the judgment to know which tool fits the problem — and the habits of mind to use any of them carefully.
 
-There is also a practical reality: machine learning is everywhere in
-environmental science now. Remote sensing, species distribution
-modeling, climate downscaling, ecological forecasting — these fields
-have absorbed ML methods rapidly, and the pace is not slowing down.
-Being able to read, evaluate, and implement these methods is
-increasingly part of what it means to be a working environmental
-scientist.
+There is also a practical reality: ML is everywhere in environmental science now. Remote sensing, species distribution modeling, climate downscaling, ecological forecasting — these fields have absorbed machine learning rapidly, and the pace isn't slowing. Knowing how to read, evaluate, and implement these methods is increasingly just part of the job.
 
 ## What Makes This Approach Different?
 
-These notes begin before the algorithms. The first three modules —
-bootstrapping, permutation testing, and cross-validation — are not
-machine learning methods in the traditional sense. They are the
-foundation for evaluating any model, ML or otherwise. Before we build a
-neural network or a random forest, we need to understand what it means
-for a model to generalize, how to detect overfitting, and why the way
-you evaluate a model matters as much as the model itself.
+We don't start with algorithms. The first three modules — bootstrapping, permutation testing, and cross-validation — aren't machine learning methods in the traditional sense. They're the foundation for evaluating *any* model, ML or otherwise. Before we build a neural network or a random forest, we need to understand what it means for a model to generalize, how to detect overfitting, and why the way you evaluate a model matters as much as the model itself.
 
-This sequencing is intentional. A lot of ML instruction skips straight
-to the algorithms and leaves evaluation as an afterthought. Here it
-comes first, because a model you can't properly evaluate is a model you
-can't trust.
+This sequencing is intentional. A lot of ML instruction skips straight to the algorithms and treats evaluation as an afterthought. Here it comes first. A model you can't properly evaluate is a model you can't trust.
 
-The methods that follow — kNN, decision trees, regression trees, neural
-networks, ensemble methods, and dimensionality reduction — are
-introduced in roughly increasing order of complexity and opacity. We
-start with methods where you can see exactly what the algorithm is
-doing, and we build toward the "black box" methods where prediction
-skill comes at the cost of interpretability. That tension — between
-understanding and performance — is one of the central themes of the
-course.
+The methods that follow — kNN, decision trees, regression trees, neural networks, ensemble methods, and dimensionality reduction — are introduced in roughly increasing order of complexity and opacity. We start with methods where you can see exactly what the algorithm is doing, and we build toward the "black box" methods where prediction skill comes at the cost of interpretability. That tension — between understanding and performance — is one of the central themes of the course.
 
 ## How to Use These Notes
 
-These notes are designed to be used alongside the studio sessions. Each
-module introduces an idea and then explores it through examples and
-small experiments. The goal is not just to see how an algorithm works,
-but to develop intuition about when it works well, when it fails, and
-how its behavior changes under different conditions.
+These notes are designed to be used alongside the studio sessions. Each module introduces an idea and then explores it through examples and small experiments. The goal isn't just to see how an algorithm works — it's to develop intuition about when it works well, when it fails, and how its behavior changes under different conditions.
 
-Many sections include code that you are encouraged to run, modify, and
-extend. Changing parameters, trying different datasets, or deliberately
-breaking things is often the fastest way to understand how a method
-behaves.
+Run the code. Modify it. Break it deliberately. Changing a parameter or swapping in a different dataset is often the fastest way to understand what a method is actually doing.
 
-Some modules depend on ideas introduced earlier, particularly those
-related to model evaluation (bootstrapping, permutation tests, and cross
-validation). But most sections can be read somewhat independently if you
-are looking for a specific method.
+Some modules depend on ideas from earlier ones, especially around model evaluation. But most sections can be read somewhat independently if you're looking for something specific.
 
 ## What's in These Notes
 
-The notes move through a set of core ideas in machine learning, roughly
-in this order:
+The notes move through a set of core ideas, roughly in this order:
 
--   **Bootstrapping** - using resampling to estimate variability and
-understand model stability
--   **Permutation Methods** - assessing significance and variable
-importance through randomization
--   **Cross Validation** - estimating predictive performance and
-guarding against overfitting
--   **k-Nearest Neighbors (kNN)** - a simple instance-based learning
-method based on similarity
--   **Decision Trees** - recursive partitioning for classification and
-regression
--   **Regression and Model Trees** - combining tree structures with
-local regression models
--   **Neural Networks** - flexible nonlinear models built from layered
-units
--   **Eigenfaces** - a dimensionality-reduction example using principal
-components for image recognition
--   **Improving Model Learning** - strategies for tuning, comparing, and
-improving predictive models
-
-Some sections build on earlier ideas (especially around model
-evaluation), but most modules can be read independently.
+-   **Bootstrapping** - using resampling to estimate variability and understand model stability
+-   **Permutation Methods** - assessing significance and variable importance through randomization
+-   **Cross Validation** - estimating predictive performance and guarding against overfitting
+-   **k-Nearest Neighbors (kNN)** - a simple instance-based learning method based on similarity
+-   **Decision Trees** - recursive partitioning for classification and regression
+-   **Regression and Model Trees** - combining tree structures with local regression models
+-   **Neural Networks** - flexible nonlinear models built from layered units
+-   **Eigenfaces** - a dimensionality-reduction example using principal components for image recognition
+-   **Improving Model Learning** - strategies for tuning, comparing, and improving predictive models
 
 ## A Note on R and Coding
 
-All examples in these notes are written in R. You don't need to be an
-expert R programmer to follow along, but you should be comfortable
-reading code, running it, and modifying it. The best way to use these
-notes is not to read them passively — it's to open RStudio alongside
-them, run every example, and then break it. Change a parameter. Swap in
-a different dataset. See what happens.
+Everything in these notes is written in R. You don't need to be an expert R programmer to follow along, but you should be comfortable reading code, running it, and modifying it. The best way to use these notes is not to read them passively. Open RStudio alongside them, run every example, and then break it. Change a parameter. Swap in a different dataset. See what happens.
 
-You'll also notice that the code here is not always the most elegant or
-concise. That's mostly on purpose. Clear, readable code is more useful
-for learning than clever one-liners. Once you understand what a
-function is doing, you can optimize; while you're learning, legibility
-matters more.
+You'll also notice the code here isn't always the most elegant or concise. That's mostly on purpose. Clear, readable code is more useful for learning than clever one-liners. Once you understand what a function is doing, you can optimize. While you're learning, legibility matters more.
 
 ## What to Expect of Yourself
 
-These notes assume you are willing to be confused for a while. Some of
-the methods covered here took decades to develop and have entire
-textbooks devoted to them. We are covering them in single modules. That
-means we are necessarily simplifying, skipping derivations, and
-focusing on intuition over rigor. That is a reasonable trade-off for a
-studio course, but it means you should hold your understanding loosely
-and be prepared to go deeper when a method matters for your own work.
+These notes assume you're willing to be confused for a while. Some of the methods covered here took decades to develop and have entire textbooks devoted to them. We're covering them in single modules. That means we're necessarily simplifying, skipping derivations, and prioritizing intuition over rigor. That's a reasonable trade-off for a studio course — but it means you should hold your understanding loosely and be prepared to go deeper when a method matters for your own work.
 
-The goal by the end is not to have memorized a set of algorithms. It's
-to have enough experience with how these methods behave — what they're
-sensitive to, what they assume, how they fail — that you can use them
-responsibly and evaluate whether someone else has used them responsibly.
+The goal by the end isn't to have memorized a set of algorithms. It's to have enough experience with how these methods behave — what they're sensitive to, what they assume, how they fail — that you can use them responsibly, and recognize when someone else hasn't.
 
 ## Technical Setup
 
-This document was written in Markdown using the **bookdown** package and
-built with **R version 4.5.2**. You should be reasonably up
-to date on your versions of R, RStudio, and relevant packages. You can
-update your packages by running:
+This document was written in Markdown using the **bookdown** package and built with **R version 4.5.2**. You should be reasonably up to date on your versions of R, RStudio, and relevant packages. You can update your packages by running:
 
 ``` r
 update.packages()
@@ -197,18 +94,13 @@ update.packages()
 
 ### Project Structure
 
-To follow along with the examples, you'll want a working RStudio
-project.
+To follow along with the examples, you'll want a working RStudio project.
 
 1.  **Create a new RStudio project**\
-Go to **File → New Project → New Directory → New Project**. Give it
-a name (for example `machineLearning-course`) and choose where to
-save it.
+Go to **File → New Project → New Directory → New Project**. Give it a name (for example `machineLearning-course`) and choose where to save it.
 
 2.  **Download the `data/` folder**\
-The datasets used in the examples are available in the `data/`
-folder of the course repository. Download that folder and place it
-inside your project directory.
+The datasets used in the examples are available in the `data/` folder of the course repository. Download that folder and place it inside your project directory.
 
 You can download the data directly from the GitHub [repo](https://github.com/AndyBunn/machineLearningNotes). The hard link to it is:
 https://github.com/AndyBunn/machineLearningNotes/blob/main/data.zip 
@@ -226,9 +118,7 @@ machineLearning-course/
 
 3.  **Refer to data files using relative paths**
 
-In your code, use paths like `"data/fishcatch.csv"` rather than full file
-paths. This keeps the code portable and ensures that it will run on
-different machines without modification. E.g., `fishcatch <- read.csv(data/fishcatch.csv`.
+In your code, use paths like `"data/fishcatch.csv"` rather than full file paths. This keeps the code portable and ensures it will run on different machines without modification. E.g., `fishcatch <- read.csv("data/fishcatch.csv")`.
 
 
 

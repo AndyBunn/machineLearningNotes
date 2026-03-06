@@ -19,6 +19,9 @@ library(class)
 library(caret)
 ```
 
+As usual we'll want `tidyverse`[@R-tidyverse] and `caret`[@R-caret] for cross validation. We'll be scalining with `scales`[@R-scales] and running kNN with `class`[@R-class]. 
+
+
 ## Reading
 Chapter 3: Lazy Learning -- Classification Using Nearest Neighbors in Machine Learning with R: Expert techniques for predictive modeling, 3rd Edition. Link on Canvas.
 

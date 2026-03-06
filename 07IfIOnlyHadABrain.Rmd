@@ -14,11 +14,14 @@ There are algorithms for doing prediction that are often called "[black boxes](h
 ## Packages
 ```{r}
 library(tidyverse)
+library(caret)
 library(neuralnet)
-library(lubridate)
 library(rpart)
 library(visNetwork)
+library(sparkline) # visNetwork might need this loaded
 ```
+
+As usual we'll want `tidyverse`[@R-tidyverse] and `caret`[@R-caret] for cross validation. The main function for the NN we will be using is in `neuralnet`[@R-neuralnet]. We'll use`rpart`[@R-rpart] and do some visualization in `visNetwork`[@R-visNetwork] and `sparkline`[@R-sparkline].
 
 ## Reading
 Chapter 7: Black Box Methods -- Neural Networks and Support Vector Machines in Machine Learning with R: Expert techniques for predictive modeling, 3rd Edition. Link on Canvas.

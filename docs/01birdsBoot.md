@@ -10,9 +10,9 @@ Bootstrapping is a resampling technique that allows for an empirical estimation 
 
 [This reading by Trist'n Joseph](https://towardsdatascience.com/bootstrapping-statistics-what-it-is-and-why-its-used-e2fa29577307) is quite good and a gentle introduction to bootstrapping. The idea that bootstrapping can be used as alternative to the traditional method of hypothesis testing as described in [this reading by Jim Frost](https://statisticsbyjim.com/hypothesis-testing/bootstrapping/)
 
-Joseph T. 2017. Bootstrapping Statistics. What it is and why it's used. Towards data science. <https://towardsdatascience.com/bootstrapping-statistics-what-it-is-and-why-its-used-e2fa29577307>. Accessed: 05-March-2026 21:22.
+Joseph T. 2017. Bootstrapping Statistics. What it is and why it's used. Towards data science. <https://towardsdatascience.com/bootstrapping-statistics-what-it-is-and-why-its-used-e2fa29577307>. Accessed: 06-March-2026 11:37.
 
-Frost, J. "Introduction to Bootstrapping in Statistics with an Example". Statistics by Jim. <https://statisticsbyjim.com/hypothesis-testing/bootstrapping/>. Accessed: 05-March-2026 21:22.
+Frost, J. "Introduction to Bootstrapping in Statistics with an Example". Statistics by Jim. <https://statisticsbyjim.com/hypothesis-testing/bootstrapping/>. Accessed: 06-March-2026 11:37.
 
 ## Methods as Historical Artifacts
 
@@ -66,6 +66,8 @@ library(tidyverse)
 ``` r
 library(boot)
 ```
+
+I'll use a mix of tidy syntax and base syntax so we'll want `tidyverse`[@R-tidyverse]. We will also use `boot`[@R-boot] later on.
 
 ## A Worked Example: Bootstrapping a Mean
 

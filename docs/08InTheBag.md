@@ -55,6 +55,20 @@ library(tidyverse) # for general use
 ```
 
 ``` r
+library(caret) # and to tune the rf
+```
+
+```
+## Loading required package: lattice
+## 
+## Attaching package: 'caret'
+## 
+## The following object is masked from 'package:purrr':
+## 
+##     lift
+```
+
+``` r
 library(rpart) # for decision trees
 library(visNetwork) # for plotting DT
 library(ipred) # for bagging
@@ -77,20 +91,6 @@ library(randomForest) # for rf
 ```
 
 ``` r
-library(caret) # and to tune the rf
-```
-
-```
-## Loading required package: lattice
-## 
-## Attaching package: 'caret'
-## 
-## The following object is masked from 'package:purrr':
-## 
-##     lift
-```
-
-``` r
 library(gbm) # for boosting
 ```
 
@@ -98,6 +98,9 @@ library(gbm) # for boosting
 ## Loaded gbm 2.2.3
 ## This version of gbm is no longer under development. Consider transitioning to gbm3, https://github.com/gbm-developers/gbm3
 ```
+
+As usual we'll want `tidyverse`[@R-tidyverse]. The big workhorse for cross validation is the `caret`[@R-caret] library. And the a lot of other packages since we are covering a lot of algorithms: `rpart`[@R-rpart], `visNetwork`[@R-visNetwork], `ipred`[@R-ipred], `randomForest`[@R-randomForest], `gbm`[@R-gbm].
+
 
 ## Reading
 Chapter 11: Improving Model Performance in Machine Learning with R: Expert techniques for predictive modeling, 3rd Edition. Link on Canvas.

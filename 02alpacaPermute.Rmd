@@ -53,6 +53,8 @@ require(tidyverse)
 require(ggridges)
 ```
 
+I'll use a mix of tidy syntax and base syntax so we'll want `tidyverse`[@R-tidyverse]. We will also use `boot`[@R-ggridges] for some fun plots.
+
 ## Alpaca sim
 Let's implement it. We start with the data of course. We have 24 alpacas and assigned them evenly into treatment and control groups. The alpacas that got the fancy shampoo with be in Group 1 and the control animals are in Group 2. After some time period, we measured the resulting wool quality. I'm not sure what the units are and it doesn't really matter -- we will call it Wool Quality. Given the Note that I didn't copy the data exactly as it is on Wilber's because they used a random number generator to make the groups. But this example is very close to the original.
 

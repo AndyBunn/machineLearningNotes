@@ -25,18 +25,27 @@ library(tidyverse)
 ```
 
 ``` r
-library(rpart)
-library(Cubist)
+library(caret)
 ```
 
 ```
 ## Loading required package: lattice
+## 
+## Attaching package: 'caret'
+## 
+## The following object is masked from 'package:purrr':
+## 
+##     lift
 ```
 
 ``` r
+library(rpart)
+library(Cubist)
 library(visNetwork)
-library(sparkline) # visNetwork might need this
+library(sparkline) # visNetwork might need this loaded
 ```
+
+As usual we'll want `tidyverse`[@R-tidyverse] and `caret`[@R-caret] for cross validation. The main function for the regression tree we will be using is in `C50`[@R-rpart], the model tree is in `Cubist`[@R-Cubist]. And some fun visualization in `visNetwork`[@R-visNetwork] and `sparkline`[@R-sparkline].
 
 ## Reading
 Chapter 6: Forecasting Numeric Data -- Classification Using Decision Trees and Rules in Machine Learning with R: Expert techniques for predictive modeling, 3rd Edition. Link on Canvas.
@@ -757,7 +766,7 @@ summary(mt1)
 
 ```
 ## 
-## Cubist [Release 2.07 GPL Edition]  Thu Mar  5 21:22:50 2026
+## Cubist [Release 2.07 GPL Edition]  Fri Mar  6 11:37:41 2026
 ## ---------------------------------
 ## 
 ##     Target attribute `outcome'

@@ -12,9 +12,11 @@ Predicting categorical class membership is one of two big areas of machine learn
 ## Packages
 ```{r}
 library(tidyverse)
-library(C50)
 library(caret)
+library(C50)
 ```
+
+As usual we'll want `tidyverse`[@R-tidyverse] and `caret`[@R-caret] for cross validation. The main function for the classification tree we will be using is in `C50`[@R-C50].
 
 ## Reading
 Chapter 5: Divide and Conquer -- Classification Using Decision Trees and Rules in Machine Learning with R: Expert techniques for predictive modeling, 3rd Edition.

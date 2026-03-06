@@ -896,6 +896,29 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   
   div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 </style>
+<style type="text/css">
+/* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
+</style>
 
 </head>
 
@@ -1170,13 +1193,14 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 ## 
 ##     lift</code></pre>
 <div class="sourceCode" id="cb85"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb85-1"><a href="always-be-cross-validating-abcv.html#cb85-1" tabindex="-1"></a><span class="fu">library</span>(PNWColors)</span></code></pre></div>
+<p>As usual we’ll want <code>tidyverse</code><span class="citation">(<a href="references.html#ref-R-tidyverse">Wickham 2023</a>)</span>. The big workhorse for cross validation is the <code>caret</code><span class="citation">(<a href="references.html#ref-R-caret">Kuhn 2024</a>)</span> library. And we’d be remiss if we didn’t use Jake Lawlor’s great <code>PNWColors</code><span class="citation">(<a href="references.html#ref-R-PNWColors">Lawlor 2020</a>)</span> resource.</p>
 </div>
 <div id="reading-2" class="section level2 hasAnchor" number="4.3">
 <h2><span class="header-section-number">4.3</span> Reading<a href="always-be-cross-validating-abcv.html#reading-2" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>Read Starmer’s chapter on crossvalidation.</p>
+<p>Read Starmer’s chapter on cross validation.</p>
 <p>Starmer J. 2022. The StatQuest Illustrated Guide To Machine Learning. ISBN 979-8811583607</p>
 <p>There are an awful lot of great resources out there for learning about cross validation. I think <a href="https://towardsdatascience.com/cross-validation-a-beginners-guide-5b8ca04962cd">this intro</a> from Neale et al. covers the key points nicely.</p>
-<p>Neale C, Workman D, Dommalapati A. 2019. Cross Validation: A Beginner’s Guide. <a href="https://towardsdatascience.com/cross-validation-a-beginners-guide-5b8ca04962cd" class="uri">https://towardsdatascience.com/cross-validation-a-beginners-guide-5b8ca04962cd</a>. Accessed on 05-March-2026 21:22</p>
+<p>Neale C, Workman D, Dommalapati A. 2019. Cross Validation: A Beginner’s Guide. <a href="https://towardsdatascience.com/cross-validation-a-beginners-guide-5b8ca04962cd" class="uri">https://towardsdatascience.com/cross-validation-a-beginners-guide-5b8ca04962cd</a>. Accessed on 06-March-2026 11:37</p>
 </div>
 <div id="overfitting-and-underfitting" class="section level2 hasAnchor" number="4.4">
 <h2><span class="header-section-number">4.4</span> Overfitting and Underfitting<a href="always-be-cross-validating-abcv.html#overfitting-and-underfitting" class="anchor-section" aria-label="Anchor link to header"></a></h2>

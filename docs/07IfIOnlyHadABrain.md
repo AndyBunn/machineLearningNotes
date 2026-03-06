@@ -27,6 +27,20 @@ library(tidyverse)
 ```
 
 ``` r
+library(caret)
+```
+
+```
+## Loading required package: lattice
+## 
+## Attaching package: 'caret'
+## 
+## The following object is masked from 'package:purrr':
+## 
+##     lift
+```
+
+``` r
 library(neuralnet)
 ```
 
@@ -40,10 +54,12 @@ library(neuralnet)
 ```
 
 ``` r
-library(lubridate)
 library(rpart)
 library(visNetwork)
+library(sparkline) # visNetwork might need this loaded
 ```
+
+As usual we'll want `tidyverse`[@R-tidyverse] and `caret`[@R-caret] for cross validation. The main function for the NN we will be using is in `neuralnet`[@R-neuralnet]. We'll use`rpart`[@R-rpart] and do some visualization in `visNetwork`[@R-visNetwork] and `sparkline`[@R-sparkline].
 
 ## Reading
 Chapter 7: Black Box Methods -- Neural Networks and Support Vector Machines in Machine Learning with R: Expert techniques for predictive modeling, 3rd Edition. Link on Canvas.

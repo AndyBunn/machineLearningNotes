@@ -11,8 +11,9 @@ library(nnet)
 library(ggthemes)
 library(gganimate)
 library(av)
-
 ```
+
+As usual we'll want `tidyverse`[@R-tidyverse]. The main function for the NN we will be using is in `nnet`[@R-nnet]. We'll be doing some animations and want `ggthemes`[@R-ggthemes], `gganimate`[@R-gganimate], and `av`[@R-av].
 
 ## The Data
 Here is a quick demo of how a neural network successively iterates to improve fit. We will create a simple sine wave and then ask a neural net to try to predict it. We will animate that process by saving the prediction at each iteration. 
@@ -101,52 +102,31 @@ p2
 ```
 
 ## Animate
-And now we can animate it all.
 
-```{r first anim, eval = TRUE}
-anim1 <- p1 + 
-  labs(title = 'Iteration: {floor(frame_time)}') +
-  transition_time(Iter)
-
-animate(anim1, duration = i, detail = 1, 
-        height = 5, width = 5, units = "in", res=250,
-        renderer = ffmpeg_renderer(format = "webm"))
-
-```
-
-
-```{r save gif, echo=FALSE, eval=TRUE}
-anim1_gif <- animate(anim1, 
-                     height = 5, width = 5, units = "in", res=250,
-                     renderer = magick_renderer(),
-                     start_pause=10, end_pause = 10)
-anim_save("nnFits_anim.gif",animation=anim1_gif)
-```
-
-And below is a combo of the fits and the skill in a GIF. Note that combining the two plots to have it all work side by side is a little more complicated than I'd like it to be and we have to use the `magick` library. See [here](https://github.com/thomasp85/gganimate/wiki/Animation-Composition). I hid the code because it's yucky and confusing.
+Below is a combo of the fits and the skill in a GIF. Note that combining the two plots to have it all work side by side is a little more complicated than I'd like it to be and we have to use the `magick` library. See [here](https://github.com/thomasp85/gganimate/wiki/Animation-Composition). I hid the code because it's yucky and confusing. But it's on the repo in the Rmd file if you want to see it.
 
 ```{r make gifs and append, eval = TRUE, echo = FALSE, message = FALSE, warning = FALSE}
 library(magick)
 
-anim2 <- p2 + labs(x = NULL) + 
-  transition_reveal(Iter)
-
-# changed renderer to improve quality
-anim1_gif <- animate(anim1,
-                     height = 5, width = 5, units = "in", res=250,
-                     renderer = magick_renderer())
-anim2_gif <- animate(anim2,
-                     height = 5, width = 5, units = "in", res=250,
-                     renderer = magick_renderer()) 
-
-combined_gif <- image_append(c(anim1_gif[1], anim2_gif[1]))
-nFrames <- dim(image_info(anim1_gif))[1]
-for(j in 2:nFrames){
-  tmp <- image_append(c(anim1_gif[j], anim2_gif[j]))
-  combined_gif <- c(combined_gif, tmp)
+if(!file.exists("nnPreds_Skill_Anim.gif")){
+  anim2 <- p2 + labs(x = NULL) + 
+    transition_reveal(Iter)
+  
+  anim1_gif <- animate(anim1,
+                       height = 5, width = 5, units = "in", res=250,
+                       renderer = magick_renderer())
+  anim2_gif <- animate(anim2,
+                       height = 5, width = 5, units = "in", res=250,
+                       renderer = magick_renderer()) 
+  
+  combined_gif <- image_append(c(anim1_gif[1], anim2_gif[1]))
+  nFrames <- dim(image_info(anim1_gif))[1]
+  for(j in 2:nFrames){
+    tmp <- image_append(c(anim1_gif[j], anim2_gif[j]))
+    combined_gif <- c(combined_gif, tmp)
+  }
+  anim_save("nnPreds_Skill_Anim.gif", animation=combined_gif)
 }
-anim_save("nnPreds_Skill_Anim.gif",animation=combined_gif)
-combined_gif
+
+image_read("nnPreds_Skill_Anim.gif")
 ```
-
-

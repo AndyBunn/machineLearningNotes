@@ -20,8 +20,10 @@ library(caret)
 library(PNWColors)
 ```
 
+As usual we'll want `tidyverse`[@R-tidyverse]. The big workhorse for cross validation is the `caret`[@R-caret] library. And we'd be remiss if we didn't use Jake Lawlor's great `PNWColors`[@R-PNWColors] resource.
+
 ## Reading
-Read Starmer's chapter on crossvalidation.
+Read Starmer's chapter on cross validation.
 
 Starmer J. 2022. The StatQuest Illustrated Guide To Machine Learning. ISBN 979-8811583607
 

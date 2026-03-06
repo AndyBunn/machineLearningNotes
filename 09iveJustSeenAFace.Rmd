@@ -14,6 +14,8 @@ library(ggrepel)
 set.seed(650) # for reproducibility of test/train data sets
 ```
 
+As usual we'll want `tidyverse`[@R-tidyverse]. And then just a little plotting help from `ggrepel`[@R-ggrepel].
+
 ## Reading
 
 We are going to implement the so-called [eigenfaces](https://en.wikipedia.org/wiki/Eigenface) approach to [facial recognition](https://en.wikipedia.org/wiki/Facial_recognition_system). It's fascinating (and dystopian). I'd encourage you to read through these wikis and get a feel for what is out there.
