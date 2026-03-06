@@ -766,7 +766,7 @@ summary(mt1)
 
 ```
 ## 
-## Cubist [Release 2.07 GPL Edition]  Fri Mar  6 11:37:41 2026
+## Cubist [Release 2.07 GPL Edition]  Fri Mar  6 11:41:54 2026
 ## ---------------------------------
 ## 
 ##     Target attribute `outcome'

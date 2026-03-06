@@ -1,5 +1,6 @@
 --- 
-title: "Machine Learning for Environmental Science: Notes for ESCI 506"
+title: "Machine Learning for Environmental Science"
+subtitle: "Notes for ESCI 506"
 author: "Andy Bunn"
 date: "06-March-2026"
 description: "Machine learning notes and exercises for ESCI 506"
