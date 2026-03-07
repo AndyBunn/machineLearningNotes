@@ -8,11 +8,11 @@ The data science approach to testing is so much easier than the way you have bee
 ## Reading
 Read through [this wonderful explanation](http://www.jwilber.me/permutationtest) of permutation tests using adorable alpacas. To go into a little more depth, read Allen Downey's fantastic posts [There is only one test!](http://allendowney.blogspot.com/2011/05/there-is-only-one-test.html) and  [There is still only one test](http://allendowney.blogspot.com/2016/06/there-is-still-only-one-test.html)
 
-Wilber J. 2019. THE PERMUTATION TEST: A Visual Explanation of Statistical Testing. https://www.jwilber.me/permutationtest/ Accessed 06-March-2026 11:41.
+Wilber J. 2019. THE PERMUTATION TEST: A Visual Explanation of Statistical Testing. https://www.jwilber.me/permutationtest/ Accessed 06-March-2026 16:02.
 
-Downey A. 2016. There is still only one test. http://allendowney.blogspot.com/2011/05/there-is-only-one-test.html  Accessed 06-March-2026 11:41.
+Downey A. 2016. There is still only one test. http://allendowney.blogspot.com/2011/05/there-is-only-one-test.html  Accessed 06-March-2026 16:02.
 
-Downey A. 2011. There is only one test! http://allendowney.blogspot.com/2011/05/there-is-only-one-test.html Accessed 06-March-2026 11:41.
+Downey A. 2011. There is only one test! http://allendowney.blogspot.com/2011/05/there-is-only-one-test.html Accessed 06-March-2026 16:02.
 
 
 ## Methods as Historical Artifacts

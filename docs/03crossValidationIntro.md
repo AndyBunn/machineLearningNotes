@@ -55,7 +55,7 @@ Starmer J. 2022. The StatQuest Illustrated Guide To Machine Learning. ISBN 979-8
 
 There are an awful lot of great resources out there for learning about cross validation. I think [this intro](https://towardsdatascience.com/cross-validation-a-beginners-guide-5b8ca04962cd) from Neale et al. covers the key points nicely.
 
-Neale C, Workman D, Dommalapati A. 2019. Cross Validation: A Beginner’s Guide. https://towardsdatascience.com/cross-validation-a-beginners-guide-5b8ca04962cd. Accessed on 06-March-2026 11:41
+Neale C, Workman D, Dommalapati A. 2019. Cross Validation: A Beginner’s Guide. https://towardsdatascience.com/cross-validation-a-beginners-guide-5b8ca04962cd. Accessed on 06-March-2026 16:02
 
 
 ## Overfitting and Underfitting
