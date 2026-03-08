@@ -24,7 +24,7 @@ We are going to implement the so-called [eigenfaces](https://en.wikipedia.org/wi
 
 We are going to use the famous (even historic!) Olivetti data set assembled by AT&T Laboratories in the early 1990s. The data consists of 400 images of 40 distinct people. These are 64x64 gray-scale images. Thus, each one has 4096 (64$^2$) pixels. The values are 8-bit integers which range from black at zero to white at 255 (Note that 8-bit is $2^8=256$). The images are low resolution by today's standards but the data set is easy to work with. Here is the first image in the data.
 
-![](subject01v01.png)
+![](assets/subject01v01.png)
 
 At the AT&T lab 30 years ago, there were an awful lot of white guys walking the halls. So while these data are fantastic for learning purposes, it lacks quite a bit in capturing the diversity of human faces to say the very least! For other data sets that you can mess with, [do a little googling and you'll find plenty](http://www.interstellarengine.com/ai/dataset-face-recognition.html). I considered using the [Labeled Faces in the Wild data](https://www.kaggle.com/datasets/jessicali9530/lfw-dataset) but it's just a hair too complex for our purposes. I really should add an ancillary page with those data and an assignment, but not right now.
 
@@ -65,7 +65,7 @@ longFaces %>% filter(subject == "subject01") %>%
   facet_wrap(~image,nrow = 2)
 ```
 
-Walk through what we did in the last two chunks. We took the `faces` data and made it long like good `tidyverse` coders. We added `x` and `y` coordinates (both are sequences from one to 64 representing the length and width of the images) and pulled out the info on the subjects and the photos. Here is the 35th subject. One of the rare non-dudes in these classically non-diverse data!
+Walk through what we did in the last two chunks. We took the `faces` data and made it long like good `tidyverse` coders. We added `x` and `y` coordinates (both are sequences from one to 64 representing the length and width of the images) and pulled out the info on the subjects and the photos. Here is the 35th subject. One of the rare non-dudes in these classically non-diverse data.
 
 ```{r}
 longFaces %>% filter(subject == "subject35") %>%
@@ -230,7 +230,7 @@ longFaces %>% filter(subject == "subject08" |
   facet_wrap(~subject)
 ```
 
-Yeah. We can see that these pictures are very different!
+Yeah. We can see that these pictures are very different.
 
 Out of curiosity let's see how the mapping looks on PC3 and PC4. These are further down in terms of explanatory power but still quite powerful.
 

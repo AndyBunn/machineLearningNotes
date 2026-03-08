@@ -104,7 +104,9 @@ Go to **File → New Project → New Directory → New Project**. Give it a name
 The datasets used in the examples are available in the `data/` folder of the course repository. Download that folder and place it inside your project directory.
 
 You can download the data directly from the GitHub [repo](https://github.com/AndyBunn/machineLearningNotes). The hard link to it is:
-https://github.com/AndyBunn/machineLearningNotes/releases/download/data-latest/data.zip
+
+https://github.com/AndyBunn/machineLearningNotes/releases/download/data-latest/data.zip 
+
 Once it's unzipped your folder structure should look something like this:
 
 ```
