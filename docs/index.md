@@ -2,7 +2,7 @@
 title: "Machine Learning for Environmental Science"
 subtitle: "Notes for ESCI 506"
 author: "Andy Bunn"
-date: "06-March-2026"
+date: "09-March-2026"
 description: "Machine learning notes and exercises for ESCI 506"
 documentclass: book
 bibliography: [packages.bib]
@@ -12,6 +12,7 @@ link-citations: yes
 site: bookdown::bookdown_site
 output: 
   bookdown::gitbook:
+    css: style.css
     includes:
       in_header: hide_code.html # inspired by: https://stackoverflow.com/questions/45360998/code-folding-in-bookdown
     config:
@@ -120,7 +121,11 @@ machineLearning-course/
 
 3.  **Refer to data files using relative paths**
 
-In your code, use paths like `"data/fishcatch.csv"` rather than full file paths. This keeps the code portable and ensures it will run on different machines without modification. E.g., `fishcatch <- read.csv("data/fishcatch.csv")`.
+In your code, use paths like `"data/fishcatch.csv"` rather than full file paths. This keeps the code portable and ensures it will run on different machines without modification. E.g., 
+
+```
+fishcatch <- read.csv("data/fishcatch.csv")
+```
 
 
 

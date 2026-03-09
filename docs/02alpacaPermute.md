@@ -8,11 +8,11 @@ The data science approach to testing is so much easier than the way you have bee
 ## Reading
 Read through [this wonderful explanation](http://www.jwilber.me/permutationtest) of permutation tests using adorable alpacas. To go into a little more depth, read Allen Downey's fantastic posts [There is only one test!](http://allendowney.blogspot.com/2011/05/there-is-only-one-test.html) and  [There is still only one test](http://allendowney.blogspot.com/2016/06/there-is-still-only-one-test.html)
 
-Wilber J. 2019. THE PERMUTATION TEST: A Visual Explanation of Statistical Testing. https://www.jwilber.me/permutationtest/ Accessed 06-March-2026 16:30.
+Wilber J. 2019. THE PERMUTATION TEST: A Visual Explanation of Statistical Testing. https://www.jwilber.me/permutationtest/ Accessed 09-March-2026 16:35.
 
-Downey A. 2016. There is still only one test. http://allendowney.blogspot.com/2011/05/there-is-only-one-test.html  Accessed 06-March-2026 16:30.
+Downey A. 2016. There is still only one test. http://allendowney.blogspot.com/2011/05/there-is-only-one-test.html  Accessed 09-March-2026 16:35.
 
-Downey A. 2011. There is only one test! http://allendowney.blogspot.com/2011/05/there-is-only-one-test.html Accessed 06-March-2026 16:30.
+Downey A. 2011. There is only one test! http://allendowney.blogspot.com/2011/05/there-is-only-one-test.html Accessed 09-March-2026 16:35.
 
 
 ## Methods as Historical Artifacts
@@ -56,10 +56,10 @@ require(tidyverse)
 
 ```
 ## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
-## ✔ dplyr     1.1.4     ✔ readr     2.1.6
+## ✔ dplyr     1.2.0     ✔ readr     2.2.0
 ## ✔ forcats   1.0.1     ✔ stringr   1.6.0
-## ✔ ggplot2   4.0.1     ✔ tibble    3.3.1
-## ✔ lubridate 1.9.4     ✔ tidyr     1.3.2
+## ✔ ggplot2   4.0.2     ✔ tibble    3.3.1
+## ✔ lubridate 1.9.5     ✔ tidyr     1.3.2
 ## ✔ purrr     1.2.1     
 ## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
 ## ✖ dplyr::filter() masks stats::filter()

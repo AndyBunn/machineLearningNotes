@@ -1,4 +1,4 @@
-# Aside: Animate a NN
+# Aside: Animate a NN {- .aside-chapter}
 
 ```{r setup, include=FALSE}
 set.seed(155) #151

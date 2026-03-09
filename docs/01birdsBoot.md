@@ -10,9 +10,9 @@ Bootstrapping is a resampling technique that allows for an empirical estimation 
 
 [This reading by Trist'n Joseph](https://towardsdatascience.com/bootstrapping-statistics-what-it-is-and-why-its-used-e2fa29577307) is quite good and a gentle introduction to bootstrapping. The idea that bootstrapping can be used as alternative to the traditional method of hypothesis testing as described in [this reading by Jim Frost](https://statisticsbyjim.com/hypothesis-testing/bootstrapping/)
 
-Joseph T. 2017. Bootstrapping Statistics. What it is and why it's used. Towards data science. <https://towardsdatascience.com/bootstrapping-statistics-what-it-is-and-why-its-used-e2fa29577307>. Accessed: 06-March-2026 16:30.
+Joseph T. 2017. Bootstrapping Statistics. What it is and why it's used. Towards data science. <https://towardsdatascience.com/bootstrapping-statistics-what-it-is-and-why-its-used-e2fa29577307>. Accessed: 09-March-2026 16:35.
 
-Frost, J. "Introduction to Bootstrapping in Statistics with an Example". Statistics by Jim. <https://statisticsbyjim.com/hypothesis-testing/bootstrapping/>. Accessed: 06-March-2026 16:30.
+Frost, J. "Introduction to Bootstrapping in Statistics with an Example". Statistics by Jim. <https://statisticsbyjim.com/hypothesis-testing/bootstrapping/>. Accessed: 09-March-2026 16:35.
 
 ## Methods as Historical Artifacts
 
@@ -52,10 +52,10 @@ library(tidyverse)
 
 ```
 ## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
-## ✔ dplyr     1.1.4     ✔ readr     2.1.6
+## ✔ dplyr     1.2.0     ✔ readr     2.2.0
 ## ✔ forcats   1.0.1     ✔ stringr   1.6.0
-## ✔ ggplot2   4.0.1     ✔ tibble    3.3.1
-## ✔ lubridate 1.9.4     ✔ tidyr     1.3.2
+## ✔ ggplot2   4.0.2     ✔ tibble    3.3.1
+## ✔ lubridate 1.9.5     ✔ tidyr     1.3.2
 ## ✔ purrr     1.2.1     
 ## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
 ## ✖ dplyr::filter() masks stats::filter()
