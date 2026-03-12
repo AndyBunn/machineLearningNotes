@@ -182,4 +182,11 @@ distance
 classify
 environmental-applications
 your-work-8
+the-data-1
+what-the-data-actually-are
+visualize-the-shape-of-acer-circinatum
+pca
+eigenleaves
+map-the-species
+train-test-classify
 references

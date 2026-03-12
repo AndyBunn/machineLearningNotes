@@ -55,7 +55,7 @@ x <- runif(n,min = -4,max = 4)
 eps <- rnorm(n,sd=10)
 y <- b0 + b1*x^3 + eps
 dat <- data.frame(x=x,y=y)
-write.csv(dat,"dat.csv",row.names = FALSE)
+write.csv(dat,"data/dat_cv.csv",row.names = FALSE)
 ```
 
 

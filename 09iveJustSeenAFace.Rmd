@@ -418,10 +418,209 @@ Astoundingly we classified almost all of them correctly (`r round(table(accVec)/
 
 I find the human facial recognition to be a little scary to be honest. It creeps me out. But I wanted you to see this kind of machine learning application in action and this is a classic example.
 
-There are more benign applications for sure. The iNaturalist app and database are being used for [automated species identification](https://www.inaturalist.org/pages/computer_vision_demo) using machine learning and there is a rich literature out there on this kind of work. E.g., [Wäldchen and Mäder (2018)](https://besjournals.onlinelibrary.wiley.com/doi/full/10.1111/2041-210X.13075), [Villon et al. (2020)](https://www.nature.com/articles/s41598-020-67573-7) and [many more](https://scholar.google.com/scholar?q=species+identification+machine+learning+with+iNaturalist&hl=en&as_sdt=0&as_vis=1&oi=scholart). In fact image processing and machine learning are showing up environmental research world all over the place (camera traps, illegal wildlife trade from social media posts, habitat classification from remote sensing, carbon budgets, etc.).
+There are more benign applications for sure. The iNaturalist app and database are being used for [automated species identification](https://www.inaturalist.org/pages/computer_vision_demo) using machine learning and there is a rich literature out there on this kind of work. E.g., [Wäldchen and Mäder (2018)](https://besjournals.onlinelibrary.wiley.com/doi/full/10.1111/2041-210X.13075), [Villon et al. (2020)](https://www.nature.com/articles/s41598-020-67573-7) and [many more](https://scholar.google.com/scholar?q=species+identification+machine+learning+with+iNaturalist&hl=en&as_sdt=0&as_vis=1&oi=scholart). In fact image processing and machine learning are showing up environmental research all over the place -- camera traps, illegal wildlife trade from social media posts, habitat classification from remote sensing, carbon budgets, the works.
 
 Some of the techniques and methods used differ (e.g., neural nets are often combined with data reduction) but if you are interested and want to learn more this basic walk through will get you rolling.
 
+Which brings us to your work.
+
 ## Your work
 
-Nothing! It's a busy week in the quarter and I know you have other pressing tasks. Go through and follow what we did above. Imagine how you could do this with birds, or plants.
+OK so now it's your turn. We're going to run the same pipeline you just watched -- PCA for data reduction, nearest-neighbor classification, train and test -- but on plant leaves instead of human faces. It's a much more direct environmental application, and it turns out the conceptual structure is almost identical. Faces are flattened into pixel vectors; leaves are described by shape descriptor vectors. The math doesn't know the difference.
+
+### The data
+
+We'll use the [One-Hundred Plant Species Leaves data set](https://doi.org/10.24432/C5RG76) from the UCI Machine Learning Repository. It contains 16 samples of leaves from each of 100 plant species, with three different 64-element descriptor vectors per sample: shape, margin texture, and fine-scale texture. We're going to use the **shape** descriptor, which encodes the outline geometry of the leaf as a contour signature. Each row is one leaf. The first column is the species label (an integer from 1 to 100) and the remaining 64 columns are the shape descriptor values.
+
+```{r}
+leafShape <- read_csv("data/data_Sha_64.txt", col_names = FALSE)
+# first column is the species label, the rest are shape descriptor values
+names(leafShape)[1] <- "species"
+names(leafShape)[2:65] <- str_c("shapeValue", 1:64)
+leafShape <- leafShape %>% mutate(species = factor(species))
+```
+
+There are 1600 rows (100 species $\times$ 16 samples) and 65 columns (1 label + 64 descriptor values). Look at the data be sure you understand how it's formatted.
+
+Ok. One thing is driving me bonkers with this. The genera names are supposed to be capitalized. The species names are not. I'm going to fix that. 
+
+```{r}
+leafShape <- leafShape %>%
+  mutate(species = str_replace(species, "(?<=\\s)\\S+", str_to_lower))
+```
+
+`(?<=\\s)\\S+` matches the first non-whitespace run that follows a space (i.e., the species name) and `str_to_lower` lowercases it. So "Acer Campestre" becomes "Acer campestre". Not a biggie but it was bugging me.
+
+### What the data actually are
+
+Before diving into the numbers, it helps to see what we're actually working with. 
+Here are four binary silhouette images of *Acer circinatum* (Vine Maple). These are four of the 16 samples for this species.
+
+| | |
+|:---:|:---:|
+| ![](assets/Acer_circinatum/Acer_Circinatum_01.ab.jpg){width=45%} | ![](assets/Acer_circinatum/Acer_Circinatum_02.ab.jpg){width=45%} |
+| ![](assets/Acer_circinatum/Acer_Circinatum_03.ab.jpg){width=45%} | ![](assets/Acer_circinatum/Acer_Circinatum_04.ab.jpg){width=45%} |
+
+These silhouettes are what was fed into the feature extraction pipeline that  produced the data set we are using. But we are not working with these images  directly. For each silhouette, the researchers computed a 64-element shape  descriptor -- a numerical summary of the leaf's outline geometry. Think of it as  a compact fingerprint of the shape: you can't reconstruct the image from the  numbers, but leaves of the same species produce similar fingerprints, and that  similarity is what the classifier exploits.
+
+
+### Visualize the shape of Acer circinatum
+
+Unlike pixel images, the shape descriptors here are contour signatures -- essentially a waveform that traces the outline of the leaf at 64 equally-spaced points around its perimeter. You can plot them as line plots. Let's look at the data for the first four samples of *Acer circinatum* (Vine Maple).
+
+```{r}
+leafShape %>% filter(species == "Acer circinatum") %>%
+  mutate(sample = row_number()) %>%
+  pivot_longer(cols = shapeValue1:shapeValue64, names_to = "position", values_to = "value") %>%
+  mutate(position = as.integer(str_remove(position, "shapeValue"))) %>%
+  filter(sample %in% 1:4) %>%
+  ggplot(aes(x = position, y = value, color = as.factor(sample))) +
+  geom_line(alpha = 0.6) +
+  labs(x = "Contour position (1–64)", 
+       y = "Shape descriptor value",
+       title = "Leaf contour signatures: Acer circinatum",
+       color = "Leaf sample") + 
+  theme_minimal()
+```
+
+The 64 values don't represent pixel brightness — they encode the geometry of the leaf's outline at 64 points around its perimeter. Think of it as a numerical fingerprint of the leaf's shape. Peaks in the waveform correspond to sharp features like the leaf tip; the valleys correspond to smoother regions. Within a species, these waveforms should be similar. Across species, they should differ.
+
+### PCA
+
+The data are already in the right orientation -- one leaf per row, 64 shape values as columns. No transpose needed. Run `prcomp` with `center = TRUE` on just the descriptor columns (not the species label). Plot cumulative variance explained.
+
+How does this compare to the face data? You needed about 120 PCs to hit 95% variance in the faces. How many do you need here? What does that tell you about the structure of leaf shape variation compared to the structure of face variation?
+
+```{r, echo=TRUE, eval=FALSE}
+# your PCA code here
+```
+
+### Eigenleaves
+
+Plot the first several eigenvectors as line plots -- the same way you'd plot the shape descriptors themselves. These are the "eigenleaves." What does the first eigenvector look like? What might it represent? Think about what kinds of variation across leaf outlines PCA would pull out first. Overall size? Elongation? Symmetry? Lobedness? Unlike the eigenfaces, which are haunting and uninterpretable, the eigenleaves might actually tell you something biological.
+
+```{r, echo=TRUE, eval=FALSE}
+# your eigenleaf visualization here
+```
+
+### Map the species
+
+Average the PCA scores for each species across its 16 samples and plot them in the space of the first two PCs, labeled by species number. Which species are close together? Which are far apart? If you happen to know what some of the species are (the data set includes taxa like *Quercus*, *Salix*, *Acer*, and many others -- [see the paper](https://doi.org/10.24432/C5RG76) for the full list), do the groupings make any botanical sense?
+
+```{r, echo=TRUE, eval=FALSE}
+# your species map here
+```
+
+### Train, test, classify
+
+Hold out four of the 16 samples per species as a test set (25% holdout: 1200 leaves for training, 400 for testing). Rerun PCA on the training leaves only. Project the test leaves into that training PCA space, calculate Mahalanobis-style distances to the mean score for each species, and classify by nearest neighbor -- exactly as we did with the faces.
+
+Report your overall accuracy. Higher or lower than the faces result (`r round(table(accVec)/length(accVec)*100,2)[2]`%)? Think carefully about why. You have 100 species instead of 40 people, which makes the problem harder by definition. But you also have a richer descriptor space that is specifically designed to capture shape. Does that help?
+
+```{r, echo=TRUE, eval=FALSE}
+# your train/test/classify code here
+```
+
+Include a short reflection. What worked? What surprised you? If accuracy is lower than you hoped, what would you try next -- more PCs, a different descriptor (margin? texture?), a different distance metric?
+
+```{r, echo=FALSE, eval=FALSE}
+# --- SOLUTION (hidden) ---
+library(tidyverse)
+library(ggrepel)
+set.seed(650)
+
+
+# --- PCA ---
+X <- leafShape %>% select(-species) %>% as.matrix()
+leafPCA <- prcomp(X, center = TRUE, scale. = FALSE)
+
+eigenvalues <- leafPCA$sdev^2
+cumVar <- cumsum(eigenvalues) / sum(eigenvalues)
+
+ggplot() +
+  geom_line(aes(x = 1:length(cumVar), y = cumVar)) +
+  geom_hline(yintercept = 0.95, linetype = "dashed", color = "red") +
+  labs(x = "PC", y = "Cumulative variance explained")
+
+thres95 <- min(which(cumVar > 0.99))
+thres95
+# typically around 20-30 PCs -- much more compact than the ~120 for faces
+
+# --- Eigenleaves ---
+eigenvectors <- leafPCA$rotation
+as_tibble(t(eigenvectors[, 1:9])) %>%
+  mutate(PC = str_c("PC", 1:9)) %>%
+  pivot_longer(cols = -PC, names_to = "position", values_to = "value") %>%
+  mutate(position = as.integer(str_remove(position, "shapeValue"))) %>%
+  ggplot(aes(x = position, y = value)) +
+  geom_line() +
+  facet_wrap(~PC, scales = "free_y") +
+  labs(x = "Descriptor position", y = "Eigenvector value",
+       title = "The first 9 eigenleaves")
+
+# --- Map species ---
+scores <- as_tibble(leafPCA$x) %>%
+  add_column(species = leafShape$species)
+
+avgScores <- scores %>%
+  group_by(species) %>%
+  summarise(PC1 = mean(PC1), PC2 = mean(PC2), PC3 = mean(PC3), PC4 = mean(PC4))
+
+ggplot(avgScores, aes(x = PC1, y = PC2, label = species)) +
+  geom_point() +
+  geom_text_repel(size = 2.5, max.overlaps = 20) +
+  labs(title = "100 species in eigenleaf space")
+
+# --- Train / Test / Classify ---
+nSpp     <- 100
+nSamples <- 16
+nTest    <- 4
+
+testIdx <- as.vector(sapply(0:(nSpp - 1), function(i) {
+  base <- i * nSamples
+  sample((base + 1):(base + nSamples), nTest)
+}))
+
+leafTest  <- leafShape[testIdx, ]
+leafTrain <- leafShape[-testIdx, ]
+
+Xtrain <- leafTrain %>% select(-species) %>% as.matrix()
+leafPCAtrain <- prcomp(Xtrain, center = TRUE, scale. = FALSE)
+
+eigenvaluesTrain <- leafPCAtrain$sdev^2
+cumVarTrain <- cumsum(eigenvaluesTrain) / sum(eigenvaluesTrain)
+thres95train <- min(which(cumVarTrain > 0.95))
+
+evTrain     <- leafPCAtrain$rotation[, 1:thres95train]
+evVals      <- eigenvaluesTrain[1:thres95train]
+scoresTrain <- leafPCAtrain$x[, 1:thres95train]
+
+Xtest    <- leafTest %>% select(-species) %>% as.matrix()
+testProj <- scale(Xtest,
+                  center = leafPCAtrain$center,
+                  scale  = leafPCAtrain$scale) %*% evTrain
+
+trainSpecies  <- leafTrain$species
+subjectScores <- aggregate(scoresTrain, list(trainSpecies), mean)
+
+distMat <- matrix(NA, nrow = nrow(subjectScores), ncol = nrow(testProj))
+rownames(distMat) <- as.character(subjectScores$Group.1)
+
+for (j in 1:ncol(distMat)) {
+  x1 <- testProj[j, ]
+  for (i in 1:nrow(distMat)) {
+    x2 <- as.numeric(subjectScores[i, -1])
+    m  <- x1 / sqrt(evVals[1:length(x1)])
+    n  <- x2 / sqrt(evVals[1:length(x1)])
+    distMat[i, j] <- sqrt(t(m - n) %*% (m - n))
+  }
+}
+
+trueLabels <- as.character(leafTest$species)
+predLabels <- rownames(distMat)[apply(distMat, 2, which.min)]
+acc <- mean(predLabels == trueLabels)
+cat("Overall accuracy:", round(acc * 100, 1), "%\n")
+# typically around 70-80%; harder than faces because 100 classes,
+# but the shape descriptor is specifically designed for leaf morphology
+# so it's not as bad as you might fear
+```
