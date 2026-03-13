@@ -451,6 +451,19 @@ leafShape <- leafShape %>%
 
 `(?<=\\s)\\S+` matches the first non-whitespace run that follows a space (i.e., the species name) and `str_to_lower` lowercases it. So "Acer Campestre" becomes "Acer campestre". Not a biggie but it was bugging me.
 
+There are a few species in there that are hybrids (e.g., "Prunus X Shmittii") and one that is only classified to genus (i.e., "Phildelphus"). We could take those out I suppose. They annoy me but that's my own issue. It doesn't matter for our purposes I guess.
+
+### Wrangle
+
+That data matrix is fine for running PCA. I kind of have a hard time wrapping my head around that as a matrix. I'll make it long kind of how we did that above with the faces.
+
+```{r}
+leafShapeLong <- leafShape %>% group_by(species) %>% 
+  mutate(sample = row_number()) %>%
+  pivot_longer(cols = shapeValue1:shapeValue64, names_to = "contourPosition", values_to = "shapeValue") %>%
+  mutate(contourPosition = as.integer(str_remove(contourPosition, "shapeValue")))
+```
+
 ### What the data actually are
 
 Before diving into the numbers, it helps to see what we're actually working with. 
@@ -458,54 +471,99 @@ Here are four binary silhouette images of *Acer circinatum* (Vine Maple). These 
 
 | | |
 |:---:|:---:|
-| ![](assets/Acer_circinatum/Acer_Circinatum_01.ab.jpg){width=45%} | ![](assets/Acer_circinatum/Acer_Circinatum_02.ab.jpg){width=45%} |
-| ![](assets/Acer_circinatum/Acer_Circinatum_03.ab.jpg){width=45%} | ![](assets/Acer_circinatum/Acer_Circinatum_04.ab.jpg){width=45%} |
+| ![](assets/leaves/Acer_Circinatum_01.ab.jpg){width=45%} | ![](assets/leaves/Acer_Circinatum_02.ab.jpg){width=45%} |
+| ![](assets/leaves/Acer_Circinatum_03.ab.jpg){width=45%} | ![](assets/leaves/Acer_Circinatum_04.ab.jpg){width=45%} |
+
+And for *Alnus rubra* (Red alder)
+
+| | |
+|:---:|:---:|
+| ![](assets/leaves/Alnus_Rubra_01.ab.jpg){width=45%} | ![](assets/leaves/Alnus_Rubra_02.ab.jpg){width=45%} |
+| ![](assets/leaves/Alnus_Rubra_03.ab.jpg){width=45%} | ![](assets/leaves/Alnus_Rubra_04.ab.jpg){width=45%} |
 
 These silhouettes are what was fed into the feature extraction pipeline that  produced the data set we are using. But we are not working with these images  directly. For each silhouette, the researchers computed a 64-element shape  descriptor -- a numerical summary of the leaf's outline geometry. Think of it as  a compact fingerprint of the shape: you can't reconstruct the image from the  numbers, but leaves of the same species produce similar fingerprints, and that  similarity is what the classifier exploits.
 
 
-### Visualize the shape of Acer circinatum
+### Visualize the shape of some leaves
 
 Unlike pixel images, the shape descriptors here are contour signatures -- essentially a waveform that traces the outline of the leaf at 64 equally-spaced points around its perimeter. You can plot them as line plots. Let's look at the data for the first four samples of *Acer circinatum* (Vine Maple).
 
 ```{r}
-leafShape %>% filter(species == "Acer circinatum") %>%
-  mutate(sample = row_number()) %>%
-  pivot_longer(cols = shapeValue1:shapeValue64, names_to = "position", values_to = "value") %>%
-  mutate(position = as.integer(str_remove(position, "shapeValue"))) %>%
+leafShapeLong %>% filter(species == "Acer circinatum") %>%
   filter(sample %in% 1:4) %>%
-  ggplot(aes(x = position, y = value, color = as.factor(sample))) +
+  ggplot(aes(x = contourPosition, y = shapeValue, color = as.factor(sample))) +
   geom_line(alpha = 0.6) +
   labs(x = "Contour position (1–64)", 
        y = "Shape descriptor value",
        title = "Leaf contour signatures: Acer circinatum",
        color = "Leaf sample") + 
   theme_minimal()
+
 ```
 
 The 64 values don't represent pixel brightness — they encode the geometry of the leaf's outline at 64 points around its perimeter. Think of it as a numerical fingerprint of the leaf's shape. Peaks in the waveform correspond to sharp features like the leaf tip; the valleys correspond to smoother regions. Within a species, these waveforms should be similar. Across species, they should differ.
 
+Let's look at the same but for a totally different species. Here are the first four samples of *Alnus rubra*.
+
+```{r}
+leafShapeLong %>% filter(species == "Alnus rubra") %>%
+  filter(sample %in% 1:4) %>%
+  ggplot(aes(x = contourPosition, y = shapeValue, color = as.factor(sample))) +
+  geom_line(alpha = 0.6) +
+  labs(x = "Contour position (1–64)", 
+       y = "Shape descriptor value",
+       title = "Leaf contour signatures: Alnus rubra",
+       color = "Leaf sample") + 
+  theme_minimal()
+
+```
+
+Those are really distinct! Let's see if a PCA approach like the eigenfaces works here.
+
 ### PCA
 
-The data are already in the right orientation -- one leaf per row, 64 shape values as columns. No transpose needed. Run `prcomp` with `center = TRUE` on just the descriptor columns (not the species label). Plot cumulative variance explained.
+The data in `leafShape` are already in the right orientation -- one leaf per row, 64 shape values as columns. No transpose needed. Run `prcomp` with `center = TRUE` on just the descriptor columns (not the species label). Plot cumulative variance explained. Looks like 10 PCs get 99% of the variance.
 
 How does this compare to the face data? You needed about 120 PCs to hit 95% variance in the faces. How many do you need here? What does that tell you about the structure of leaf shape variation compared to the structure of face variation?
 
-```{r, echo=TRUE, eval=FALSE}
-# your PCA code here
+```{r}
+X <- leafShape %>% select(-species) %>% as.matrix()
+leafPCA <- prcomp(X, center = TRUE, scale. = FALSE)
+
+eigenvalues <- leafPCA$sdev^2
+cumVar <- cumsum(eigenvalues) / sum(eigenvalues)
+
+ggplot() +
+  geom_line(aes(x = 1:length(cumVar), y = cumVar)) +
+  geom_hline(yintercept = 0.99, linetype = "dashed", color = "red") +
+  labs(x = "PC", y = "Cumulative variance explained")
+
+thres99 <- min(which(cumVar > 0.99))
+thres99
 ```
 
 ### Eigenleaves
 
-Plot the first several eigenvectors as line plots -- the same way you'd plot the shape descriptors themselves. These are the "eigenleaves." What does the first eigenvector look like? What might it represent? Think about what kinds of variation across leaf outlines PCA would pull out first. Overall size? Elongation? Symmetry? Lobedness? Unlike the eigenfaces, which are haunting and uninterpretable, the eigenleaves might actually tell you something biological.
+Here are the first nine eigenvector values.
 
-```{r, echo=TRUE, eval=FALSE}
-# your eigenleaf visualization here
+```{r}
+eigenvectors <- leafPCA$rotation
+as_tibble(t(eigenvectors[, 1:9])) %>%
+  mutate(PC = str_c("PC", 1:9)) %>%
+  pivot_longer(cols = -PC, names_to = "position", values_to = "value") %>%
+  mutate(position = as.integer(str_remove(position, "shapeValue"))) %>%
+  ggplot(aes(x = position, y = value)) +
+  geom_line() +
+  facet_wrap(~PC, scales = "free_y") +
+  labs(x = "Contour position (1–64)", y = "Eigenvector value")
 ```
 
-### Map the species
+With the faces data we could plot the eigenvectors as images and they looked like spooky ghost faces. You might expect something similar here -- "eigenleaves" that look like abstract leaf shapes. They don't. The shape descriptors are already a mathematical abstraction of the outline, so the eigenvectors of those descriptors are an abstraction of an abstraction. They're just wiggly lines with no obvious biological interpretation.
 
-Average the PCA scores for each species across its 16 samples and plot them in the space of the first two PCs, labeled by species number. Which species are close together? Which are far apart? If you happen to know what some of the species are (the data set includes taxa like *Quercus*, *Salix*, *Acer*, and many others -- [see the paper](https://doi.org/10.24432/C5RG76) for the full list), do the groupings make any botanical sense?
+That's fine and actually worth noting: PCA doesn't always produce interpretable components. Here it's doing a purely instrumental job -- compressing 64 dimensions down to a handful that capture most of the variance, so that nearest-neighbor distance in that reduced space is fast and meaningful. The biology is in the classification result, not the eigenvectors.
+
+### Map the species
+Let's get to work on classifying. Average the PCA scores for each species across its 16 samples and plot them in the space of the first two PCs, labeled by species number. Which species are close together? Which are far apart? If you happen to know what some of the species are (the data set includes taxa like *Quercus*, *Salix*, *Acer*, and many others -- [see the paper](https://doi.org/10.24432/C5RG76) for the full list), do the groupings make any botanical sense?
 
 ```{r, echo=TRUE, eval=FALSE}
 # your species map here
@@ -521,7 +579,7 @@ Report your overall accuracy. Higher or lower than the faces result (`r round(ta
 # your train/test/classify code here
 ```
 
-Include a short reflection. What worked? What surprised you? If accuracy is lower than you hoped, what would you try next -- more PCs, a different descriptor (margin? texture?), a different distance metric?
+Include a short reflection. What worked? What surprised you? If accuracy is lower than you hoped, what would you try next -- more PCs, a different descriptor (margin? texture?), a different distance metric? What if we tried to classify to genus instead of species?
 
 ```{r, echo=FALSE, eval=FALSE}
 # --- SOLUTION (hidden) ---
@@ -530,33 +588,7 @@ library(ggrepel)
 set.seed(650)
 
 
-# --- PCA ---
-X <- leafShape %>% select(-species) %>% as.matrix()
-leafPCA <- prcomp(X, center = TRUE, scale. = FALSE)
 
-eigenvalues <- leafPCA$sdev^2
-cumVar <- cumsum(eigenvalues) / sum(eigenvalues)
-
-ggplot() +
-  geom_line(aes(x = 1:length(cumVar), y = cumVar)) +
-  geom_hline(yintercept = 0.95, linetype = "dashed", color = "red") +
-  labs(x = "PC", y = "Cumulative variance explained")
-
-thres95 <- min(which(cumVar > 0.99))
-thres95
-# typically around 20-30 PCs -- much more compact than the ~120 for faces
-
-# --- Eigenleaves ---
-eigenvectors <- leafPCA$rotation
-as_tibble(t(eigenvectors[, 1:9])) %>%
-  mutate(PC = str_c("PC", 1:9)) %>%
-  pivot_longer(cols = -PC, names_to = "position", values_to = "value") %>%
-  mutate(position = as.integer(str_remove(position, "shapeValue"))) %>%
-  ggplot(aes(x = position, y = value)) +
-  geom_line() +
-  facet_wrap(~PC, scales = "free_y") +
-  labs(x = "Descriptor position", y = "Eigenvector value",
-       title = "The first 9 eigenleaves")
 
 # --- Map species ---
 scores <- as_tibble(leafPCA$x) %>%
@@ -566,7 +598,7 @@ avgScores <- scores %>%
   group_by(species) %>%
   summarise(PC1 = mean(PC1), PC2 = mean(PC2), PC3 = mean(PC3), PC4 = mean(PC4))
 
-ggplot(avgScores, aes(x = PC1, y = PC2, label = species)) +
+ggplot(avgScores, aes(x = PC3, y = PC4, label = species)) +
   geom_point() +
   geom_text_repel(size = 2.5, max.overlaps = 20) +
   labs(title = "100 species in eigenleaf space")
@@ -589,11 +621,11 @@ leafPCAtrain <- prcomp(Xtrain, center = TRUE, scale. = FALSE)
 
 eigenvaluesTrain <- leafPCAtrain$sdev^2
 cumVarTrain <- cumsum(eigenvaluesTrain) / sum(eigenvaluesTrain)
-thres95train <- min(which(cumVarTrain > 0.95))
+thres99train <- min(which(cumVarTrain > 0.99))
 
-evTrain     <- leafPCAtrain$rotation[, 1:thres95train]
-evVals      <- eigenvaluesTrain[1:thres95train]
-scoresTrain <- leafPCAtrain$x[, 1:thres95train]
+evTrain     <- leafPCAtrain$rotation[, 1:thres99train]
+evVals      <- eigenvaluesTrain[1:thres99train]
+scoresTrain <- leafPCAtrain$x[, 1:thres99train]
 
 Xtest    <- leafTest %>% select(-species) %>% as.matrix()
 testProj <- scale(Xtest,
