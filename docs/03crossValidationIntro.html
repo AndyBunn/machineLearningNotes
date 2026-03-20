@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.25">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Machine learning notes and exercises">
+
+<title>Always Be Cross Validating (ABCv) – Machine Learning for Environmental Science</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./04HiDiddilyHoNeighborino.html" rel="next">
+<link href="./02alpacaPermute.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-a04a01d9790747593e0658c5ce91c85b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="custom.css">
+</head>
+
+<body class="nav-sidebar floating nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="./index.html" class="navbar-brand navbar-brand-logo">
+    </a>
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">Machine Learning for Environmental Science</span>
+    </a>
+  </div>
+        <div class="quarto-navbar-tools tools-end">
+    <a href="https://github.com/AndyBunn/machineLearningNotes" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+</div>
+          <div id="quarto-search" class="" title="Search"></div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./03crossValidationIntro.html"><span class="chapter-title">Always Be Cross Validating (ABCv)</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header sidebar-header-stacked">
+      <a href="./index.html" class="sidebar-logo-link">
+      </a>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Cover Page</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./00Welcome.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Welcome</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01birdsBoot.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Bootstrapping</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01xAsideMethods_and_generics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Aside: Understanding Methods and Generics in R</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02alpacaPermute.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Permutation</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03crossValidationIntro.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">Always Be Cross Validating (ABCv)</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04HiDiddilyHoNeighborino.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Classifying with kNN</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05SoManyChoices.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Classifying with Decision Trees</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06Discrete2Continuous.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Continuous Prediction with Regression Trees</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06xAsideOLS_Algebric_Matrix.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Aside: OLS via Algebra and Matrices</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07IfIOnlyHadABrain.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Neural Nets</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07xAsideAnimateNeuralNet.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Aside: Animate a NN</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./08InTheBag.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Improving Model Performance</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./09iveJustSeenAFace.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Eigen Faces</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./10PackagesUsed.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">References</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#big-idea" id="toc-big-idea" class="nav-link active" data-scroll-target="#big-idea">Big Idea</a></li>
+  <li><a href="#packages" id="toc-packages" class="nav-link" data-scroll-target="#packages">Packages</a></li>
+  <li><a href="#reading" id="toc-reading" class="nav-link" data-scroll-target="#reading">Reading</a></li>
+  <li><a href="#overfitting-and-underfitting" id="toc-overfitting-and-underfitting" class="nav-link" data-scroll-target="#overfitting-and-underfitting">Overfitting and Underfitting</a></li>
+  <li><a href="#a-worked-example" id="toc-a-worked-example" class="nav-link" data-scroll-target="#a-worked-example">A worked example</a></li>
+  <li><a href="#holdouts-divide-and-conquer-train-and-test" id="toc-holdouts-divide-and-conquer-train-and-test" class="nav-link" data-scroll-target="#holdouts-divide-and-conquer-train-and-test">Holdouts, divide and conquer, train and test</a></li>
+  <li><a href="#doing-k-fold-cross-validation" id="toc-doing-k-fold-cross-validation" class="nav-link" data-scroll-target="#doing-k-fold-cross-validation">Doing k-fold cross validation</a>
+  <ul class="collapse">
+  <li><a href="#aside-is-this-the-same-as-bootstrapping-or-permutation" id="toc-aside-is-this-the-same-as-bootstrapping-or-permutation" class="nav-link" data-scroll-target="#aside-is-this-the-same-as-bootstrapping-or-permutation">Aside: Is this the same as bootstrapping? Or permutation?</a></li>
+  </ul></li>
+  <li><a href="#doing-loocv" id="toc-doing-loocv" class="nav-link" data-scroll-target="#doing-loocv">Doing LOOCV?</a></li>
+  <li><a href="#what-about-repeating-k-fold" id="toc-what-about-repeating-k-fold" class="nav-link" data-scroll-target="#what-about-repeating-k-fold">What about repeating k-fold?</a></li>
+  <li><a href="#caret-classification-and-regression-training" id="toc-caret-classification-and-regression-training" class="nav-link" data-scroll-target="#caret-classification-and-regression-training"><code>caret</code>: Classification And REgression Training</a></li>
+  <li><a href="#final-thoughts-abcv" id="toc-final-thoughts-abcv" class="nav-link" data-scroll-target="#final-thoughts-abcv">Final thoughts: ABCv</a></li>
+  <li><a href="#your-work" id="toc-your-work" class="nav-link" data-scroll-target="#your-work">Your Work</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/AndyBunn/machineLearningNotes/edit/main/03crossValidationIntro.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/AndyBunn/machineLearningNotes/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">Always Be Cross Validating (ABCv)</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="big-idea" class="level2">
+<h2 class="anchored" data-anchor-id="big-idea">Big Idea</h2>
+<p>Cross validation is arguably the most important and under-taught area of applied statistics. It is really important for you to understand. Cross validation is a family of techniques that allows you to understand how skillful a model is at making predictions. It makes the most of what is usually limited data and can be used to pick the right algorithm for a given task. It is used ubiquitously in machine learning and increasingly in environmental science.</p>
+</section>
+<section id="packages" class="level2">
+<h2 class="anchored" data-anchor-id="packages">Packages</h2>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(caret)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(PNWColors)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p>As usual we’ll want <code>tidyverse</code><span class="citation" data-cites="R-tidyverse">(<a href="10PackagesUsed.html#ref-R-tidyverse" role="doc-biblioref">Wickham 2023</a>)</span>. The big workhorse for cross validation is the <code>caret</code><span class="citation" data-cites="R-caret">(<a href="10PackagesUsed.html#ref-R-caret" role="doc-biblioref">Kuhn 2024</a>)</span> library. And we’d be remiss if we didn’t use Jake Lawlor’s great <code>PNWColors</code><span class="citation" data-cites="R-PNWColors">(<a href="10PackagesUsed.html#ref-R-PNWColors" role="doc-biblioref">Lawlor 2020</a>)</span> resource.</p>
+</section>
+<section id="reading" class="level2">
+<h2 class="anchored" data-anchor-id="reading">Reading</h2>
+<p>Read Starmer’s chapter on cross validation.</p>
+<p>Starmer J. 2022. The StatQuest Illustrated Guide To Machine Learning. ISBN 979-8811583607</p>
+<p>There are an awful lot of great resources out there for learning about cross validation. I think <a href="https://towardsdatascience.com/cross-validation-a-beginners-guide-5b8ca04962cd">this intro</a> from Neale et al.&nbsp;covers the key points nicely.</p>
+<p>Neale C, Workman D, Dommalapati A. 2019. Cross Validation: A Beginner’s Guide. https://towardsdatascience.com/cross-validation-a-beginners-guide-5b8ca04962cd. Accessed on 19-March-2026 21:53</p>
+</section>
+<section id="overfitting-and-underfitting" class="level2">
+<h2 class="anchored" data-anchor-id="overfitting-and-underfitting">Overfitting and Underfitting</h2>
+<p>Underfitting is when a model is too simple to capture the signal. For instance, you try to model <span class="math inline">\(y=f(x)\)</span> when <span class="math inline">\(x\)</span> isn’t a great predictor of <span class="math inline">\(y\)</span> or the function you propose doesn’t match the underlying process (maybe <span class="math inline">\(y\approx \beta_0 + \beta_1 x + \beta_2 x^2\)</span> and you tried to model <span class="math inline">\(y \approx \beta_0 + \beta_1 x\)</span>). If the model is underfit we say it has high bias.</p>
+<p>Overfitting is when a model is fit to the noise in your data as well as the signal. When that happens the model is not generalizable. That is, the model wouldn’t apply to new data very well and we say it has high variance. We might fit the observed data well (even optimally) but the model might not be very good at predicting data it hasn’t seen yet. If your predictions correspond too closely to the observed data but fail to fit additional data your model might be overfit. This is extremely common with higher order models or the “black-box” prediction algorithms that are commonly used in machine learning and data science.</p>
+<p>The trick is, of course to solve the Goldilocks problem and get it just right. <img src="assets/overUnder.png" class="img-fluid"></p>
+<p>This conundrum in Machine Learning is sometimes called the <a href="Bias–variance_tradeoff">Bias-Variance Tradeoff</a> and it is ubiquitous in modeling. In today’s analytic world you can fit thousands of different models at the push of a button. And the word is increasingly data rich with many many covariates. How do you chose the most parsimonious model? If your model has parameters that might need tuning, how do you go about that?</p>
+<p>Answer: There is no perfect way of course but cross validation gets us started.</p>
+<p>The reading is more eloquent on this than I am but I’ll show you here how we can implement model validation using these concepts below.</p>
+</section>
+<section id="a-worked-example" class="level2">
+<h2 class="anchored" data-anchor-id="a-worked-example">A worked example</h2>
+<p>Let’s start a worked example.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>dat <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"data/dat_cv.csv"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p>We have a <code>data.frame</code> called <code>dat</code> with 50 rows and two columns: <code>x</code> and <code>y</code>. Our goal will be to divide the data into training and test subsets and then test how well we can predict <span class="math inline">\(y=f(x)\)</span>.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(dat)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>       x                 y         
+ Min.   :-3.9797   Min.   : 54.41  
+ 1st Qu.:-2.3021   1st Qu.: 83.09  
+ Median :-0.1317   Median : 99.05  
+ Mean   : 0.1211   Mean   : 99.90  
+ 3rd Qu.: 2.4912   3rd Qu.:116.32  
+ Max.   : 3.6947   Max.   :150.58  </code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>           x         y
+1  1.2406553 117.72119
+2 -0.5935191 115.45229
+3 -2.8802510  81.38414
+4 -0.2133922 116.88047
+5 -1.8396273  90.56090
+6 -2.0029451  80.94719</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(dat,<span class="fu">aes</span>(<span class="at">x=</span>x,<span class="at">y=</span>y)) <span class="sc">+</span> <span class="fu">geom_point</span>(<span class="at">size=</span><span class="dv">3</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>p1</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="03crossValidationIntro_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>A first step might be to use a linear model and see how much variance we can explain. E.g.,</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>lm1 <span class="ot">&lt;-</span> <span class="fu">lm</span>(y<span class="sc">~</span>x,<span class="at">data=</span>dat)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(lm1)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = y ~ x, data = dat)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-38.667  -8.682   0.593   9.332  26.982 
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)  99.0513     1.8706  52.952  &lt; 2e-16 ***
+x             7.0050     0.7662   9.143 4.37e-12 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 13.21 on 48 degrees of freedom
+Multiple R-squared:  0.6352,    Adjusted R-squared:  0.6276 
+F-statistic: 83.59 on 1 and 48 DF,  p-value: 4.373e-12</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>p1 <span class="sc">+</span> <span class="fu">geom_smooth</span>(<span class="at">method=</span><span class="st">"lm"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="03crossValidationIntro_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>OK, the coefficient of determination (R<span class="math inline">\(^2\)</span>) for the <span class="math inline">\(y=\beta_0 + \beta_1 x\)</span> model is 0.635. That’s all well and good but recall that this is using all of the data for the model so we get a <strong>point</strong> estimate of R<span class="math inline">\(^2\)</span>. We don’t know how much that can vary with out-of-sample testing data. We can use cross validation is a really simple way to get R<span class="math inline">\(^2\)</span> as an <strong>interval</strong> estimate of expected out-of-sample predictive performance, conditional on the observed data and the chosen model. This is not a classical population parameter in the inferential statistics sense, but an estimate of how well this modeling approach is expected to perform on new data.</p>
+</section>
+<section id="holdouts-divide-and-conquer-train-and-test" class="level2">
+<h2 class="anchored" data-anchor-id="holdouts-divide-and-conquer-train-and-test">Holdouts, divide and conquer, train and test</h2>
+<p>Before we start on true cross validation let’s start with simple validation. The standard advice is (or used to be when we did statistics on legal pads) to withhold 1/3 of your data to validate your model. You could then build or <strong>train</strong> the model using the first 2/3 of the data and then have 1/3 of the samples as independent data to <strong>test</strong> the model. You’d then be able to evaluate the out-of-sample error one time.</p>
+<p><img src="assets/TrainTest.png" class="img-fluid"></p>
+<p>Let’s train a model on 2/3 of the data and then test it on the remaining 1/3. Here is how we can randomly designate some of the points to be <strong>training</strong> and others to be <strong>testing</strong>.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(dat)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>rows2test <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span>n,<span class="at">size =</span> n <span class="sc">*</span> <span class="dv">1</span><span class="sc">/</span><span class="dv">3</span>)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>dat<span class="sc">$</span>Test <span class="ot">&lt;-</span> <span class="cn">FALSE</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>dat<span class="sc">$</span>Test[rows2test] <span class="ot">&lt;-</span> <span class="cn">TRUE</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat,<span class="dv">20</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>            x         y  Test
+1   1.2406553 117.72119 FALSE
+2  -0.5935191 115.45229 FALSE
+3  -2.8802510  81.38414 FALSE
+4  -0.2133922 116.88047  TRUE
+5  -1.8396273  90.56090 FALSE
+6  -2.0029451  80.94719  TRUE
+7  -3.2974312  71.07423 FALSE
+8   1.8715842  97.38329 FALSE
+9   3.1305105 128.01530 FALSE
+10 -0.1768353  82.88575 FALSE
+11 -3.5945386  64.87419  TRUE
+12  3.0784048 122.23627 FALSE
+13 -2.7580102  92.21703 FALSE
+14 -2.5427072  97.82129  TRUE
+15 -3.7057072  54.41273 FALSE
+16  2.5427025 116.60760 FALSE
+17  3.2636735 117.64169  TRUE
+18 -0.5135446  98.47971 FALSE
+19  2.9249040  99.61774  TRUE
+20 -3.5706221  55.64744 FALSE</code></pre>
+</div>
+</div>
+<p>Note that we have a ~1/3 the data to Test</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(dat<span class="sc">$</span>Test)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+FALSE  TRUE 
+   34    16 </code></pre>
+</div>
+</div>
+<p>Here is the same plot above to visualize the split. The TRUE points will be withheld from the model building.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>anem7 <span class="ot">&lt;-</span> <span class="fu">pnw_palette</span>(<span class="at">name=</span><span class="st">"Anemone"</span>,<span class="at">n=</span><span class="dv">7</span>,<span class="at">type=</span><span class="st">"discrete"</span>)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(dat,<span class="fu">aes</span>(<span class="at">x=</span>x,<span class="at">y=</span>y,<span class="at">color=</span>Test))<span class="sc">+</span> <span class="fu">geom_point</span>(<span class="at">size=</span><span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values=</span><span class="fu">c</span>(anem7[<span class="dv">1</span>],anem7[<span class="dv">7</span>]))</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>p1</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="03crossValidationIntro_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>From here we could build a model on the training data and then test it to get out-of-sample skill or error.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>testing <span class="ot">&lt;-</span> dat[dat<span class="sc">$</span>Test,]</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>training <span class="ot">&lt;-</span> dat[<span class="sc">!</span>dat<span class="sc">$</span>Test,]</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>lm1 <span class="ot">&lt;-</span> <span class="fu">lm</span>(y<span class="sc">~</span>x,<span class="at">data=</span>training)</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(lm1)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = y ~ x, data = training)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-36.978  -9.407   1.618   9.242  28.930 
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)   98.281      2.386  41.182  &lt; 2e-16 ***
+x              6.669      1.046   6.376 3.67e-07 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 13.86 on 32 degrees of freedom
+Multiple R-squared:  0.5596,    Adjusted R-squared:  0.5458 
+F-statistic: 40.66 on 1 and 32 DF,  p-value: 3.669e-07</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>p1 <span class="sc">+</span> <span class="fu">geom_abline</span>(<span class="at">intercept =</span> <span class="fu">coef</span>(lm1)[<span class="dv">1</span>], <span class="at">slope =</span> <span class="fu">coef</span>(lm1)[<span class="dv">2</span>],</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>                 <span class="at">color =</span> anem7[<span class="dv">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="03crossValidationIntro_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>We can use the training model to predict the withheld testing data. Then we will get some idea of how well the model works on this unknown data using R<span class="math inline">\(^2\)</span>. We will also calculate two other common validation statistics Mean Absolute Error (MAE) and Root Mean Squared Error (RMSE). These are very closely related.</p>
+<p><span class="math display">\[MAE= \frac{\sum_{i=1}^n |\hat y_i - y_i|}{n} \]</span> where <span class="math inline">\(\hat y\)</span> is the model prediction of the observed value (<span class="math inline">\(y\)</span>), <span class="math inline">\(i\)</span> is the observation and <span class="math inline">\(n\)</span> is the total number of observations. Thus, it is the mean of the absolute errors.</p>
+<p><span class="math display">\[RMSE= \sqrt \frac{\sum_{i=1}^n (\hat y_i - y_i)^2}{n} \]</span> These are both positive numbers in the units of <span class="math inline">\(y\)</span> and lowers values indicate a better fit. A value of zero (never achieved in practice) would indicate a perfect fit to the data. Which to use? You can read a little more about the differences between them <a href="https://stats.stackexchange.com/questions/48267/mean-absolute-error-or-root-mean-squared-error">here</a>. Honestly, I’m happy to let the stats geeks fight about <a href="https://en.wikipedia.org/wiki/Mean_absolute_error#Related_measures">this</a> but in general I prefer MAE because it’s simpler.</p>
+<p>Let’s look at these measures of skill (accuracy) on our withheld data.</p>
+<p>First we can add the predictions to the <code>testing</code> data.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>testing<span class="sc">$</span>yhat <span class="ot">&lt;-</span> <span class="fu">predict</span>(lm1,<span class="at">newdata=</span>testing)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(testing,<span class="fu">aes</span>(<span class="at">x=</span>y,<span class="at">y=</span>yhat)) <span class="sc">+</span> <span class="fu">geom_point</span>(<span class="at">size=</span><span class="dv">3</span>,<span class="at">color=</span>anem7[<span class="dv">7</span>]) <span class="sc">+</span> </span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_abline</span>(<span class="at">intercept =</span> <span class="dv">0</span>, <span class="at">slope =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title=</span><span class="st">"Testing Data"</span>,<span class="at">x=</span><span class="st">"Observed"</span>, <span class="at">y=</span><span class="st">"Predicted"</span>) <span class="sc">+</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_equal</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="03crossValidationIntro_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>And now get some numbers.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>rsq <span class="ot">&lt;-</span> <span class="fu">cor</span>(testing<span class="sc">$</span>yhat,testing<span class="sc">$</span>y)<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>mae <span class="ot">&lt;-</span> <span class="fu">mean</span>(<span class="fu">abs</span>(testing<span class="sc">$</span>yhat <span class="sc">-</span> testing<span class="sc">$</span>y))</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>rmse <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">mean</span>((testing<span class="sc">$</span>yhat <span class="sc">-</span> testing<span class="sc">$</span>y)<span class="sc">^</span><span class="dv">2</span>))</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>rsq</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.7337835</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>mae</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 10.61353</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>rmse</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 11.98126</code></pre>
+</div>
+</div>
+<p>This is great. It gave us a one time test on out-of-sample data and we plotted it and saw that the R<span class="math inline">\(^2\)</span>=0.734, the MAE=10.614, and the RMSE=11.981. An easy way to think about these is that R<span class="math inline">\(^2\)</span> provides a scale-free measure of explained variance, MAE reflects typical absolute prediction error, and RMSE penalizes large errors more strongly. See links above for details. These skill metrics are an improvement over using the entire data sat <code>dat</code> to assess the skill of our linear model because we are exposing the model to data it hasn’t seen before. But this was a one time shot and still gives us a point estimate. We have an independent skill check but no idea of how much that might vary with different testing data.</p>
+</section>
+<section id="doing-k-fold-cross-validation" class="level2">
+<h2 class="anchored" data-anchor-id="doing-k-fold-cross-validation">Doing k-fold cross validation</h2>
+<p>A better approach than the one-off train and test split <strong>validation</strong> we did above is to to let the computer repeat this several times and create multiple test sets and average the out-of-sample error. This is generally called <strong>cross validation</strong> because we are <strong>validating</strong> a<strong>cross</strong> many subsets. This will give us a more precise estimate of true out-of-sample error. We will in fact get a distribution of out-of-sample errors if we are diligent enough. This will move us from point estimates to an interval estimates.</p>
+<p>The most common approach for this kind of multiple test set approaches is called <span class="math inline">\(k\)</span>-fold cross validation.</p>
+<p><img src="assets/folds.png" class="img-fluid"></p>
+<p>In this method, we split the data into <span class="math inline">\(k\)</span> folds or subsets and make the training and testing splits that way. The figure above shows a 10-fold schematic (<span class="math inline">\(k=10\)</span>). With this, we’d create the folds so that each row of the data occurs in exactly one test set. So following the above, the first time we ran the comparison we’d train the model on folds 2 to 10 and test it on fold 1. The second time we ran it we’d train on folds 1, 3, 4, 5, 6, 7, 8, 9 and 10 and test it on fold 2. And so on.</p>
+<p>This gives us 10 test sets and assures us that every point gets to be in a test set once. So, we get a test set that is the same size as our training set, but is composed of out-of-sample predictions. We assign each row to its single test set randomly, to avoid any kind of systemic biases in how our data are laid out.</p>
+<p>This is one of the best and simplest ways to estimate out-of-sample error for predictive models.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a new data.frame, drop the test column we added above,</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="co"># then randomly shuffle the data to remove any systematic ordering </span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="co"># of the rows.</span></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>dat2 <span class="ot">&lt;-</span> dat[,<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>]</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>dat2 <span class="ot">&lt;-</span> dat2[<span class="fu">sample</span>(n),]</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Create k equally size folds</span></span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>k <span class="ot">&lt;-</span> <span class="dv">10</span></span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>dat2<span class="sc">$</span>fold <span class="ot">&lt;-</span> <span class="fu">cut</span>(<span class="fu">seq</span>(<span class="dv">1</span>,n),<span class="at">breaks=</span>k,<span class="at">labels=</span><span class="cn">FALSE</span>)</span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Take a peek -- note the fold column</span></span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat2,<span class="dv">20</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>            x         y fold
+7  -3.2974312  71.07423    1
+46  2.1110922  99.82447    1
+30  1.3218005 126.20120    1
+32  0.5063895  83.69236    1
+22  1.5797374  92.31556    1
+9   3.1305105 128.01530    2
+5  -1.8396273  90.56090    2
+10 -0.1768353  82.88575    2
+50  1.0865615 109.55272    2
+23  3.6947242 131.29794    2
+6  -2.0029451  80.94719    3
+8   1.8715842  97.38329    3
+41 -2.4642067  91.80013    3
+19  2.9249040  99.61774    3
+40 -1.8851663  85.49068    3
+43 -0.2078126  88.30130    4
+28 -2.6478092 101.31099    4
+37 -3.9797427  63.43873    4
+44 -2.4018186  82.82204    4
+31 -0.8836568  78.60771    4</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># plot</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(dat2,<span class="fu">aes</span>(<span class="at">x=</span>x,<span class="at">y=</span>y,<span class="at">color=</span><span class="fu">factor</span>(fold))) <span class="sc">+</span> </span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size=</span><span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_viridis_d</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="03crossValidationIntro_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Because the assignment of rows to folds is random, the results of k-fold cross validation will vary slightly each time it is run. In practice, cross validation is often repeated multiple times with different random fold assignments to stabilize estimates of out-of-sample performance. See below for a quick diatribe on repeating k-fold.</p>
+<p>Here is a better look at just fold 1:</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>dat2 <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">fold1Only =</span> <span class="fu">ifelse</span>(fold<span class="sc">==</span><span class="dv">1</span>,<span class="st">"Fold one"</span>,<span class="st">"All other folds"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span>x,<span class="at">y=</span>y,<span class="at">color=</span>fold1Only)) <span class="sc">+</span> </span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size=</span><span class="dv">3</span>,<span class="at">alpha=</span><span class="fl">0.8</span>) <span class="sc">+</span></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"grey60"</span>,<span class="st">"darkblue"</span>)) <span class="sc">+</span></span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="03crossValidationIntro_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>With that new variable <code>fold</code> we can do a proper cross validation.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># object to store results</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>lm1Results <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">rsq=</span><span class="fu">rep</span>(<span class="cn">NA</span>,k), </span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>                         <span class="at">mae=</span><span class="fu">rep</span>(<span class="cn">NA</span>,k),</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>                         <span class="at">rmse=</span><span class="fu">rep</span>(<span class="cn">NA</span>,k))</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a><span class="co"># loop through each fold</span></span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>k){</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>  testing <span class="ot">&lt;-</span> dat2[dat2<span class="sc">$</span>fold<span class="sc">==</span>i,]</span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>  training <span class="ot">&lt;-</span> dat2[dat2<span class="sc">$</span>fold<span class="sc">!=</span>i,]</span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a>  lm1 <span class="ot">&lt;-</span> <span class="fu">lm</span>(y<span class="sc">~</span>x,<span class="at">data=</span>training)</span>
+<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a>  testing<span class="sc">$</span>yhat <span class="ot">&lt;-</span> <span class="fu">predict</span>(lm1,<span class="at">newdata=</span>testing)</span>
+<span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a>  lm1Results<span class="sc">$</span>rsq[i] <span class="ot">&lt;-</span> <span class="fu">cor</span>(testing<span class="sc">$</span>yhat,testing<span class="sc">$</span>y)<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb30-14"><a href="#cb30-14" aria-hidden="true" tabindex="-1"></a>  lm1Results<span class="sc">$</span>mae[i] <span class="ot">&lt;-</span> <span class="fu">mean</span>(<span class="fu">abs</span>(testing<span class="sc">$</span>yhat <span class="sc">-</span> testing<span class="sc">$</span>y))</span>
+<span id="cb30-15"><a href="#cb30-15" aria-hidden="true" tabindex="-1"></a>  lm1Results<span class="sc">$</span>rmse[i] <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">mean</span>((testing<span class="sc">$</span>yhat <span class="sc">-</span> testing<span class="sc">$</span>y)<span class="sc">^</span><span class="dv">2</span>))</span>
+<span id="cb30-16"><a href="#cb30-16" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb30-17"><a href="#cb30-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Here is the mean rsq for lm1 </span></span>
+<span id="cb30-18"><a href="#cb30-18" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(lm1Results<span class="sc">$</span>rsq)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.6429923</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># and the SE on that mean</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sd</span>(lm1Results<span class="sc">$</span>rsq)<span class="sc">/</span><span class="fu">sqrt</span>(k)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.095515</code></pre>
+</div>
+</div>
+<p>Note that we have <code>k</code> instances of the metrics. Here are all the <span class="math inline">\(R^2\)</span> values</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(lm1Results, <span class="fu">aes</span>(<span class="at">x =</span> <span class="st">""</span>, <span class="at">y =</span> rsq)) <span class="sc">+</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>(</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">width =</span> <span class="fl">0.25</span>,</span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">fill =</span> anem7[<span class="dv">2</span>],</span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">outlier.shape =</span> <span class="cn">NA</span></span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_jitter</span>(</span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">width =</span> <span class="fl">0.08</span>,</span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">size =</span> <span class="dv">4</span>, <span class="at">alpha=</span><span class="fl">0.8</span>,</span>
+<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> anem7[<span class="dv">7</span>]</span>
+<span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb34-12"><a href="#cb34-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb34-13"><a href="#cb34-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Cross-validated R² across folds"</span>,</span>
+<span id="cb34-14"><a href="#cb34-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="cn">NULL</span>,</span>
+<span id="cb34-15"><a href="#cb34-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="fu">expression</span>(R<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb34-16"><a href="#cb34-16" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb34-17"><a href="#cb34-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">13</span>) <span class="sc">+</span></span>
+<span id="cb34-18"><a href="#cb34-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb34-19"><a href="#cb34-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">panel.grid.minor =</span> <span class="fu">element_blank</span>()</span>
+<span id="cb34-20"><a href="#cb34-20" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="03crossValidationIntro_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Each point represents the out-of-sample R<span class="math inline">\(^2\)</span> from a single cross-validation fold, while the boxplot summarizes the distribution of predictive performance across folds, highlighting the variability introduced by different training and test splits.</p>
+<p>We now have an interval estimate and can say that using 10-fold cross validation the mean for R<span class="math inline">\(^2\)</span> is 0.643 along with the standard error of that mean as 0.096. Similarly, we can say the MAE is 10.799 with a standard error of 1.005. This is calculated using held-out test folds samples and a far better estimate of R<span class="math inline">\(^2\)</span> and MAE than we started with before cross validation. Because the folds are not independent of one another, this standard error should be viewed as an approximate measure of variability across folds rather than a formal inferential standard error.</p>
+<p>In reality, you will almost never have to write a single loop to do cross validation. I dragged you through it because it’s good for you to see how you might implement it yourself. There are many packages and functions out there for doing cross validation.</p>
+<p>It is important to distinguish cross validation from classical statistical inference. Cross validation is designed to estimate predictive performance, not to test hypotheses about model parameters or determine whether coefficients differ from zero.</p>
+<section id="aside-is-this-the-same-as-bootstrapping-or-permutation" class="level3">
+<h3 class="anchored" data-anchor-id="aside-is-this-the-same-as-bootstrapping-or-permutation">Aside: Is this the same as bootstrapping? Or permutation?</h3>
+<p>Answer? No.&nbsp;But they are all resampling methods! And if you are feeling like they are very similar you aren’t alone. <a href="https://datascience.stackexchange.com/questions/32264/what-is-the-difference-between-bootstrapping-and-cross-validation">Here</a> is a great thread on how they are similar and how they differ.</p>
+</section>
+</section>
+<section id="doing-loocv" class="level2">
+<h2 class="anchored" data-anchor-id="doing-loocv">Doing LOOCV?</h2>
+<p>Leave one out cross validation (LOOCV) is an extreme form of k-fold where <span class="math inline">\(k=n\)</span>. That is one observation is left out each time. So, if in k-fold we estimate the performance of a model trained on a subset that uses <span class="math inline">\(100 \frac{k-1}{k}\)</span> percent of the available data, in LOOCV we’d use <span class="math inline">\(100 \frac{n-1}{n}\)</span> of the data to build the model. This can be prohibitively expensive for large data sets but is simple enough with the toy data above.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>loocvResults <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">y=</span><span class="fu">rep</span>(<span class="cn">NA</span>,n), <span class="at">yhat=</span><span class="fu">rep</span>(<span class="cn">NA</span>,n ))</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a><span class="co"># loop n times and leave one out each time</span></span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>n){</span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>  testing <span class="ot">&lt;-</span> dat[i,]</span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>  training <span class="ot">&lt;-</span> dat[<span class="sc">-</span>i,]</span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>  lm1 <span class="ot">&lt;-</span> <span class="fu">lm</span>(y<span class="sc">~</span>x,<span class="at">data=</span>training)</span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>  testing<span class="sc">$</span>yhat <span class="ot">&lt;-</span> <span class="fu">predict</span>(lm1,<span class="at">newdata=</span>testing)</span>
+<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a>  loocvResults<span class="sc">$</span>y[i] <span class="ot">&lt;-</span> testing<span class="sc">$</span>y</span>
+<span id="cb35-11"><a href="#cb35-11" aria-hidden="true" tabindex="-1"></a>  loocvResults<span class="sc">$</span>yhat[i] <span class="ot">&lt;-</span> testing<span class="sc">$</span>yhat</span>
+<span id="cb35-12"><a href="#cb35-12" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb35-13"><a href="#cb35-13" aria-hidden="true" tabindex="-1"></a><span class="co">#rsq2</span></span>
+<span id="cb35-14"><a href="#cb35-14" aria-hidden="true" tabindex="-1"></a><span class="fu">cor</span>(loocvResults<span class="sc">$</span>yhat,loocvResults<span class="sc">$</span>y)<span class="sc">^</span><span class="dv">2</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.6037989</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="co">#mae</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(<span class="fu">abs</span>(loocvResults<span class="sc">$</span>yhat <span class="sc">-</span> loocvResults<span class="sc">$</span>y))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 10.71293</code></pre>
+</div>
+</div>
+<p>The reading discusses a bit about when LOOCV is preferable to k-fold in terms of variance and bias in the results. And you can find loads more discussion about it if you look. E.g., <a href="https://stats.stackexchange.com/questions/61783/bias-and-variance-in-leave-one-out-vs-k-fold-cross-validation/357749#357749">here</a> and <a href="https://stats.stackexchange.com/questions/280665/variance-of-k-fold-cross-validation-estimates-as-fk-what-is-the-role-of">here</a>. I’m not conversant enough with the arguments to make an argument one way or another but in my experience the differences are small in resampling methods in general.</p>
+</section>
+<section id="what-about-repeating-k-fold" class="level2">
+<h2 class="anchored" data-anchor-id="what-about-repeating-k-fold">What about repeating k-fold?</h2>
+<p>Heck yes! You can go as crazy as time and computer memory allow. You can repeat your k-fold procedure as many times are you like. I won’t drag you through it with loops but the idea is that you can do a k-fold cross validation then reshuffle the data and repeat. This way you are getting a new suite of folds for your training and testing. This is really helpful to assess how stable a model is. I’ll explain more in the video.</p>
+</section>
+<section id="caret-classification-and-regression-training" class="level2">
+<h2 class="anchored" data-anchor-id="caret-classification-and-regression-training"><code>caret</code>: Classification And REgression Training</h2>
+<p>At the moment the <code>caret</code> package is the go-to resource for improving prediction from classification and regression models. <a href="http://topepo.github.io/caret/index.html">This is an excellent intro to it</a>. The strength of the <code>caret</code> implementation is that any almost algorithm with a <code>predict</code> method can be wrapped up and used in a really slick cross validation schema that includes model tuning and comparing different models. There are literally 100’s of models you can use. <a href="http://topepo.github.io/caret/models-clustered-by-tag-similarity.html">Here is a visualization of them</a>.</p>
+<p>As a really simple example of <code>caret</code> I’ll show how we can use <code>caret</code> for repeated k-fold cross validation on the toy data <span class="math inline">\(y=f(x)\)</span> that we started with and compare a Generalized Linear Model (<code>glm</code>) to a Generalized Additive Model using Splines (<code>gamSpline</code>) which allows for the response function to be non linear.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(caret)</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="do">## 10-fold CV with 10 repeats</span></span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>fitControl <span class="ot">&lt;-</span> <span class="fu">trainControl</span>(</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">method =</span> <span class="st">"repeatedcv"</span>,</span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">number =</span> <span class="dv">10</span>,</span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">repeats =</span> <span class="dv">10</span>)</span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>glm1 <span class="ot">&lt;-</span> <span class="fu">train</span>(y <span class="sc">~</span> x, <span class="at">data =</span> dat, </span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>              <span class="at">method =</span> <span class="st">"glm"</span>, </span>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a>              <span class="at">trControl =</span> fitControl)</span>
+<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a>glm1</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Generalized Linear Model 
+
+50 samples
+ 1 predictor
+
+No pre-processing
+Resampling: Cross-Validated (10 fold, repeated 10 times) 
+Summary of sample sizes: 44, 43, 46, 45, 44, 46, ... 
+Resampling results:
+
+  RMSE      Rsquared   MAE     
+  12.86057  0.6944658  10.56652</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Note that if you run this, you might be prompted </span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a><span class="co"># to install the `gam` library.</span></span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a><span class="co"># install.packages("gam")</span></span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>gam1 <span class="ot">&lt;-</span> <span class="fu">train</span>(y <span class="sc">~</span> x, <span class="at">data =</span> dat2, </span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>              <span class="at">method =</span> <span class="st">"gamSpline"</span>, </span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>              <span class="at">trControl =</span> fitControl)</span>
+<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a>gam1</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Generalized Additive Model using Splines 
+
+50 samples
+ 1 predictor
+
+No pre-processing
+Resampling: Cross-Validated (10 fold, repeated 10 times) 
+Summary of sample sizes: 46, 46, 45, 44, 46, 45, ... 
+Resampling results across tuning parameters:
+
+  df  RMSE      Rsquared   MAE     
+  1   12.87164  0.6812382  10.63245
+  2   12.74338  0.6858391  10.51561
+  3   12.39209  0.6962180  10.17219
+
+RMSE was used to select the optimal model using the smallest value.
+The final value used for the model was df = 3.</code></pre>
+</div>
+</div>
+<p>The cross validated GAM outperforms the linear model. And if we look at the predicted function we can indeed see the non-linear response from the GAM fit.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>newDat <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">x=</span><span class="fu">seq</span>(<span class="sc">-</span><span class="dv">4</span>,<span class="dv">4</span>,<span class="at">by=</span><span class="fl">0.1</span>))</span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>newDat<span class="sc">$</span>yhat <span class="ot">&lt;-</span> <span class="fu">predict</span>(gam1,<span class="at">newdata =</span> newDat)</span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> dat,<span class="fu">aes</span>(<span class="at">x=</span>x,<span class="at">y=</span>y),<span class="at">size=</span><span class="dv">3</span>,</span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>             <span class="at">shape=</span><span class="dv">21</span>,<span class="at">fill=</span><span class="st">"darkred"</span>,<span class="at">alpha=</span><span class="fl">0.7</span>) <span class="sc">+</span> </span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> newDat,<span class="fu">aes</span>(<span class="at">x=</span>x,<span class="at">y=</span>yhat),<span class="at">linewidth=</span><span class="fl">1.1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="03crossValidationIntro_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Because of the cross validation, we can be at least somewhat confident that this model isn’t overfit and that the black line does describe <span class="math inline">\(y=f(x)\)</span>. Note that I essentially choose the <code>gamSpline</code> at random from the 100’s of possible prediction methods. If I were really interested in these data (like for a thesis), I’d spend a lot more time learning which methods work best with the data and especially how they might work well (or not) with the underlying processes.</p>
+</section>
+<section id="final-thoughts-abcv" class="level2">
+<h2 class="anchored" data-anchor-id="final-thoughts-abcv">Final thoughts: ABCv</h2>
+<p>That’s all for now on cross validation. It’s a powerful idea and, despite how central it is to modern modeling, it still tends to slip through the cracks of many statistics sequences. I tried to use graphics and explicit code above so you could step through the mechanics and see how cross validation actually works, rather than treating it as a black box.</p>
+<p>One reason cross validation matters so much is that it makes uncertainty visible. A single train–test split can give a very misleading impression of model performance, simply because of how the data happened to be divided. By repeatedly training and testing across multiple folds, cross validation forces us to confront the variability in predictive performance and moves us away from relying on a single point estimate.</p>
+<p>Cross validation is also something that should be taught earlier. Many of you were trained to think first about coefficients, p-values, and hypothesis tests, long before being asked to think seriously about prediction. That can create the impression that a model with statistically significant terms is necessarily a good model, even if it performs poorly on new data. Cross validation shifts the focus to a different question: how well should we expect this model to perform on data we have not yet seen?</p>
+<p>At the same time, it is important to keep the goal straight. Cross validation is about prediction, not inference. It does not test hypotheses or tell us whether parameters differ from zero. Instead, it gives us an empirical way to evaluate and compare models based on their out-of-sample behavior.</p>
+<p>I’m only scratching the surface here. Some of you will embrace, and perhaps build careers in, machine learning and data science. If so, you’ll encounter many variations on these ideas, including different resampling schemes, repeated cross validation, and cross validation for model tuning and selection.</p>
+<p>But get this into your head when doing modeling: <strong>ABCv</strong>. Always be cross validating.</p>
+<p>Until the revolution comes, computers are happy to do repetitive resampling as many times as we like. Take advantage of it.</p>
+</section>
+<section id="your-work" class="level2">
+<h2 class="anchored" data-anchor-id="your-work">Your Work</h2>
+<p>Let’s use the adorable penguin data from the <a href="https://allisonhorst.github.io/palmerpenguins/">Palmer Penguin library</a>. And let’s do something simple like ask if we can predict body mass (<span class="math inline">\(y\)</span>) as a function of bill length (<span class="math inline">\(x_1\)</span>) and species (<span class="math inline">\(x_2\)</span>).</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(penguins)</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>penguins <span class="ot">&lt;-</span> penguins <span class="sc">%&gt;%</span> <span class="fu">na.omit</span>()</span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data=</span>penguins,<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x=</span>bill_len, <span class="at">y=</span>body_mass,<span class="at">color=</span>species)) <span class="sc">+</span></span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">geom_smooth</span>(<span class="at">method=</span><span class="st">"lm"</span>) <span class="sc">+</span></span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x=</span><span class="st">"Bill length (mm)"</span>, <span class="at">y=</span><span class="st">"Body mass (g)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="03crossValidationIntro_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Here is a non-validated model using all the data.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>lmMass <span class="ot">&lt;-</span> <span class="fu">lm</span>(body_mass <span class="sc">~</span> bill_len <span class="sc">+</span> species , <span class="at">data =</span> penguins)</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(lmMass)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = body_mass ~ bill_len + species, data = penguins)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-860.77 -244.79    4.36  215.73 1075.25 
+
+Coefficients:
+                 Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)       200.453    271.646   0.738    0.461    
+bill_len           90.298      6.951  12.991  &lt; 2e-16 ***
+speciesChinstrap -876.942     88.744  -9.882  &lt; 2e-16 ***
+speciesGentoo     596.702     76.429   7.807 7.88e-14 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 375.2 on 329 degrees of freedom
+Multiple R-squared:  0.7848,    Adjusted R-squared:  0.7829 
+F-statistic:   400 on 3 and 329 DF,  p-value: &lt; 2.2e-16</code></pre>
+</div>
+</div>
+<p>The R<span class="math inline">\(^2\)</span> for this unvalidated model is 0.785 and the MAE is 296.923.</p>
+<p>For your work this module, cross validate a model of body mass as a function of bill length and species. Do the cross validation how you see fit and report the mean R<span class="math inline">\(^2\)</span> and MAE. Be aware that there are a few <code>NA</code> values in the data. You should be able to do this “by hand” with a loop as well as use <code>caret</code>. Be aware of what the output structure from <code>caret::train</code> looks like. What is it actually returning?</p>
+
+
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list" style="display: none">
+<div id="ref-R-caret" class="csl-entry" role="listitem">
+Kuhn, Max. 2024. <em>Caret: Classification and Regression Training</em>. <a href="https://github.com/topepo/caret/">https://github.com/topepo/caret/</a>.
+</div>
+<div id="ref-R-PNWColors" class="csl-entry" role="listitem">
+Lawlor, Jake. 2020. <em>PNWColors: Color Palettes Inspired by Nature in the US Pacific Northwest</em>. <a href="https://github.com/jakelawlor/PNWColors">https://github.com/jakelawlor/PNWColors</a>.
+</div>
+<div id="ref-R-tidyverse" class="csl-entry" role="listitem">
+Wickham, Hadley. 2023. <em>Tidyverse: Easily Install and Load the Tidyverse</em>. <a href="https://tidyverse.tidyverse.org">https://tidyverse.tidyverse.org</a>.
+</div>
+</div>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./02alpacaPermute.html" class="pagination-link" aria-label="Permutation">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">Permutation</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./04HiDiddilyHoNeighborino.html" class="pagination-link" aria-label="Classifying with kNN">
+        <span class="nav-page-text"><span class="chapter-title">Classifying with kNN</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/AndyBunn/machineLearningNotes/edit/main/03crossValidationIntro.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/AndyBunn/machineLearningNotes/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

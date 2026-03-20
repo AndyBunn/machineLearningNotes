@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.25">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Machine learning notes and exercises">
+
+<title>Classifying with kNN – Machine Learning for Environmental Science</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./05SoManyChoices.html" rel="next">
+<link href="./03crossValidationIntro.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-a04a01d9790747593e0658c5ce91c85b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<link href="site_libs/htmltools-fill-0.5.9/fill.css" rel="stylesheet">
+<script src="site_libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+<script src="site_libs/plotly-binding-4.12.0/plotly.js"></script>
+<script src="site_libs/typedarray-0.1/typedarray.min.js"></script>
+<script src="site_libs/jquery-3.5.1/jquery.min.js"></script>
+<link href="site_libs/crosstalk-1.2.2/css/crosstalk.min.css" rel="stylesheet">
+<script src="site_libs/crosstalk-1.2.2/js/crosstalk.min.js"></script>
+<link href="site_libs/plotly-htmlwidgets-css-2.25.2/plotly-htmlwidgets.css" rel="stylesheet">
+<script src="site_libs/plotly-main-2.25.2/plotly-latest.min.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="custom.css">
+</head>
+
+<body class="nav-sidebar floating nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="./index.html" class="navbar-brand navbar-brand-logo">
+    </a>
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">Machine Learning for Environmental Science</span>
+    </a>
+  </div>
+        <div class="quarto-navbar-tools tools-end">
+    <a href="https://github.com/AndyBunn/machineLearningNotes" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+</div>
+          <div id="quarto-search" class="" title="Search"></div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./04HiDiddilyHoNeighborino.html"><span class="chapter-title">Classifying with kNN</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header sidebar-header-stacked">
+      <a href="./index.html" class="sidebar-logo-link">
+      </a>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Cover Page</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./00Welcome.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Welcome</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01birdsBoot.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Bootstrapping</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01xAsideMethods_and_generics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Aside: Understanding Methods and Generics in R</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02alpacaPermute.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Permutation</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03crossValidationIntro.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Always Be Cross Validating (ABCv)</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04HiDiddilyHoNeighborino.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">Classifying with kNN</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05SoManyChoices.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Classifying with Decision Trees</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06Discrete2Continuous.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Continuous Prediction with Regression Trees</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06xAsideOLS_Algebric_Matrix.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Aside: OLS via Algebra and Matrices</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07IfIOnlyHadABrain.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Neural Nets</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07xAsideAnimateNeuralNet.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Aside: Animate a NN</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./08InTheBag.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Improving Model Performance</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./09iveJustSeenAFace.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Eigen Faces</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./10PackagesUsed.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">References</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#big-idea" id="toc-big-idea" class="nav-link active" data-scroll-target="#big-idea">Big Idea</a></li>
+  <li><a href="#packages" id="toc-packages" class="nav-link" data-scroll-target="#packages">Packages</a></li>
+  <li><a href="#reading" id="toc-reading" class="nav-link" data-scroll-target="#reading">Reading</a></li>
+  <li><a href="#classification-voting-by-distance" id="toc-classification-voting-by-distance" class="nav-link" data-scroll-target="#classification-voting-by-distance">Classification Voting by Distance</a></li>
+  <li><a href="#high-dimensional-space" id="toc-high-dimensional-space" class="nav-link" data-scroll-target="#high-dimensional-space">High Dimensional Space</a>
+  <ul class="collapse">
+  <li><a href="#euclidean-distance" id="toc-euclidean-distance" class="nav-link" data-scroll-target="#euclidean-distance">Euclidean Distance</a></li>
+  <li><a href="#space-in-knn" id="toc-space-in-knn" class="nav-link" data-scroll-target="#space-in-knn">Space in kNN</a></li>
+  </ul></li>
+  <li><a href="#the-knn-algorithm" id="toc-the-knn-algorithm" class="nav-link" data-scroll-target="#the-knn-algorithm">The kNN Algorithm</a>
+  <ul class="collapse">
+  <li><a href="#eat-your-fruits-and-veggies" id="toc-eat-your-fruits-and-veggies" class="nav-link" data-scroll-target="#eat-your-fruits-and-veggies">Eat Your Fruits and Veggies</a></li>
+  </ul></li>
+  <li><a href="#other-tidbits" id="toc-other-tidbits" class="nav-link" data-scroll-target="#other-tidbits">Other Tidbits</a>
+  <ul class="collapse">
+  <li><a href="#rescaling" id="toc-rescaling" class="nav-link" data-scroll-target="#rescaling">Rescaling</a></li>
+  <li><a href="#categorical-predictors" id="toc-categorical-predictors" class="nav-link" data-scroll-target="#categorical-predictors">Categorical Predictors</a></li>
+  </ul></li>
+  <li><a href="#worked-example" id="toc-worked-example" class="nav-link" data-scroll-target="#worked-example">Worked Example</a>
+  <ul class="collapse">
+  <li><a href="#diagnostic-wisconsin-breast-cancer-database" id="toc-diagnostic-wisconsin-breast-cancer-database" class="nav-link" data-scroll-target="#diagnostic-wisconsin-breast-cancer-database">Diagnostic Wisconsin Breast Cancer Database</a></li>
+  <li><a href="#traintest" id="toc-traintest" class="nav-link" data-scroll-target="#traintest">Train/Test</a></li>
+  <li><a href="#run-knn" id="toc-run-knn" class="nav-link" data-scroll-target="#run-knn">Run kNN</a></li>
+  <li><a href="#the-confusion-matrix" id="toc-the-confusion-matrix" class="nav-link" data-scroll-target="#the-confusion-matrix">The Confusion Matrix</a></li>
+  <li><a href="#some-interp" id="toc-some-interp" class="nav-link" data-scroll-target="#some-interp">Some Interp</a></li>
+  </ul></li>
+  <li><a href="#your-work" id="toc-your-work" class="nav-link" data-scroll-target="#your-work">Your Work</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/AndyBunn/machineLearningNotes/edit/main/04HiDiddilyHoNeighborino.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/AndyBunn/machineLearningNotes/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">Classifying with kNN</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="big-idea" class="level2">
+<h2 class="anchored" data-anchor-id="big-idea">Big Idea</h2>
+<p>Predicting categorical class membership is one of two big areas of machine learning (the other being predicting a continuous response – e.g., regression). The idea behind kNN is simple. For an unclassified sample, the algorithm finds some number (<span class="math inline">\(k\)</span>) of samples that are close by in a parameter space and classifies the unknown sample by the class membership of the nearest neighbors. It’s an appealing and intuitive approach.</p>
+</section>
+<section id="packages" class="level2">
+<h2 class="anchored" data-anchor-id="packages">Packages</h2>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(scales)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(class)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(caret)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p>As usual we’ll want <code>tidyverse</code><span class="citation" data-cites="R-tidyverse">(<a href="10PackagesUsed.html#ref-R-tidyverse" role="doc-biblioref">Wickham 2023</a>)</span> and <code>caret</code><span class="citation" data-cites="R-caret">(<a href="10PackagesUsed.html#ref-R-caret" role="doc-biblioref">Kuhn 2024</a>)</span> for cross validation. We’ll be scalining with <code>scales</code><span class="citation" data-cites="R-scales">(<a href="10PackagesUsed.html#ref-R-scales" role="doc-biblioref">Wickham, Pedersen, and Seidel 2025</a>)</span> and running kNN with <code>class</code><span class="citation" data-cites="R-class">(<a href="10PackagesUsed.html#ref-R-class" role="doc-biblioref">Ripley 2025</a>)</span>.</p>
+</section>
+<section id="reading" class="level2">
+<h2 class="anchored" data-anchor-id="reading">Reading</h2>
+<p>Chapter 3: Lazy Learning – Classification Using Nearest Neighbors in Machine Learning with R: Expert techniques for predictive modeling, 3rd Edition. Link on Canvas.</p>
+</section>
+<section id="classification-voting-by-distance" class="level2">
+<h2 class="anchored" data-anchor-id="classification-voting-by-distance">Classification Voting by Distance</h2>
+<p>Most machine learning tasks come down to prediction, right? When the response variable (the left hand side of the equation) is categorical we call this classification. The kNN algorithm is a very simple but effective classifier that goes back to the 1950s and assigns membership to an unknown sample based on its proximity to known samples. It’s used quite a bit because of its simplicity and often seen as a “recommender” algorithm (e.g., Netflix, Spotify, Amazon). We will learn more about other (slicker?) methods like neural nets later on but kNN is still a workhorse in the classification game.</p>
+</section>
+<section id="high-dimensional-space" class="level2">
+<h2 class="anchored" data-anchor-id="high-dimensional-space">High Dimensional Space</h2>
+<p>In ML, we spend a lot of time and effort thinking about the relationships between samples as described by many (maybe related, maybe independent) variables. In the classic Palmer Penguin data we’ve used there is categorical data on species, sex, and island for each bird. And we have continuous measurements of bill length, bill depth, flipper length, body mass. That is, for the continuous data, we have a four dimensional space in which we can characterize each bird. In ML applications we will deal with high dimensional space all the time. In fact we often have so many dimensions that we reduce them to more manageable sizes using tools like PCA.</p>
+<p>Algorithms like kNN work just fine in high dimensional space. But that doesn’t mean you can just chuck variables in without thinking about what they are because they all get weighted equally. As the number of dimensions increases, distances between points tend to become more similar to one another. This means that the idea of a “nearest” neighbor can start to break down - a common issue referred to as the curse of dimensionality. Adding predictors does not automatically improve kNN performance.</p>
+<p>Let’s review Euclidean distance which will help make sense of how you think about variables.</p>
+<section id="euclidean-distance" class="level3">
+<h3 class="anchored" data-anchor-id="euclidean-distance">Euclidean Distance</h3>
+<p>Between your coursework here, in ESCI 503, and in ESCI 505 you’ll have had a bellyful of Euclidean distance (and other distance measures in ESCI 503) by the time June rolls around. But just to cover all the bases, here is a quick example of how we get distances in 1D (one dimension), 2D, 3D, and then <span class="math inline">\(n\)</span>D. The key point is that distance is computed across all predictors simultaneously, with each contributing equally once variables are on the same scale.</p>
+<p>One dimension is easy, right? If we have two points (<span class="math inline">\(p\)</span> and <span class="math inline">\(q\)</span>) at <span class="math inline">\(p=3\)</span> and <span class="math inline">\(q=10\)</span> we know that the distance between them is <span class="math inline">\(d(p,q) = \sqrt{(q - p)^2} = 7\)</span>, right?</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="dv">3</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>q <span class="ot">&lt;-</span> <span class="dv">10</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>((q<span class="sc">-</span>p)<span class="sc">^</span><span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 7</code></pre>
+</div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="04HiDiddilyHoNeighborino_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>If the points <span class="math inline">\(p\)</span> and <span class="math inline">\(q\)</span> are in a two dimensional plane we extend that as: <span class="math display">\[d(p,q)=\sqrt{(q_1-p_1)^2 + (q_2-p_2)^2}\]</span></p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">3</span>,<span class="dv">1</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>q <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">10</span>,<span class="dv">6</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>((q[<span class="dv">1</span>] <span class="sc">-</span> p[<span class="dv">1</span>])<span class="sc">^</span><span class="dv">2</span> <span class="sc">+</span> (q[<span class="dv">2</span>] <span class="sc">-</span> p[<span class="dv">2</span>])<span class="sc">^</span><span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 8.602325</code></pre>
+</div>
+</div>
+<p>I think I encountered this first as finding the hypotenuse of a right triangle in middle school.</p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="04HiDiddilyHoNeighborino_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Since we are just adding the two dimensions together, we can generalize that expression a bit as: <span class="math display">\[d(p,q)=\sqrt{(q_1-p_1)^2 + (q_2-p_2)^2} = \sqrt{\sum_{i=1}^n(q_i-p_i)^2}\]</span> where <span class="math inline">\(n\)</span> is the total number of dimensions.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(<span class="fu">sum</span>((q<span class="sc">-</span>p)<span class="sc">^</span><span class="dv">2</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 8.602325</code></pre>
+</div>
+</div>
+<p>In 3D space (like measuring the distance from where you are now to the upper left-hand corner of the room), <span class="math inline">\(n=3\)</span>. Let’s add a third dimension to <span class="math inline">\(p\)</span> and <span class="math inline">\(q\)</span> and calculate the distance.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">3</span>,<span class="dv">1</span>,<span class="dv">5</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>q <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">10</span>,<span class="dv">6</span>,<span class="dv">7</span>)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>((q[<span class="dv">1</span>] <span class="sc">-</span> p[<span class="dv">1</span>])<span class="sc">^</span><span class="dv">2</span> <span class="sc">+</span> (q[<span class="dv">2</span>] <span class="sc">-</span> p[<span class="dv">2</span>])<span class="sc">^</span><span class="dv">2</span> <span class="sc">+</span> (q[<span class="dv">3</span>] <span class="sc">-</span> p[<span class="dv">3</span>])<span class="sc">^</span><span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 8.831761</code></pre>
+</div>
+</div>
+<p>Here is an attempt at a 3D plot.</p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div class="plotly html-widget html-fill-item" id="htmlwidget-8c4d9b60d14b65263b72" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-8c4d9b60d14b65263b72">{"x":{"visdat":{"71b97448fee":["function () ","plotlyVisDat"]},"cur_data":"71b97448fee","attrs":{"71b97448fee":{"x":{},"y":{},"z":{},"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"scatter3d","mode":"markers","marker":{"color":"black"},"inherit":true},"71b97448fee.1":{"x":{},"y":{},"z":{},"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"scatter3d","mode":"lines","line":{"color":"black"},"inherit":true}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"scene":{"xaxis":{"title":"x","range":[0,12]},"yaxis":{"title":"y","range":[0,12]},"zaxis":{"title":"z","range":[0,12]},"aspectmode":"cube"},"showlegend":false,"hovermode":"closest"},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"data":[{"x":[3,10],"y":[1,6],"z":[5,7],"type":"scatter3d","mode":"markers","marker":{"color":"black","line":{"color":"rgba(31,119,180,1)"}},"error_y":{"color":"rgba(31,119,180,1)"},"error_x":{"color":"rgba(31,119,180,1)"},"line":{"color":"rgba(31,119,180,1)"},"frame":null},{"x":[3,10],"y":[1,6],"z":[5,7],"type":"scatter3d","mode":"lines","line":{"color":"black"},"marker":{"color":"rgba(255,127,14,1)","line":{"color":"rgba(255,127,14,1)"}},"error_y":{"color":"rgba(255,127,14,1)"},"error_x":{"color":"rgba(255,127,14,1)"},"frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<p>Of course, we can use the generalized equation as well: <span class="math display">\[d(p,q)=\sqrt{\sum_{i=1}^n(q_i-p_i)^2}\]</span></p>
+<p>Implemented the same as above using <code>sum</code>:</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(<span class="fu">sum</span>((q<span class="sc">-</span>p)<span class="sc">^</span><span class="dv">2</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 8.831761</code></pre>
+</div>
+</div>
+<p>We just did a 3D example and I tried to visualize it. But we can do as many dimensions as we want. Our brains break after 3D but we can add as many dimensions as we like. Here is the 5D Euclidean distance between two points:</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">3</span>,<span class="dv">1</span>,<span class="dv">5</span>,<span class="dv">7</span>,<span class="dv">2</span>)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>q <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">10</span>,<span class="dv">6</span>,<span class="dv">7</span>,<span class="dv">13</span>,<span class="dv">1</span>)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>((q[<span class="dv">1</span>] <span class="sc">-</span> p[<span class="dv">1</span>])<span class="sc">^</span><span class="dv">2</span> <span class="sc">+</span> (q[<span class="dv">2</span>] <span class="sc">-</span> p[<span class="dv">2</span>])<span class="sc">^</span><span class="dv">2</span> <span class="sc">+</span> (q[<span class="dv">3</span>] <span class="sc">-</span> p[<span class="dv">3</span>])<span class="sc">^</span><span class="dv">2</span> <span class="sc">+</span> (q[<span class="dv">4</span>] <span class="sc">-</span> p[<span class="dv">4</span>])<span class="sc">^</span><span class="dv">2</span> <span class="sc">+</span> (q[<span class="dv">5</span>] <span class="sc">-</span> p[<span class="dv">5</span>])<span class="sc">^</span><span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 10.72381</code></pre>
+</div>
+</div>
+<p>Or:</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(<span class="fu">sum</span>((q<span class="sc">-</span>p)<span class="sc">^</span><span class="dv">2</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 10.72381</code></pre>
+</div>
+</div>
+<p>High-dimensional spaces occur all the time in science. Have four variables to describe something? You have a 4D space and can calculate the Euclidean distance between your observations. Six variables? 6D space and so on. N variables? nD space. It’ll be important as we continue on that you are comfortable with the idea of distances in high-dimensional spaces.</p>
+</section>
+<section id="space-in-knn" class="level3">
+<h3 class="anchored" data-anchor-id="space-in-knn">Space in kNN</h3>
+<p>The kNN algorithm uses space explicitly as each variable becomes an equally weighted axis in the <span class="math inline">\(n\)</span> dimensional space. Because the algorithm for kNN doesn’t teach itself to recognize which variables might be more important than others it’s up to the analyst (that’s you) to build a model sensibly.</p>
+</section>
+</section>
+<section id="the-knn-algorithm" class="level2">
+<h2 class="anchored" data-anchor-id="the-knn-algorithm">The kNN Algorithm</h2>
+<p>The kNN is a dirt simple classifier the assigns membership based on the membership of points that are close by in the parameter space. Typically, the distance is Euclidean as we saw above. The text and materials linked on Canvas explain it all pretty well but I’ll walk through an example based on the fruits and veggies examples in the reading real quick.</p>
+<section id="eat-your-fruits-and-veggies" class="level3">
+<h3 class="anchored" data-anchor-id="eat-your-fruits-and-veggies">Eat Your Fruits and Veggies</h3>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>foodStuffs <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">culinaryUse =</span> <span class="fu">c</span>(<span class="st">"vegetable"</span>,<span class="st">"vegetable"</span>,<span class="st">"vegetable"</span>,</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>                                     <span class="st">"vegetable"</span>,<span class="st">"vegetable"</span>,<span class="st">"vegetable"</span>,</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>                                     <span class="st">"fruit"</span>, <span class="st">"fruit"</span>, <span class="st">"fruit"</span>,</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>                                     <span class="st">"fruit"</span>, <span class="st">"fruit"</span>, <span class="st">"fruit"</span>),</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>                     <span class="at">item =</span>  <span class="fu">c</span>(<span class="st">"green bean"</span>,<span class="st">"broccoli"</span>,<span class="st">"cauliflower"</span>,</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>                               <span class="st">"cabbage"</span>,<span class="st">"asparagus"</span>,<span class="st">"kale"</span>,</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>                               <span class="st">"apple"</span>,<span class="st">"organge"</span>, <span class="st">"grape"</span>,</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>                               <span class="st">"banana"</span>,<span class="st">"peach"</span>,<span class="st">"blueberry"</span>),</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>                     <span class="at">sweetness =</span> <span class="fu">c</span>(<span class="fl">0.5</span>,<span class="fl">0.2</span>,<span class="fl">0.2</span>,</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>                                   <span class="fl">0.3</span>,<span class="fl">0.3</span>,<span class="fl">0.1</span>,</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>                                   <span class="fl">0.7</span>,<span class="fl">0.9</span>,<span class="fl">0.9</span>,</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>                                   <span class="fl">0.6</span>,<span class="fl">0.8</span>,<span class="fl">0.7</span>),</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>                     <span class="at">crunchiness =</span> <span class="fu">c</span>(<span class="fl">0.8</span>,<span class="fl">0.6</span>,<span class="fl">0.9</span>,</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>                                     <span class="fl">0.7</span>,<span class="fl">0.6</span>,<span class="fl">0.5</span>,</span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>                                     <span class="fl">0.7</span>,<span class="fl">0.1</span>,<span class="fl">0.2</span>,</span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>                                     <span class="fl">0.1</span>,<span class="fl">0.3</span>,<span class="fl">0.2</span>))</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>foodPlot <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data=</span>foodStuffs, <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x=</span>sweetness, <span class="at">y =</span> crunchiness)) <span class="sc">+</span></span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_label</span>(<span class="fu">aes</span>(<span class="at">label=</span>item,<span class="at">fill=</span>culinaryUse),<span class="at">position =</span> <span class="st">"jitter"</span>) <span class="sc">+</span> </span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">lims</span>(<span class="at">x=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>),<span class="at">y=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>)) <span class="sc">+</span> <span class="fu">coord_fixed</span>() <span class="sc">+</span> <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>)</span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>foodPlot</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="04HiDiddilyHoNeighborino_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>As many of you with botany training know that the fruit/veggie dichotomy is quite different in terms of culinary classification as opposed to biological classification (e.g., green beans, cucumbers, green bears, etc. are all fruits botanically but we use mostly use them as vegetables around these parts at least). So let’s think about these in terms of culinary uses.</p>
+<p>Imagine putting in a new item like a strawberry into this space. It’s sweet and not crunchy and we’d call it a fruit using kNN because its nearest neighbors would all be fruits. Let’s do this kNN calculation for, I dunno, eggplant (technically a fruit as well!). Here is my scoring for eggplant and I’ll add it to the plot with a “?”.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>eggplant <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">sweetness=</span><span class="fl">0.5</span>, <span class="at">crunchiness =</span> <span class="fl">0.6</span>)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>foodPlot <span class="sc">+</span> <span class="fu">geom_point</span>(<span class="at">data=</span>eggplant, <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x=</span>sweetness,<span class="at">y=</span>crunchiness),<span class="at">shape=</span><span class="st">"?"</span>,<span class="at">size=</span><span class="dv">7</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="04HiDiddilyHoNeighborino_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Our first step is to get the distances from our unknown item to all the known items. So here is the distance between green beans and eggplant. Note that this is a 2D space but this approach would work in as many dimensions as we might care to assign to our foods.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> foodStuffs <span class="sc">%&gt;%</span> <span class="fu">filter</span>(item <span class="sc">==</span> <span class="st">"green bean"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(sweetness,crunchiness)</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>q <span class="ot">&lt;-</span> eggplant <span class="sc">%&gt;%</span> <span class="fu">select</span>(sweetness,crunchiness)</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="co"># distance from eggplant to green bean</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(<span class="fu">sum</span>((q<span class="sc">-</span>p)<span class="sc">^</span><span class="dv">2</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.2</code></pre>
+</div>
+</div>
+<p>And eggplant to blueberry.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> foodStuffs <span class="sc">%&gt;%</span> <span class="fu">filter</span>(item <span class="sc">==</span> <span class="st">"blueberry"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(sweetness,crunchiness)</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>q <span class="ot">&lt;-</span> eggplant <span class="sc">%&gt;%</span> <span class="fu">select</span>(sweetness,crunchiness)</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="co"># distance from eggplant to blueberry</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(<span class="fu">sum</span>((q<span class="sc">-</span>p)<span class="sc">^</span><span class="dv">2</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.4472136</code></pre>
+</div>
+</div>
+<p>We can use <code>apply</code> to look at the distance from eggplant to all the rows in the <code>foodStuffs</code> data.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> foodStuffs <span class="sc">%&gt;%</span> <span class="fu">select</span>(sweetness,crunchiness)</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>q <span class="ot">&lt;-</span> eggplant <span class="sc">%&gt;%</span> <span class="fu">select</span>(sweetness,crunchiness)</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="co"># distance from eggplant to all the items</span></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>dist2all <span class="ot">&lt;-</span> <span class="fu">apply</span>(p,<span class="dv">1</span>,<span class="cf">function</span>(x){<span class="fu">sqrt</span>(<span class="fu">sum</span>((q<span class="sc">-</span>x)<span class="sc">^</span><span class="dv">2</span>))})</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a><span class="fu">tibble</span>(<span class="at">culinaryUse =</span> foodStuffs<span class="sc">$</span>culinaryUse, <span class="at">d =</span> dist2all) <span class="sc">%&gt;%</span></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(d)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 12 × 2
+   culinaryUse     d
+   &lt;chr&gt;       &lt;dbl&gt;
+ 1 vegetable   0.2  
+ 2 vegetable   0.2  
+ 3 fruit       0.224
+ 4 vegetable   0.224
+ 5 vegetable   0.3  
+ 6 vegetable   0.412
+ 7 vegetable   0.424
+ 8 fruit       0.424
+ 9 fruit       0.447
+10 fruit       0.510
+11 fruit       0.566
+12 fruit       0.640</code></pre>
+</div>
+</div>
+<p>Now, to classify the eggplant we’d ask for a vote based on <span class="math inline">\(k\)</span>. If we asked for the three closest neighbors (<span class="math inline">\(k=3\)</span>) the vote would be two veggie and one fruit (that crunchy but sweet apple is the minority vote) So we’d call the eggplant a vegetable. The choice of <span class="math inline">\(k\)</span> controls a tradeoff. Small values of <span class="math inline">\(k\)</span> lead to very local decisions that can be sensitive to noise (high variance). Larger values of <span class="math inline">\(k\)</span> produce smoother decision boundaries but can blur meaningful local structure (higher bias).</p>
+<p>Make sense? Now this is a trivial example but I will note that ML is being used in cooking and cuisine! Imagine you wanted an ingredient to contrast with your others and had a big database of flavor profiles. You could end up with something really cool (think “curry ice cream” which is awesome) if a ML algorithm helped you find a pattern that you hadn’t thought about before. Google <a href="https://www.google.com/search?q=chef+watson">Chef Watson</a> for this in real life.</p>
+</section>
+</section>
+<section id="other-tidbits" class="level2">
+<h2 class="anchored" data-anchor-id="other-tidbits">Other Tidbits</h2>
+<section id="rescaling" class="level3">
+<h3 class="anchored" data-anchor-id="rescaling">Rescaling</h3>
+<p>The reading describes why variables used in kNN have to be on the same scale. I won’t belabor that point here but this is a critical idea. When working in a parameter space that includes many different kinds of variables (length, width, number, whatever) they all need to be scaled to the same frame of reference before you can think about distance. The book uses a min|max normalization from 0 to 1 for all the variables and also talks about transforming to z-scores. In practice, scaling parameters should be computed using the training data only, and then applied to the test data. Computing scaling parameters on the full dataset can leak information from the test set into the model.</p>
+</section>
+<section id="categorical-predictors" class="level3">
+<h3 class="anchored" data-anchor-id="categorical-predictors">Categorical Predictors</h3>
+<p>You can use categorical data in kNN but that doesn’t mean that you should. Categorical data (e.g., <code>sex</code> in the penguin data) can be used in kNN but would have to be converted into numbers (e.g., 0 and 1) before being used to calculate distance. If you have multiple categories (e.g., <code>island</code> in the penguin data) it’s not clear how you transform those into distance because coding them as integers won’t work. One possibility in that case is to put the categories as numbers equally spaced around a circle – that way the distance between any pair of them is the same but that starts getting complicated fast. kNN might not be the best choice if you have a lot of categorical data that you want to use as predictors.</p>
+</section>
+</section>
+<section id="worked-example" class="level2">
+<h2 class="anchored" data-anchor-id="worked-example">Worked Example</h2>
+<section id="diagnostic-wisconsin-breast-cancer-database" class="level3">
+<h3 class="anchored" data-anchor-id="diagnostic-wisconsin-breast-cancer-database">Diagnostic Wisconsin Breast Cancer Database</h3>
+<p>We are going to follow along with the book and look at the Diagnostic Wisconsin Breast Cancer Database. The data are archived <a href="https://archive.ics.uci.edu/ml/datasets/Breast+Cancer+Wisconsin+%28Diagnostic%29">here</a> and I’ve put the csv file on Canvas. As you can read, there are 569 rows (samples) and 30 explanatory variables for the diagnosis (malignant or benign). There is also an id column that we will ignore (never use ID to predict!). The 30 explanatory variables are the mean, standard error, and largest (worst) value for 10 different characteristics of the digitized cell nuclei.</p>
+<p>I’m not going to retype the textbook. Read the book along with the code below.</p>
+<p>Let’s read the data, shuffle the rows to make sure they are random, drop the id column, and recode the diagnosis column to be a factor.</p>
+<p>As you work through the code below, focus on three things:</p>
+<ol type="1">
+<li>How the data are split into training and test sets</li>
+<li>How the choice of <span class="math inline">\(k\)</span> affects predictions</li>
+<li>How to interpret the confusion matrix rather than the raw accuracy alone</li>
+</ol>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>wbcd <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/wisc_bc_data.csv"</span>)</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>rowShuffle <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="at">x =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(wbcd),<span class="at">size =</span> <span class="fu">nrow</span>(wbcd),<span class="at">replace =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>wbcd <span class="ot">&lt;-</span> wbcd[rowShuffle,] <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="sc">-</span>id) <span class="sc">%&gt;%</span> </span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">diagnosis =</span> <span class="fu">factor</span>(diagnosis, </span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>                            <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"B"</span>,<span class="st">"M"</span>), </span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>                            <span class="at">labels =</span>  <span class="fu">c</span>(<span class="st">"Benign"</span>,<span class="st">"Malignant"</span>)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p>And get a count of the response (diagnosis).</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>wbcd <span class="sc">%&gt;%</span> <span class="fu">count</span>(diagnosis) <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">freq =</span> n <span class="sc">/</span> <span class="fu">sum</span>(n))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 3
+  diagnosis     n  freq
+  &lt;fct&gt;     &lt;int&gt; &lt;dbl&gt;
+1 Benign      357 0.627
+2 Malignant   212 0.373</code></pre>
+</div>
+</div>
+<p>So far we are following along with the book but I’m using tidy syntax. The next step is to normalize the predictor variables to get them on the same scale. The book shows you how to write your own function <code>normalize</code> to get each variable on a scale from zero to one. While I applaud rolling your own functions, I’ll use the <code>rescale</code> function in the <code>scales</code> library which does the same thing. Note that the <code>scales</code> library has all kinds of cool and useful transformations in it.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>wbcd_n <span class="ot">&lt;-</span> wbcd <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="dv">2</span><span class="sc">:</span><span class="dv">31</span>, rescale))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p>Look at <code>area_mean</code> in the normalized data.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>wbcd_n <span class="sc">%&gt;%</span> <span class="fu">select</span>(area_mean) <span class="sc">%&gt;%</span> <span class="fu">summary</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>   area_mean     
+ Min.   :0.0000  
+ 1st Qu.:0.1174  
+ Median :0.1729  
+ Mean   :0.2169  
+ 3rd Qu.:0.2711  
+ Max.   :1.0000  </code></pre>
+</div>
+</div>
+<p>All systems go. Note that one difference here as compared to the book is that I’ve kept the <code>diagnosis</code> column in the data so far. I prefer keeping data together as long as possible but because the books pulls the diagnosis column out, I will bow to pressure and make the labels a separate object here.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>wbcd_labels <span class="ot">&lt;-</span> wbcd_n <span class="sc">%&gt;%</span> <span class="fu">pull</span>(diagnosis)</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>wbcd_n <span class="ot">&lt;-</span> wbcd_n <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="sc">-</span>diagnosis)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="traintest" class="level3">
+<h3 class="anchored" data-anchor-id="traintest">Train/Test</h3>
+<p>Let’s get training and test data. Because the rows have already been shuffled, we can divide using row indices. The book, somewhat arbitrarily, uses 100 rows for the testing data. Because I’ve shuffled the data above (and you will have your own random shuffle), the results will be slightly different between the book, what I have below, and what you get when you run it. But they should be very similar. If they aren’t, that tells you a lot about the stability of the approach.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>wbcd_train <span class="ot">&lt;-</span> wbcd_n[<span class="dv">1</span><span class="sc">:</span><span class="dv">469</span>,]</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>wbcd_train_labels <span class="ot">&lt;-</span> wbcd_labels[<span class="dv">1</span><span class="sc">:</span><span class="dv">469</span>]</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>wbcd_test <span class="ot">&lt;-</span> wbcd_n[<span class="dv">470</span><span class="sc">:</span><span class="dv">569</span>,]</span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>wbcd_test_labels <span class="ot">&lt;-</span> wbcd_labels[<span class="dv">470</span><span class="sc">:</span><span class="dv">569</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="run-knn" class="level3">
+<h3 class="anchored" data-anchor-id="run-knn">Run kNN</h3>
+<p>And now we will do the classification using <code>knn</code>.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>wbcd_test_pred <span class="ot">&lt;-</span> <span class="fu">knn</span>(<span class="at">train =</span> wbcd_train, </span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>                      <span class="at">test =</span> wbcd_test,</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>                      <span class="at">cl=</span>wbcd_train_labels,</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>                      <span class="at">k=</span><span class="dv">21</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p>Let’s take a look at that object of predictions.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(wbcd_test_pred)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>wbcd_test_pred
+   Benign Malignant 
+       67        33 </code></pre>
+</div>
+</div>
+<p>There are 100 predictions and 64 times the case was classified as Benign and 36 times as Malignant. Because these are the test data we know the real answers for each of these cases. E.g.,:</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tibble</span>(<span class="at">preds =</span> wbcd_test_pred, <span class="at">truth =</span> wbcd_test_labels)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 100 × 2
+   preds     truth    
+   &lt;fct&gt;     &lt;fct&gt;    
+ 1 Benign    Benign   
+ 2 Benign    Benign   
+ 3 Benign    Benign   
+ 4 Benign    Benign   
+ 5 Benign    Benign   
+ 6 Benign    Benign   
+ 7 Benign    Benign   
+ 8 Malignant Malignant
+ 9 Malignant Malignant
+10 Benign    Benign   
+# ℹ 90 more rows</code></pre>
+</div>
+</div>
+<p>This is the predicted values from <code>knn</code> and the observed (aka truth aka reference) values. They are mostly the same (that’s good!) but sometimes we have a misclassification (that’s bad).</p>
+</section>
+<section id="the-confusion-matrix" class="level3">
+<h3 class="anchored" data-anchor-id="the-confusion-matrix">The Confusion Matrix</h3>
+<p>We can evaluate the fit with the aptly named <a href="https://en.wikipedia.org/wiki/Confusion_matrix">confusion matrix</a> (i.e., which classes are confused with each other). The book uses the <code>CrossTable</code> function from the <code>gmodels</code> library. That’s fine and has all the information you need (run <code>gmodels::CrossTable(x=wbcd_test_labels,y = wbcd_test_pred)</code>) to get the output the book shows. I’m going to show you the output using <code>confusionMatrix</code> function from <code>caret</code> which I see more commonly in the wild.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>cm <span class="ot">&lt;-</span> <span class="fu">confusionMatrix</span>(<span class="at">data =</span> wbcd_test_pred,<span class="at">reference =</span> wbcd_test_labels)</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>cm</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Confusion Matrix and Statistics
+
+           Reference
+Prediction  Benign Malignant
+  Benign        65         2
+  Malignant      1        32
+                                          
+               Accuracy : 0.97            
+                 95% CI : (0.9148, 0.9938)
+    No Information Rate : 0.66            
+    P-Value [Acc &gt; NIR] : 2.113e-14       
+                                          
+                  Kappa : 0.9327          
+                                          
+ Mcnemar's Test P-Value : 1               
+                                          
+            Sensitivity : 0.9848          
+            Specificity : 0.9412          
+         Pos Pred Value : 0.9701          
+         Neg Pred Value : 0.9697          
+             Prevalence : 0.6600          
+         Detection Rate : 0.6500          
+   Detection Prevalence : 0.6700          
+      Balanced Accuracy : 0.9630          
+                                          
+       'Positive' Class : Benign          
+                                          </code></pre>
+</div>
+</div>
+<p>Don’t freak out at all that information, we will walk through the most important parts. The key part being the table itself (<code>cm$table</code>). It’s just four numbers and look at all we can infer from it!</p>
+<p>The predictions from <code>knn</code> are in rows. The truth (aka observed, aka reference) are in the columns. Thus, the top-left corner and the bottom-right corner are the cases that are classified correctly. The lower-left and upper-right corners are misclassifications. In this table we say that a result of “Benign” is a positive result and thus then the lower left shows that there is one false negative (aka type II error) and the upper right shows that there are two false positives (aka type I error).</p>
+<p>These errors are summarized in the “Sensitivity” and “Specificity” (those of you that follow the COVID test and vaccine development will be familiar with those terms already). Sensitivity is the proportion of positives (“Benign”) that are correctly identified while Specificity is the proportion of negatives (“Malignant”) that are correctly identified.</p>
+<p>The other statistic in that sea that I’ll break down a bit for you is kappa (<span class="math inline">\(\kappa\)</span>). This is pretty much always reported when you see a classification. The kappa statistic is a number less than one that tells you how much better your classification is performing as compared to a random expectation. It’s calculated as:</p>
+<p><span class="math display">\[ \kappa = \frac{p_o - p_e}{1-p_e}\]</span></p>
+<p>where <span class="math inline">\(p_o\)</span> is the is the observed agreement, and <span class="math inline">\(p_e\)</span> is the expected agreement. There isn’t a p-value for kappa but you can loosely think about it as a value &lt; 0 means no agreement between the classes, 0–0.20 as slight agreement, 0.21–0.40 as fair, 0.41–0.60 as moderate, 0.61–0.80 as substantial, and 0.81–1 as excellent agreement. A pretty no nonsense but very thorough write up is on <a href="https://stats.stackexchange.com/questions/82162/cohens-kappa-in-plain-english">stackexchange</a>.</p>
+<p>There is a lot more in the <code>confusionMatrix</code> output but that’s enough for now I think. For details on interpreting all the numbers in this function look at the help page. It’s pretty clean: <code>?confusionMatrix</code>.</p>
+</section>
+<section id="some-interp" class="level3">
+<h3 class="anchored" data-anchor-id="some-interp">Some Interp</h3>
+<p>The book walks through some of the important aspects and trade offs as you interpret this classification. Is it better for an analyst to worry about false positives or false negatives in terms of patient care? How does changing <span class="math inline">\(k\)</span> affect this classification? What about the variable normalization? What about the “right” number of predictors to use? I’ll talk about each of these in the video but they are all important considerations.</p>
+</section>
+</section>
+<section id="your-work" class="level2">
+<h2 class="anchored" data-anchor-id="your-work">Your Work</h2>
+<p>Let’s use a cool data set of fish caught in Finland in 1917. There are 159 fish from seven species caught from <a href="https://www.google.com/maps/place/L%C3%A4ngelm%C3%A4vesi/@61.5563738,24.2872989,11z/">lake Laengelmavesi</a>. In addition to the species there are columns for the weight of the fish (in grams), three measurements of length: 1. Length from the nose to the beginning of the tail, 2. Length from the nose to the notch of the tail, and 3. Length from the nose to the end of the tail. All of the length measurements are in cm. There is also the width of the fish and its height (in cm) as well as the ratio of height to total length and the ratio of width to total length (in percent). The raw data are archived <a href="http://jse.amstat.org/jse_data_archive.htm">here</a> and formatted nicely in the <code>fishcatch.csv</code> file.</p>
+<p>I’m going to read in the file and do some wrangling and cleaning. I’ll drop all the <code>NA</code> values first. I’ll limit the species we are going to classify to just three species. Then I select just four of the variables to predict species (weight, total length, height, and width) which are rescaled from zero to one.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>fish <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/fishcatch.csv"</span>)</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>fishFiltered <span class="ot">&lt;-</span> fish <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="sc">-</span>std_name,<span class="sc">-</span>sex) <span class="sc">%&gt;%</span></span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">common_name =</span> <span class="fu">factor</span>(common_name)) <span class="sc">%&gt;%</span></span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(common_name <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"bream"</span>,<span class="st">"perch"</span>,<span class="st">"pike"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">common_name =</span> <span class="fu">factor</span>(common_name)) <span class="sc">%&gt;%</span></span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(common_name,</span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>         weight_g,</span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>         length_nose2tail_end_cm,</span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>         height_cm,</span>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a>         width_cm) <span class="sc">%&gt;%</span></span>
+<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">drop_na</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb39-12"><a href="#cb39-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="dv">2</span><span class="sc">:</span><span class="dv">5</span>, rescale))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p>Let’s try a 3d view (have to leave out weight for this plot).</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(plotly)</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_ly</span>(fishFiltered, </span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>        <span class="at">x =</span> <span class="sc">~</span>length_nose2tail_end_cm,</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>        <span class="at">y =</span> <span class="sc">~</span>height_cm,</span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>        <span class="at">z =</span> <span class="sc">~</span>width_cm, </span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>        <span class="at">color =</span> <span class="sc">~</span>common_name) <span class="sc">%&gt;%</span></span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_markers</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">layout</span>(<span class="at">scene =</span> <span class="fu">list</span>(<span class="at">xaxis =</span> <span class="fu">list</span>(<span class="at">title =</span> <span class="st">'Length'</span>),</span>
+<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a>                      <span class="at">yaxis =</span> <span class="fu">list</span>(<span class="at">title =</span> <span class="st">'Height'</span>),</span>
+<span id="cb40-10"><a href="#cb40-10" aria-hidden="true" tabindex="-1"></a>                      <span class="at">zaxis =</span> <span class="fu">list</span>(<span class="at">title =</span> <span class="st">'Width'</span>))) <span class="sc">%&gt;%</span></span>
+<span id="cb40-11"><a href="#cb40-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">layout</span>(<span class="at">showlegend =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="plotly html-widget html-fill-item" id="htmlwidget-b6565f515210d1576420" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-b6565f515210d1576420">{"x":{"visdat":{"71b9e57ab4b":["function () ","plotlyVisDat"]},"cur_data":"71b9e57ab4b","attrs":{"71b9e57ab4b":{"x":{},"y":{},"z":{},"color":{},"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"scatter3d","mode":"markers","inherit":true}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"scene":{"xaxis":{"title":"Length"},"yaxis":{"title":"Height"},"zaxis":{"title":"Width"}},"showlegend":false,"hovermode":"closest"},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"data":[{"x":[0.35810810810810806,0.37837837837837834,0.3766891891891892,0.41722972972972971,0.42567567567567566,0.4375,0.4341216216216216,0.44256756756756754,0.44425675675675674,0.46283783783783783,0.46283783783783783,0.46283783783783783,0.46621621621621617,0.47972972972972977,0.47972972972972977,0.49831081081081074,0.50168918918918914,0.5033783783783784,0.50506756756756754,0.51858108108108103,0.51351351351351349,0.52195945945945943,0.53716216216216217,0.53547297297297292,0.5422297297297296,0.53716216216216217,0.55236486486486491,0.55405405405405395,0.57094594594594583,0.59628378378378366,0.59459459459459463,0.61655405405405406,0.62668918918918903,0.63682432432432434],"y":[0.55621301775147935,0.61538461538461542,0.60946745562130189,0.62721893491124259,0.60946745562130189,0.68047337278106512,0.71597633136094674,0.62721893491124259,0.70414201183431957,0.71597633136094674,0.72189349112426049,0.72781065088757402,0.6923076923076924,0.76331360946745574,0.78698224852071019,0.75739644970414211,0.75739644970414211,0.79881656804733736,0.73372781065088766,0.76923076923076927,0.82248520710059181,0.79289940828402372,0.79289940828402372,0.83431952662721898,0.84615384615384615,0.84615384615384615,0.8520710059171599,0.87573964497041423,1,0.94082840236686405,0.94674556213017758,0.98816568047337283,0.97633136094674566,0.9171597633136096],"z":[0.38805970149253738,0.43283582089552242,0.49253731343283591,0.46268656716417916,0.55223880597014929,0.52238805970149271,0.58208955223880599,0.49253731343283591,0.5074626865671642,0.537313432835821,0.55223880597014929,0.5074626865671642,0.44776119402985087,0.56716417910447769,0.62686567164179097,0.58208955223880599,0.56716417910447769,0.55223880597014929,0.64179104477611959,0.62686567164179097,0.59701492537313439,0.58208955223880599,0.70149253731343275,0.62686567164179097,0.70149253731343275,0.70149253731343275,0.67164179104477617,0.71641791044776137,0.77611940298507465,0.73134328358208966,0.73134328358208966,0.79104477611940316,0.79104477611940316,0.74626865671641796],"type":"scatter3d","mode":"markers","name":"bream","marker":{"color":"rgba(102,194,165,1)","line":{"color":"rgba(102,194,165,1)"}},"textfont":{"color":"rgba(102,194,165,1)"},"error_y":{"color":"rgba(102,194,165,1)"},"error_x":{"color":"rgba(102,194,165,1)"},"line":{"color":"rgba(102,194,165,1)"},"frame":null},{"x":[0,0.09966216216216213,0.1216216216216216,0.14189189189189186,0.16385135135135134,0.17567567567567563,0.179054054054054,0.19256756756756754,0.20270270270270269,0.20608108108108106,0.23141891891891889,0.23141891891891889,0.23141891891891889,0.23648648648648649,0.2483108108108108,0.2483108108108108,0.2483108108108108,0.2483108108108108,0.2483108108108108,0.25675675675675674,0.25675675675675674,0.26013513513513509,0.26520270270270269,0.27364864864864863,0.28209459459459457,0.28209459459459457,0.29391891891891886,0.29898648648648646,0.3074324324324324,0.32432432432432429,0.33614864864864863,0.33952702702702697,0.33952702702702697,0.33952702702702697,0.34797297297297292,0.35979729729729731,0.38513513513513514,0.42567567567567566,0.46790540540540537,0.48141891891891886,0.51013513513513509,0.49831081081081074,0.51689189189189189,0.51520270270270263,0.55067567567567555,0.55067567567567555,0.54898648648648651,0.5658783783783784,0.5692567567567568,0.56756756756756743,0.5692567567567568,0.6047297297297296,0.61486486486486491,0.61993243243243246,0.6283783783783784,0.63851351351351349],"y":[0,0.082840236686390539,0.10059171597633135,0.14792899408284022,0.14792899408284022,0.18343195266272191,0.18343195266272191,0.20710059171597633,0.17751479289940827,0.17751479289940827,0.21301775147928997,0.2248520710059172,0.21301775147928997,0.25443786982248529,0.23668639053254437,0.20710059171597633,0.23668639053254437,0.2248520710059172,0.20118343195266272,0.2248520710059172,0.27810650887573962,0.23076923076923078,0.18343195266272191,0.24852071005917159,0.30769230769230765,0.25443786982248529,0.27218934911242604,0.25443786982248529,0.26627218934911245,0.30177514792899407,0.36686390532544388,0.30177514792899407,0.29585798816568049,0.30769230769230765,0.33727810650887574,0.32544378698224857,0.32544378698224857,0.4674556213017752,0.48520710059171607,0.55621301775147935,0.52071005917159774,0.50295857988165682,0.5147928994082841,0.50295857988165682,0.53254437869822491,0.53254437869822491,0.60946745562130189,0.5798816568047338,0.56804733727810652,0.60946745562130189,0.53254437869822491,0.63313609467455634,0.5798816568047338,0.61538461538461542,0.62130177514792906,0.61538461538461542],"z":[0,0.089552238805970172,0.1492537313432836,0.17910447761194034,0.22388059701492541,0.28358208955223885,0.25373134328358216,0.25373134328358216,0.23880597014925378,0.20895522388059704,0.32835820895522394,0.28358208955223885,0.34328358208955234,0.31343283582089559,0.29850746268656719,0.31343283582089559,0.31343283582089559,0.31343283582089559,0.38805970149253738,0.32835820895522394,0.32835820895522394,0.32835820895522394,0.32835820895522394,0.34328358208955234,0.34328358208955234,0.35820895522388063,0.41791044776119413,0.34328358208955234,0.41791044776119413,0.40298507462686567,0.55223880597014929,0.43283582089552242,0.43283582089552242,0.47761194029850745,0.41791044776119413,0.47761194029850745,0.5074626865671642,0.68656716417910446,0.74626865671641796,0.95522388059701513,0.82089552238805974,0.79104477611940316,0.73134328358208966,0.74626865671641796,0.91044776119402993,0.68656716417910446,0.89552238805970164,0.85074626865671643,0.86567164179104494,0.91044776119402993,0.77611940298507465,0.82089552238805974,0.88059701492537323,0.89552238805970164,1,0.92537313432835822],"type":"scatter3d","mode":"markers","name":"perch","marker":{"color":"rgba(252,141,98,1)","line":{"color":"rgba(252,141,98,1)"}},"textfont":{"color":"rgba(252,141,98,1)"},"error_y":{"color":"rgba(252,141,98,1)"},"error_x":{"color":"rgba(252,141,98,1)"},"line":{"color":"rgba(252,141,98,1)"},"frame":null},{"x":[0.43918918918918909,0.4898648648648648,0.50675675675675669,0.52364864864864857,0.53547297297297292,0.54391891891891897,0.61993243243243246,0.61993243243243246,0.625,0.66216216216216217,0.67398648648648651,0.71621621621621623,0.78209459459459452,0.85979729729729737,0.93243243243243246,0.93243243243243246,1],"y":[0.20710059171597633,0.21301775147928997,0.2248520710059172,0.24852071005917159,0.30769230769230765,0.25443786982248529,0.30769230769230765,0.27810650887573962,0.33727810650887574,0.2899408284023669,0.33727810650887574,0.33136094674556216,0.4023668639053255,0.50887573964497046,0.44378698224852076,0.44378698224852076,0.5147928994082841],"z":[0.29850746268656719,0.41791044776119413,0.44776119402985087,0.38805970149253738,0.47761194029850745,0.38805970149253738,0.43283582089552242,0.46268656716417916,0.55223880597014929,0.52238805970149271,0.52238805970149271,0.59701492537313439,0.71641791044776137,0.83582089552238814,0.70149253731343275,0.70149253731343275,0.91044776119402993],"type":"scatter3d","mode":"markers","name":"pike","marker":{"color":"rgba(141,160,203,1)","line":{"color":"rgba(141,160,203,1)"}},"textfont":{"color":"rgba(141,160,203,1)"},"error_y":{"color":"rgba(141,160,203,1)"},"error_x":{"color":"rgba(141,160,203,1)"},"line":{"color":"rgba(141,160,203,1)"},"frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<p>What I want you to do is use <code>knn</code> in <code>fishFiltered</code> to classify species using the four variables. You’ll have to specify <span class="math inline">\(k\)</span> obviously as well as come up with some kind of <code>train</code> and <code>test</code> scheme. You can use <code>knn</code> as above or use the <code>train</code> function in <code>caret</code> if you are feeling ambitious. No matter what, you need to do some cross validation. Summarize your findings. Feel free to expand the species, variables used, or the rescaling as well for those that really like to color outside the lines.</p>
+
+
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list" style="display: none">
+<div id="ref-R-caret" class="csl-entry" role="listitem">
+Kuhn, Max. 2024. <em>Caret: Classification and Regression Training</em>. <a href="https://github.com/topepo/caret/">https://github.com/topepo/caret/</a>.
+</div>
+<div id="ref-R-class" class="csl-entry" role="listitem">
+Ripley, Brian. 2025. <em>Class: Functions for Classification</em>. <a href="http://www.stats.ox.ac.uk/pub/MASS4/">http://www.stats.ox.ac.uk/pub/MASS4/</a>.
+</div>
+<div id="ref-R-tidyverse" class="csl-entry" role="listitem">
+Wickham, Hadley. 2023. <em>Tidyverse: Easily Install and Load the Tidyverse</em>. <a href="https://tidyverse.tidyverse.org">https://tidyverse.tidyverse.org</a>.
+</div>
+<div id="ref-R-scales" class="csl-entry" role="listitem">
+Wickham, Hadley, Thomas Lin Pedersen, and Dana Seidel. 2025. <em>Scales: Scale Functions for Visualization</em>. <a href="https://scales.r-lib.org">https://scales.r-lib.org</a>.
+</div>
+</div>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./03crossValidationIntro.html" class="pagination-link" aria-label="Always Be Cross Validating (ABCv)">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">Always Be Cross Validating (ABCv)</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./05SoManyChoices.html" class="pagination-link" aria-label="Classifying with Decision Trees">
+        <span class="nav-page-text"><span class="chapter-title">Classifying with Decision Trees</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/AndyBunn/machineLearningNotes/edit/main/04HiDiddilyHoNeighborino.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/AndyBunn/machineLearningNotes/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

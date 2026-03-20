@@ -1,0 +1,1581 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.25">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Machine learning notes and exercises">
+
+<title>Eigen Faces – Machine Learning for Environmental Science</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./10PackagesUsed.html" rel="next">
+<link href="./08InTheBag.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-a04a01d9790747593e0658c5ce91c85b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<link href="site_libs/htmltools-fill-0.5.9/fill.css" rel="stylesheet">
+<script src="site_libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+<script src="site_libs/plotly-binding-4.12.0/plotly.js"></script>
+<script src="site_libs/typedarray-0.1/typedarray.min.js"></script>
+<script src="site_libs/jquery-3.5.1/jquery.min.js"></script>
+<link href="site_libs/crosstalk-1.2.2/css/crosstalk.min.css" rel="stylesheet">
+<script src="site_libs/crosstalk-1.2.2/js/crosstalk.min.js"></script>
+<link href="site_libs/plotly-htmlwidgets-css-2.25.2/plotly-htmlwidgets.css" rel="stylesheet">
+<script src="site_libs/plotly-main-2.25.2/plotly-latest.min.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="custom.css">
+</head>
+
+<body class="nav-sidebar floating nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="./index.html" class="navbar-brand navbar-brand-logo">
+    </a>
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">Machine Learning for Environmental Science</span>
+    </a>
+  </div>
+        <div class="quarto-navbar-tools tools-end">
+    <a href="https://github.com/AndyBunn/machineLearningNotes" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+</div>
+          <div id="quarto-search" class="" title="Search"></div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./09iveJustSeenAFace.html"><span class="chapter-title">Eigen Faces</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header sidebar-header-stacked">
+      <a href="./index.html" class="sidebar-logo-link">
+      </a>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Cover Page</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./00Welcome.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Welcome</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01birdsBoot.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Bootstrapping</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01xAsideMethods_and_generics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Aside: Understanding Methods and Generics in R</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02alpacaPermute.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Permutation</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03crossValidationIntro.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Always Be Cross Validating (ABCv)</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04HiDiddilyHoNeighborino.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Classifying with kNN</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05SoManyChoices.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Classifying with Decision Trees</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06Discrete2Continuous.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Continuous Prediction with Regression Trees</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06xAsideOLS_Algebric_Matrix.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Aside: OLS via Algebra and Matrices</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07IfIOnlyHadABrain.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Neural Nets</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07xAsideAnimateNeuralNet.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Aside: Animate a NN</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./08InTheBag.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Improving Model Performance</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./09iveJustSeenAFace.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">Eigen Faces</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./10PackagesUsed.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">References</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#big-idea" id="toc-big-idea" class="nav-link active" data-scroll-target="#big-idea">Big Idea</a></li>
+  <li><a href="#packages" id="toc-packages" class="nav-link" data-scroll-target="#packages">Packages</a></li>
+  <li><a href="#reading" id="toc-reading" class="nav-link" data-scroll-target="#reading">Reading</a></li>
+  <li><a href="#a-bunch-of-mostly-white-guys" id="toc-a-bunch-of-mostly-white-guys" class="nav-link" data-scroll-target="#a-bunch-of-mostly-white-guys">A bunch of mostly white guys</a></li>
+  <li><a href="#average-face" id="toc-average-face" class="nav-link" data-scroll-target="#average-face">Average face</a></li>
+  <li><a href="#principal-component-analysis" id="toc-principal-component-analysis" class="nav-link" data-scroll-target="#principal-component-analysis">Principal Component Analysis</a></li>
+  <li><a href="#mapping-individuals" id="toc-mapping-individuals" class="nav-link" data-scroll-target="#mapping-individuals">Mapping individuals</a></li>
+  <li><a href="#facial-recognition" id="toc-facial-recognition" class="nav-link" data-scroll-target="#facial-recognition">Facial recognition</a>
+  <ul class="collapse">
+  <li><a href="#traintest" id="toc-traintest" class="nav-link" data-scroll-target="#traintest">Train/Test</a></li>
+  <li><a href="#pca-on-training" id="toc-pca-on-training" class="nav-link" data-scroll-target="#pca-on-training">PCA on training</a></li>
+  <li><a href="#project-the-test-photos" id="toc-project-the-test-photos" class="nav-link" data-scroll-target="#project-the-test-photos">Project the test photos</a></li>
+  <li><a href="#distance" id="toc-distance" class="nav-link" data-scroll-target="#distance">Distance</a></li>
+  <li><a href="#classify" id="toc-classify" class="nav-link" data-scroll-target="#classify">Classify</a></li>
+  </ul></li>
+  <li><a href="#environmental-applications" id="toc-environmental-applications" class="nav-link" data-scroll-target="#environmental-applications">Environmental applications</a></li>
+  <li><a href="#your-work" id="toc-your-work" class="nav-link" data-scroll-target="#your-work">Your work</a>
+  <ul class="collapse">
+  <li><a href="#the-data" id="toc-the-data" class="nav-link" data-scroll-target="#the-data">The data</a></li>
+  <li><a href="#wrangle" id="toc-wrangle" class="nav-link" data-scroll-target="#wrangle">Wrangle</a></li>
+  <li><a href="#what-the-data-actually-are" id="toc-what-the-data-actually-are" class="nav-link" data-scroll-target="#what-the-data-actually-are">What the data actually are</a></li>
+  <li><a href="#visualize-the-shape-of-some-leaves" id="toc-visualize-the-shape-of-some-leaves" class="nav-link" data-scroll-target="#visualize-the-shape-of-some-leaves">Visualize the shape of some leaves</a></li>
+  <li><a href="#pca" id="toc-pca" class="nav-link" data-scroll-target="#pca">PCA</a></li>
+  <li><a href="#eigenleaves" id="toc-eigenleaves" class="nav-link" data-scroll-target="#eigenleaves">Eigenleaves</a></li>
+  <li><a href="#map-the-species" id="toc-map-the-species" class="nav-link" data-scroll-target="#map-the-species">Map the species</a></li>
+  <li><a href="#train-test-classify" id="toc-train-test-classify" class="nav-link" data-scroll-target="#train-test-classify">Train, test, classify</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/AndyBunn/machineLearningNotes/edit/main/09iveJustSeenAFace.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/AndyBunn/machineLearningNotes/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">Eigen Faces</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="big-idea" class="level2">
+<h2 class="anchored" data-anchor-id="big-idea">Big Idea</h2>
+<p>Facial recognition is a thing, right? Many of you unlock your phones with facial recognition. This is one way to implement a facial recognition scheme using PCA as a data reduction technique.</p>
+<p>Note that we can use these techniques for cool environmental applications as well like species id, habitat classification, and so on.</p>
+</section>
+<section id="packages" class="level2">
+<h2 class="anchored" data-anchor-id="packages">Packages</h2>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggrepel)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">650</span>) <span class="co"># for reproducibility of test/train data sets</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p>As usual we’ll want <code>tidyverse</code><span class="citation" data-cites="R-tidyverse">(<a href="10PackagesUsed.html#ref-R-tidyverse" role="doc-biblioref">Wickham 2023</a>)</span>. And then just a little plotting help from <code>ggrepel</code><span class="citation" data-cites="R-ggrepel">(<a href="10PackagesUsed.html#ref-R-ggrepel" role="doc-biblioref">Slowikowski 2026</a>)</span>.</p>
+</section>
+<section id="reading" class="level2">
+<h2 class="anchored" data-anchor-id="reading">Reading</h2>
+<p>We are going to implement the so-called <a href="https://en.wikipedia.org/wiki/Eigenface">eigenfaces</a> approach to <a href="https://en.wikipedia.org/wiki/Facial_recognition_system">facial recognition</a>. It’s fascinating (and dystopian). I’d encourage you to read through these wikis and get a feel for what is out there.</p>
+</section>
+<section id="a-bunch-of-mostly-white-guys" class="level2">
+<h2 class="anchored" data-anchor-id="a-bunch-of-mostly-white-guys">A bunch of mostly white guys</h2>
+<p>We are going to use the famous (even historic!) Olivetti data set assembled by AT&amp;T Laboratories in the early 1990s. The data consists of 400 images of 40 distinct people. These are 64x64 gray-scale images. Thus, each one has 4096 (64<span class="math inline">\(^2\)</span>) pixels. The values are 8-bit integers which range from black at zero to white at 255 (Note that 8-bit is <span class="math inline">\(2^8=256\)</span>). The images are low resolution by today’s standards but the data set is easy to work with. Here is the first image in the data.</p>
+<p><img src="assets/subject01v01.png" class="img-fluid"></p>
+<p>At the AT&amp;T lab 30 years ago, there were an awful lot of white guys walking the halls. So while these data are fantastic for learning purposes, it lacks quite a bit in capturing the diversity of human faces to say the very least! For other data sets that you can mess with, <a href="http://www.interstellarengine.com/ai/dataset-face-recognition.html">do a little googling and you’ll find plenty</a>. I considered using the <a href="https://www.kaggle.com/datasets/jessicali9530/lfw-dataset">Labeled Faces in the Wild data</a> but it’s just a hair too complex for our purposes. I really should add an ancillary page with those data and an assignment, but not right now.</p>
+<p>Anyways, here we go.I’ll read the data in and give labels in <code>names</code>.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>faces <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/faces.csv"</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>ids <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">person =</span> <span class="fu">str_c</span>(<span class="st">"subject"</span>,</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>                             <span class="fu">str_pad</span>(<span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">40</span>,<span class="at">each=</span><span class="dv">10</span>), <span class="dv">2</span>, <span class="at">pad =</span> <span class="st">"0"</span>)),</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>              <span class="at">rep =</span> <span class="fu">str_c</span>(<span class="st">"v"</span>,</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">str_pad</span>(<span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>,<span class="at">times=</span><span class="dv">40</span>), <span class="dv">2</span>, <span class="at">pad =</span> <span class="st">"0"</span>)))</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(faces) <span class="ot">&lt;-</span> <span class="fu">str_c</span>(ids<span class="sc">$</span>person,ids<span class="sc">$</span>rep)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p>Each of the columns is an image. There are 10 pictures each of 40 different people. Each image is stored in a column – we’ll reshape it into a 2d matrix (or raster) in order to view it. E.g., here is the first subject.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>longFaces <span class="ot">&lt;-</span> faces <span class="sc">%&gt;%</span> <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">everything</span>(), </span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">names_to =</span> <span class="st">"photo"</span>, <span class="at">values_to =</span> <span class="st">"z"</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>longFaces <span class="ot">&lt;-</span> longFaces <span class="sc">%&gt;%</span> </span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_column</span>(<span class="at">x =</span> <span class="fu">rep</span>(<span class="fu">rep</span>(<span class="fu">seq</span>(<span class="dv">1</span>,<span class="dv">64</span>),<span class="at">times=</span><span class="dv">64</span>),<span class="at">each =</span> <span class="dv">400</span>),</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>             <span class="at">y =</span> <span class="fu">rep</span>(<span class="fu">rep</span>(<span class="fu">seq</span>(<span class="dv">1</span>,<span class="dv">64</span>),<span class="at">each=</span><span class="dv">64</span>),<span class="at">each =</span> <span class="dv">400</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate</span>(<span class="at">col =</span> photo, <span class="fu">c</span>(<span class="st">"subject"</span>, <span class="st">"image"</span>), <span class="at">sep =</span> <span class="dv">9</span>, <span class="at">remove =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p>With all the data in a long format with <code>x</code> and <code>y</code> coordinates for plotting we can filter and plot subsets of the images. E.g., here is the first subject.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>longFaces <span class="sc">%&gt;%</span> <span class="fu">filter</span>(subject <span class="sc">==</span> <span class="st">"subject01"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x=</span>y,<span class="at">y=</span>x,<span class="at">fill=</span>z)) <span class="sc">+</span> </span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_raster</span>() <span class="sc">+</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_gradientn</span>(<span class="at">colors =</span> <span class="fu">grey</span>(<span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="at">length=</span><span class="dv">256</span>))) <span class="sc">+</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_fixed</span>() <span class="sc">+</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_void</span>() <span class="sc">+</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>image,<span class="at">nrow =</span> <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="09iveJustSeenAFace_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Walk through what we did in the last two chunks. We took the <code>faces</code> data and made it long like good <code>tidyverse</code> coders. We added <code>x</code> and <code>y</code> coordinates (both are sequences from one to 64 representing the length and width of the images) and pulled out the info on the subjects and the photos. Here is the 35th subject. One of the rare non-dudes in these classically non-diverse data.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>longFaces <span class="sc">%&gt;%</span> <span class="fu">filter</span>(subject <span class="sc">==</span> <span class="st">"subject35"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x=</span>y,<span class="at">y=</span>x,<span class="at">fill=</span>z)) <span class="sc">+</span> </span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_raster</span>() <span class="sc">+</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_gradientn</span>(<span class="at">colors =</span> <span class="fu">grey</span>(<span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="at">length=</span><span class="dv">256</span>))) <span class="sc">+</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_fixed</span>() <span class="sc">+</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_void</span>() <span class="sc">+</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>image,<span class="at">nrow =</span> <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="09iveJustSeenAFace_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>And here is the first image for each of the 40 subjects.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>longFaces <span class="sc">%&gt;%</span> <span class="fu">filter</span>(image <span class="sc">==</span> <span class="st">"v01"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x=</span>y,<span class="at">y=</span>x,<span class="at">fill=</span>z)) <span class="sc">+</span> </span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_raster</span>() <span class="sc">+</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_gradientn</span>(<span class="at">colors =</span> <span class="fu">grey</span>(<span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="at">length=</span><span class="dv">256</span>))) <span class="sc">+</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_fixed</span>() <span class="sc">+</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_void</span>() <span class="sc">+</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>subject, <span class="at">ncol=</span><span class="dv">8</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="09iveJustSeenAFace_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="average-face" class="level2">
+<h2 class="anchored" data-anchor-id="average-face">Average face</h2>
+<p>Because we have all the faces as vectors of the same length we can manipulate them like any numbers. So here is a completely spooky average of all the faces.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>avgFace <span class="ot">&lt;-</span> faces <span class="sc">%&gt;%</span>  <span class="fu">reframe</span>(<span class="at">z=</span><span class="fu">rowMeans</span>(.)) <span class="sc">%&gt;%</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_column</span>(<span class="at">x =</span> <span class="fu">rep</span>(<span class="fu">seq</span>(<span class="dv">1</span>,<span class="dv">64</span>),<span class="at">times=</span><span class="dv">64</span>),</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">y =</span> <span class="fu">rep</span>(<span class="fu">seq</span>(<span class="dv">1</span>,<span class="dv">64</span>),<span class="at">each=</span><span class="dv">64</span>)) </span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>avgFace <span class="sc">%&gt;%</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x=</span>y,<span class="at">y=</span>x,<span class="at">fill=</span>z)) <span class="sc">+</span> </span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_raster</span>() <span class="sc">+</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_gradientn</span>(<span class="at">colors =</span> <span class="fu">grey</span>(<span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="at">length=</span><span class="dv">256</span>))) <span class="sc">+</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_fixed</span>() <span class="sc">+</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_void</span>() <span class="sc">+</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="09iveJustSeenAFace_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>That’s a bit of a dream haunter, huh? But it shows that we can aggregate and extract information about these faces and show common variance among the faces.</p>
+<p>We can look at how individual faces relate to the average face as well by subtraction. Here is the first picture of each subject substracted from the average face. That is each image is converted into a “difference from the average face.”</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>facesCentered <span class="ot">&lt;-</span> <span class="fu">sweep</span>(faces, <span class="dv">1</span>, avgFace<span class="sc">$</span>z, <span class="st">"-"</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>longFacesCentered <span class="ot">&lt;-</span> facesCentered <span class="sc">%&gt;%</span> </span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">everything</span>(), </span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_to =</span> <span class="st">"photo"</span>, <span class="at">values_to =</span> <span class="st">"z"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_column</span>(<span class="at">x =</span> <span class="fu">rep</span>(<span class="fu">rep</span>(<span class="fu">seq</span>(<span class="dv">1</span>,<span class="dv">64</span>),<span class="at">times=</span><span class="dv">64</span>),<span class="at">each =</span> <span class="dv">400</span>),</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>             <span class="at">y =</span> <span class="fu">rep</span>(<span class="fu">rep</span>(<span class="fu">seq</span>(<span class="dv">1</span>,<span class="dv">64</span>),<span class="at">each=</span><span class="dv">64</span>),<span class="at">each =</span> <span class="dv">400</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate</span>(<span class="at">col =</span> photo, <span class="fu">c</span>(<span class="st">"subject"</span>, <span class="st">"image"</span>), </span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>           <span class="at">sep =</span> <span class="dv">9</span>, <span class="at">remove =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>longFacesCentered <span class="sc">%&gt;%</span> <span class="fu">filter</span>(image <span class="sc">==</span> <span class="st">"v01"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x=</span>y,<span class="at">y=</span>x,<span class="at">fill=</span>z)) <span class="sc">+</span> </span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_raster</span>() <span class="sc">+</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_gradientn</span>(<span class="at">colors =</span> <span class="fu">grey</span>(<span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="at">length=</span><span class="dv">256</span>))) <span class="sc">+</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_fixed</span>() <span class="sc">+</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_void</span>() <span class="sc">+</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>subject, <span class="at">ncol=</span><span class="dv">8</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="09iveJustSeenAFace_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>While averaging is one way to reduce the dimensionality of these data, we know that other methods have a lot more to offer.</p>
+</section>
+<section id="principal-component-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="principal-component-analysis">Principal Component Analysis</h2>
+<p>Go review your notes on PCA from ESCI 503 and watch this <a href="https://www.youtube.com/watch?v=FgakZw6K1QQ&amp;ab_channel=StatQuestwithJoshStarmer">great video</a> for a refresher.</p>
+<p>We will use PCA for data reduction and find the commonality among the faces. Let’s reduce the <code>faces</code> data into its constitute components with <code>prcomp</code>. Note that I’m transposing the data to get the 4096 pixels as columns and the 400 images as rows. This will decompose, therefore, as 399 (n-1) principal components.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>facesPCA <span class="ot">&lt;-</span> <span class="fu">prcomp</span>(<span class="fu">t</span>(faces), <span class="at">center =</span> <span class="cn">TRUE</span>, <span class="at">scale. =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p>We have the (square root) of the eigenvalues in the first element <code>facesPCA$sdev</code> with one value for each image (400). We have the eigenvectors in <code>facesPCA$rotation</code> with the same dimensions as the original data (4096 by 400) and the scores in <code>facesPCA$x</code> with each photo on each PC (400 by 400).</p>
+<p>We can plot the cumulative variance explained via:</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>eigenvalues <span class="ot">&lt;-</span> facesPCA<span class="sc">$</span>sdev<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>cumVar  <span class="ot">&lt;-</span> <span class="fu">cumsum</span>(eigenvalues) <span class="sc">/</span> <span class="fu">sum</span>(eigenvalues)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x=</span><span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(cumVar),<span class="at">y=</span>cumVar)) <span class="sc">+</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x=</span><span class="st">"PC"</span>,<span class="at">y=</span><span class="st">"Cumulative variance explained"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="09iveJustSeenAFace_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>From this we can see that we get more than 90% of the variance explained with about the first 75 (out of 400) PCs and 95% explained with about 120 PCs. This indicates that these data are highly reducible.</p>
+<p>Let’s see what these “eigenfaces” look like.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>eigenvectors <span class="ot">&lt;-</span> facesPCA<span class="sc">$</span>rotation</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co"># keep the first 9 vectors. why 9? because i'll make a 3x3 plot below</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>longEigenvectors <span class="ot">&lt;-</span> <span class="fu">as_tibble</span>(eigenvectors[,<span class="dv">1</span><span class="sc">:</span><span class="dv">9</span>]) <span class="sc">%&gt;%</span> </span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">everything</span>(), </span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_to =</span> <span class="st">"ev"</span>, <span class="at">values_to =</span> <span class="st">"z"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_column</span>(<span class="at">x =</span> <span class="fu">rep</span>(<span class="fu">rep</span>(<span class="fu">seq</span>(<span class="dv">1</span>,<span class="dv">64</span>),<span class="at">times=</span><span class="dv">64</span>),<span class="at">each =</span> <span class="dv">9</span>),</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">y =</span> <span class="fu">rep</span>(<span class="fu">rep</span>(<span class="fu">seq</span>(<span class="dv">1</span>,<span class="dv">64</span>),<span class="at">each=</span><span class="dv">64</span>),<span class="at">each =</span> <span class="dv">9</span>))</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>longEigenvectors <span class="sc">%&gt;%</span> <span class="fu">filter</span>(ev <span class="sc">==</span> <span class="st">"PC1"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x=</span>y,<span class="at">y=</span>x,<span class="at">fill=</span>z)) <span class="sc">+</span> </span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_raster</span>() <span class="sc">+</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_gradientn</span>(<span class="at">colors =</span> <span class="fu">grey</span>(<span class="fu">seq</span>(<span class="dv">1</span>, <span class="dv">0</span>, <span class="at">length=</span><span class="dv">256</span>))) <span class="sc">+</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_fixed</span>() <span class="sc">+</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_void</span>() <span class="sc">+</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="09iveJustSeenAFace_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>That image is the first PC – here we can call it the first “eigenface.” Terrifying, huh? But this single vector explains about 20% of the variance in the entire <code>faces</code> data of 400 images. It doesn’t appear to map onto a specific facial feature (like “glasses” or “nose”) but corresponds to the general brightness of the image. Let’s look at the first nine PCs.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>longEigenvectors <span class="sc">%&gt;%</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x=</span>y,<span class="at">y=</span>x,<span class="at">fill=</span>z)) <span class="sc">+</span> </span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_raster</span>() <span class="sc">+</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_gradientn</span>(<span class="at">colors =</span> <span class="fu">grey</span>(<span class="fu">seq</span>(<span class="dv">1</span>, <span class="dv">0</span>, <span class="at">length=</span><span class="dv">256</span>))) <span class="sc">+</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_fixed</span>() <span class="sc">+</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_void</span>() <span class="sc">+</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>ev)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="09iveJustSeenAFace_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Here we see that some of these first few PCs (which explain &gt;60% of the variance in the entire data set) seem to correspond to facial features. For instance, PC four seems to be related to eye shape, PC six seems to be related to nose location, PC eight is particular to eye brows. The presence or absence of chunky 1990s glasses seems spread across many of the PCs.</p>
+</section>
+<section id="mapping-individuals" class="level2">
+<h2 class="anchored" data-anchor-id="mapping-individuals">Mapping individuals</h2>
+<p>We can use the scores to see which faces are close together in the eigenspace and which are more distant. Below we will pull out the scores for each image and then average them by subject to get an average for each individual subject. We can then plot them in the eigenspace for the first two PCs. Photos that are far apart in the eigenspace should look pretty different from each other.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="do">## plot subjects</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>scoresPCA <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(facesPCA<span class="sc">$</span>x)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>scoresPCA <span class="ot">&lt;-</span> <span class="fu">rownames_to_column</span>(scoresPCA, <span class="at">var =</span> <span class="st">"photo"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate</span>(<span class="at">col =</span> photo, <span class="fu">c</span>(<span class="st">"subject"</span>, <span class="st">"image"</span>), </span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>           <span class="at">sep =</span> <span class="dv">9</span>, <span class="at">remove =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>avgScoresPCA <span class="ot">&lt;-</span> scoresPCA <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(subject) <span class="sc">%&gt;%</span> </span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">PC1=</span><span class="fu">mean</span>(PC1),<span class="at">PC2=</span><span class="fu">mean</span>(PC2),</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>            <span class="at">PC3=</span><span class="fu">mean</span>(PC3),<span class="at">PC4=</span><span class="fu">mean</span>(PC4))</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data=</span>avgScoresPCA,</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>       <span class="at">mapping=</span><span class="fu">aes</span>(<span class="at">x=</span>PC1,<span class="at">y=</span>PC2,<span class="at">label=</span>subject)) <span class="sc">+</span> </span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text_repel</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="09iveJustSeenAFace_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>We can see that subject eight and subject 34 are separated well on the first two PCs. Let’s see who they are.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>longFaces <span class="sc">%&gt;%</span> <span class="fu">filter</span>(subject <span class="sc">==</span> <span class="st">"subject08"</span> <span class="sc">|</span> </span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>                       subject <span class="sc">==</span> <span class="st">"subject34"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(image <span class="sc">==</span> <span class="st">"v01"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x=</span>y,<span class="at">y=</span>x,<span class="at">fill=</span>z)) <span class="sc">+</span> </span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_raster</span>() <span class="sc">+</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_gradientn</span>(<span class="at">colors =</span> <span class="fu">grey</span>(<span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="at">length=</span><span class="dv">256</span>))) <span class="sc">+</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_fixed</span>() <span class="sc">+</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_void</span>() <span class="sc">+</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>subject)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="09iveJustSeenAFace_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Yeah. We can see that these pictures are very different.</p>
+<p>Out of curiosity let’s see how the mapping looks on PC3 and PC4. These are further down in terms of explanatory power but still quite powerful.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data=</span>avgScoresPCA,</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>       <span class="at">mapping=</span><span class="fu">aes</span>(<span class="at">x=</span>PC3,<span class="at">y=</span>PC4,<span class="at">label=</span>subject)) <span class="sc">+</span> </span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text_repel</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="09iveJustSeenAFace_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Looks subjects 24 and 37 are distinct in this part of the space. Let’s take a look.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>longFaces <span class="sc">%&gt;%</span> <span class="fu">filter</span>(subject <span class="sc">==</span> <span class="st">"subject24"</span> <span class="sc">|</span> </span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>                       subject <span class="sc">==</span> <span class="st">"subject37"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(image <span class="sc">==</span> <span class="st">"v01"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x=</span>y,<span class="at">y=</span>x,<span class="at">fill=</span>z)) <span class="sc">+</span> </span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_raster</span>() <span class="sc">+</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_gradientn</span>(<span class="at">colors =</span> <span class="fu">grey</span>(<span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="at">length=</span><span class="dv">256</span>))) <span class="sc">+</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_fixed</span>() <span class="sc">+</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_void</span>() <span class="sc">+</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>subject)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="09iveJustSeenAFace_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Yep. Wow. These are two very different looking people. We have to be careful about describing the PCs in terms of individual features (glasses, facial hair, etc.) but we can definitely see that they are extremely different looking.</p>
+<p>Note that we can try other visualization methods although as always, our brains max out at 3D. We could use this to find similar or dissimilar faces in different parts of the eigenspace.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(plotly)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(viridis)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_ly</span>(avgScoresPCA, </span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>        <span class="at">x =</span> <span class="sc">~</span>PC1, <span class="at">y =</span> <span class="sc">~</span>PC2, <span class="at">z =</span> <span class="sc">~</span>PC3, </span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>        <span class="at">color =</span> <span class="sc">~</span>subject,</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>        <span class="at">colors =</span> <span class="fu">viridis_pal</span>(<span class="at">option =</span> <span class="st">"D"</span>)(<span class="dv">40</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_markers</span>() <span class="sc">%&gt;%</span> <span class="fu">layout</span>(<span class="at">scene =</span> <span class="fu">list</span>(<span class="at">xaxis =</span> <span class="fu">list</span>(<span class="at">title =</span> <span class="st">'PC1'</span>),</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>                                        <span class="at">yaxis =</span> <span class="fu">list</span>(<span class="at">title =</span> <span class="st">'PC2'</span>),</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>                                        <span class="at">zaxis =</span> <span class="fu">list</span>(<span class="at">title =</span> <span class="st">'PC3'</span>))) <span class="sc">%&gt;%</span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">layout</span>(<span class="at">showlegend =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="plotly html-widget html-fill-item" id="htmlwidget-bebe8d4f91303f337dd8" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-bebe8d4f91303f337dd8">{"x":{"visdat":{"75cd574ac4e4":["function () ","plotlyVisDat"]},"cur_data":"75cd574ac4e4","attrs":{"75cd574ac4e4":{"x":{},"y":{},"z":{},"color":{},"colors":["#440154FF","#460B5DFF","#481467FF","#481D6FFF","#482576FF","#472E7CFF","#453581FF","#433E85FF","#404588FF","#3D4D8AFF","#3A538BFF","#375B8DFF","#34618DFF","#31688EFF","#2E6F8EFF","#2B748EFF","#297B8EFF","#26818EFF","#24878EFF","#228D8DFF","#20938CFF","#1F998AFF","#1FA088FF","#21A585FF","#25AC82FF","#2DB17EFF","#35B779FF","#40BC72FF","#4CC26CFF","#59C864FF","#67CC5CFF","#76D153FF","#87D549FF","#97D83FFF","#A9DB33FF","#BADE28FF","#CBE11EFF","#DDE318FF","#EDE51BFF","#FDE725FF"],"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"scatter3d","mode":"markers","inherit":true}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"scene":{"xaxis":{"title":"PC1"},"yaxis":{"title":"PC2"},"zaxis":{"title":"PC3"}},"showlegend":false,"hovermode":"closest"},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"data":[{"x":[-1135.9892952075706],"y":[218.80055346392518],"z":[120.68972940619365],"type":"scatter3d","mode":"markers","name":"subject01","marker":{"color":"rgba(68,1,84,1)","line":{"color":"rgba(68,1,84,1)"}},"textfont":{"color":"rgba(68,1,84,1)"},"error_y":{"color":"rgba(68,1,84,1)"},"error_x":{"color":"rgba(68,1,84,1)"},"line":{"color":"rgba(68,1,84,1)"},"frame":null},{"x":[-29.541135384239759],"y":[-648.91113820692044],"z":[-795.38161331584331],"type":"scatter3d","mode":"markers","name":"subject02","marker":{"color":"rgba(70,11,93,1)","line":{"color":"rgba(70,11,93,1)"}},"textfont":{"color":"rgba(70,11,93,1)"},"error_y":{"color":"rgba(70,11,93,1)"},"error_x":{"color":"rgba(70,11,93,1)"},"line":{"color":"rgba(70,11,93,1)"},"frame":null},{"x":[31.738526888742921],"y":[146.61107783017832],"z":[541.89214630399931],"type":"scatter3d","mode":"markers","name":"subject03","marker":{"color":"rgba(72,20,103,1)","line":{"color":"rgba(72,20,103,1)"}},"textfont":{"color":"rgba(72,20,103,1)"},"error_y":{"color":"rgba(72,20,103,1)"},"error_x":{"color":"rgba(72,20,103,1)"},"line":{"color":"rgba(72,20,103,1)"},"frame":null},{"x":[-374.98028599924965],"y":[-75.914583856313513],"z":[-114.96156484307819],"type":"scatter3d","mode":"markers","name":"subject04","marker":{"color":"rgba(72,29,111,1)","line":{"color":"rgba(72,29,111,1)"}},"textfont":{"color":"rgba(72,29,111,1)"},"error_y":{"color":"rgba(72,29,111,1)"},"error_x":{"color":"rgba(72,29,111,1)"},"line":{"color":"rgba(72,29,111,1)"},"frame":null},{"x":[-453.62236226222643],"y":[447.46464688540999],"z":[277.34677886377341],"type":"scatter3d","mode":"markers","name":"subject05","marker":{"color":"rgba(72,37,118,1)","line":{"color":"rgba(72,37,118,1)"}},"textfont":{"color":"rgba(72,37,118,1)"},"error_y":{"color":"rgba(72,37,118,1)"},"error_x":{"color":"rgba(72,37,118,1)"},"line":{"color":"rgba(72,37,118,1)"},"frame":null},{"x":[-2070.4404238273701],"y":[136.64254986841956],"z":[-198.90593208988273],"type":"scatter3d","mode":"markers","name":"subject06","marker":{"color":"rgba(71,46,124,1)","line":{"color":"rgba(71,46,124,1)"}},"textfont":{"color":"rgba(71,46,124,1)"},"error_y":{"color":"rgba(71,46,124,1)"},"error_x":{"color":"rgba(71,46,124,1)"},"line":{"color":"rgba(71,46,124,1)"},"frame":null},{"x":[-1248.6792837697121],"y":[165.67031409078552],"z":[-433.19550496342958],"type":"scatter3d","mode":"markers","name":"subject07","marker":{"color":"rgba(69,53,129,1)","line":{"color":"rgba(69,53,129,1)"}},"textfont":{"color":"rgba(69,53,129,1)"},"error_y":{"color":"rgba(69,53,129,1)"},"error_x":{"color":"rgba(69,53,129,1)"},"line":{"color":"rgba(69,53,129,1)"},"frame":null},{"x":[-961.28142448208769],"y":[-1288.7302949832135],"z":[81.088446335261992],"type":"scatter3d","mode":"markers","name":"subject08","marker":{"color":"rgba(67,62,133,1)","line":{"color":"rgba(67,62,133,1)"}},"textfont":{"color":"rgba(67,62,133,1)"},"error_y":{"color":"rgba(67,62,133,1)"},"error_x":{"color":"rgba(67,62,133,1)"},"line":{"color":"rgba(67,62,133,1)"},"frame":null},{"x":[57.239058746828128],"y":[221.85852729234111],"z":[611.75711182051339],"type":"scatter3d","mode":"markers","name":"subject09","marker":{"color":"rgba(64,69,136,1)","line":{"color":"rgba(64,69,136,1)"}},"textfont":{"color":"rgba(64,69,136,1)"},"error_y":{"color":"rgba(64,69,136,1)"},"error_x":{"color":"rgba(64,69,136,1)"},"line":{"color":"rgba(64,69,136,1)"},"frame":null},{"x":[-419.47086903312828],"y":[-508.22910508795115],"z":[705.69442917550089],"type":"scatter3d","mode":"markers","name":"subject10","marker":{"color":"rgba(61,77,138,1)","line":{"color":"rgba(61,77,138,1)"}},"textfont":{"color":"rgba(61,77,138,1)"},"error_y":{"color":"rgba(61,77,138,1)"},"error_x":{"color":"rgba(61,77,138,1)"},"line":{"color":"rgba(61,77,138,1)"},"frame":null},{"x":[-648.56868662479769],"y":[-1182.9692772168421],"z":[-688.33057424089236],"type":"scatter3d","mode":"markers","name":"subject11","marker":{"color":"rgba(58,83,139,1)","line":{"color":"rgba(58,83,139,1)"}},"textfont":{"color":"rgba(58,83,139,1)"},"error_y":{"color":"rgba(58,83,139,1)"},"error_x":{"color":"rgba(58,83,139,1)"},"line":{"color":"rgba(58,83,139,1)"},"frame":null},{"x":[-179.30863613589091],"y":[172.90170116784961],"z":[1032.2538284845907],"type":"scatter3d","mode":"markers","name":"subject12","marker":{"color":"rgba(55,91,141,1)","line":{"color":"rgba(55,91,141,1)"}},"textfont":{"color":"rgba(55,91,141,1)"},"error_y":{"color":"rgba(55,91,141,1)"},"error_x":{"color":"rgba(55,91,141,1)"},"line":{"color":"rgba(55,91,141,1)"},"frame":null},{"x":[-322.16776560489137],"y":[432.5415557422923],"z":[21.189337180178892],"type":"scatter3d","mode":"markers","name":"subject13","marker":{"color":"rgba(52,97,141,1)","line":{"color":"rgba(52,97,141,1)"}},"textfont":{"color":"rgba(52,97,141,1)"},"error_y":{"color":"rgba(52,97,141,1)"},"error_x":{"color":"rgba(52,97,141,1)"},"line":{"color":"rgba(52,97,141,1)"},"frame":null},{"x":[15.853433944359399],"y":[-587.548162363389],"z":[419.37784135461237],"type":"scatter3d","mode":"markers","name":"subject14","marker":{"color":"rgba(49,104,142,1)","line":{"color":"rgba(49,104,142,1)"}},"textfont":{"color":"rgba(49,104,142,1)"},"error_y":{"color":"rgba(49,104,142,1)"},"error_x":{"color":"rgba(49,104,142,1)"},"line":{"color":"rgba(49,104,142,1)"},"frame":null},{"x":[-140.78653313965921],"y":[-135.0397360637802],"z":[-639.05800054953056],"type":"scatter3d","mode":"markers","name":"subject15","marker":{"color":"rgba(46,111,142,1)","line":{"color":"rgba(46,111,142,1)"}},"textfont":{"color":"rgba(46,111,142,1)"},"error_y":{"color":"rgba(46,111,142,1)"},"error_x":{"color":"rgba(46,111,142,1)"},"line":{"color":"rgba(46,111,142,1)"},"frame":null},{"x":[-882.5543691659816],"y":[-19.666002742385444],"z":[-647.35995419027336],"type":"scatter3d","mode":"markers","name":"subject16","marker":{"color":"rgba(43,116,142,1)","line":{"color":"rgba(43,116,142,1)"}},"textfont":{"color":"rgba(43,116,142,1)"},"error_y":{"color":"rgba(43,116,142,1)"},"error_x":{"color":"rgba(43,116,142,1)"},"line":{"color":"rgba(43,116,142,1)"},"frame":null},{"x":[-405.51131313218696],"y":[885.44727577765627],"z":[375.05297475158494],"type":"scatter3d","mode":"markers","name":"subject17","marker":{"color":"rgba(41,123,142,1)","line":{"color":"rgba(41,123,142,1)"}},"textfont":{"color":"rgba(41,123,142,1)"},"error_y":{"color":"rgba(41,123,142,1)"},"error_x":{"color":"rgba(41,123,142,1)"},"line":{"color":"rgba(41,123,142,1)"},"frame":null},{"x":[-1131.1383664248333],"y":[-58.337744772869975],"z":[83.794849685435906],"type":"scatter3d","mode":"markers","name":"subject18","marker":{"color":"rgba(38,129,142,1)","line":{"color":"rgba(38,129,142,1)"}},"textfont":{"color":"rgba(38,129,142,1)"},"error_y":{"color":"rgba(38,129,142,1)"},"error_x":{"color":"rgba(38,129,142,1)"},"line":{"color":"rgba(38,129,142,1)"},"frame":null},{"x":[-562.96927320623831],"y":[-607.28639513485757],"z":[-184.02798879441158],"type":"scatter3d","mode":"markers","name":"subject19","marker":{"color":"rgba(36,135,142,1)","line":{"color":"rgba(36,135,142,1)"}},"textfont":{"color":"rgba(36,135,142,1)"},"error_y":{"color":"rgba(36,135,142,1)"},"error_x":{"color":"rgba(36,135,142,1)"},"line":{"color":"rgba(36,135,142,1)"},"frame":null},{"x":[58.395235146167472],"y":[153.60446690069887],"z":[-264.08490739098545],"type":"scatter3d","mode":"markers","name":"subject20","marker":{"color":"rgba(34,141,141,1)","line":{"color":"rgba(34,141,141,1)"}},"textfont":{"color":"rgba(34,141,141,1)"},"error_y":{"color":"rgba(34,141,141,1)"},"error_x":{"color":"rgba(34,141,141,1)"},"line":{"color":"rgba(34,141,141,1)"},"frame":null},{"x":[656.89377873153069],"y":[719.32065658418276],"z":[79.332581387387023],"type":"scatter3d","mode":"markers","name":"subject21","marker":{"color":"rgba(32,147,140,1)","line":{"color":"rgba(32,147,140,1)"}},"textfont":{"color":"rgba(32,147,140,1)"},"error_y":{"color":"rgba(32,147,140,1)"},"error_x":{"color":"rgba(32,147,140,1)"},"line":{"color":"rgba(32,147,140,1)"},"frame":null},{"x":[2383.9503485074733],"y":[197.05334923271965],"z":[-121.0994310653074],"type":"scatter3d","mode":"markers","name":"subject22","marker":{"color":"rgba(31,153,138,1)","line":{"color":"rgba(31,153,138,1)"}},"textfont":{"color":"rgba(31,153,138,1)"},"error_y":{"color":"rgba(31,153,138,1)"},"error_x":{"color":"rgba(31,153,138,1)"},"line":{"color":"rgba(31,153,138,1)"},"frame":null},{"x":[-658.52799753859381],"y":[-27.140617993045986],"z":[366.04360679658254],"type":"scatter3d","mode":"markers","name":"subject23","marker":{"color":"rgba(31,160,136,1)","line":{"color":"rgba(31,160,136,1)"}},"textfont":{"color":"rgba(31,160,136,1)"},"error_y":{"color":"rgba(31,160,136,1)"},"error_x":{"color":"rgba(31,160,136,1)"},"line":{"color":"rgba(31,160,136,1)"},"frame":null},{"x":[157.41620372051574],"y":[952.47355583564456],"z":[-1054.2805592974316],"type":"scatter3d","mode":"markers","name":"subject24","marker":{"color":"rgba(33,165,133,1)","line":{"color":"rgba(33,165,133,1)"}},"textfont":{"color":"rgba(33,165,133,1)"},"error_y":{"color":"rgba(33,165,133,1)"},"error_x":{"color":"rgba(33,165,133,1)"},"line":{"color":"rgba(33,165,133,1)"},"frame":null},{"x":[-124.52161109360695],"y":[-502.87976002612402],"z":[223.63028272650456],"type":"scatter3d","mode":"markers","name":"subject25","marker":{"color":"rgba(37,172,130,1)","line":{"color":"rgba(37,172,130,1)"}},"textfont":{"color":"rgba(37,172,130,1)"},"error_y":{"color":"rgba(37,172,130,1)"},"error_x":{"color":"rgba(37,172,130,1)"},"line":{"color":"rgba(37,172,130,1)"},"frame":null},{"x":[261.28822584335092],"y":[-427.50480486430536],"z":[776.88017348417134],"type":"scatter3d","mode":"markers","name":"subject26","marker":{"color":"rgba(45,177,126,1)","line":{"color":"rgba(45,177,126,1)"}},"textfont":{"color":"rgba(45,177,126,1)"},"error_y":{"color":"rgba(45,177,126,1)"},"error_x":{"color":"rgba(45,177,126,1)"},"line":{"color":"rgba(45,177,126,1)"},"frame":null},{"x":[-204.00983601356043],"y":[-904.24051339839207],"z":[126.24426134027267],"type":"scatter3d","mode":"markers","name":"subject27","marker":{"color":"rgba(53,183,121,1)","line":{"color":"rgba(53,183,121,1)"}},"textfont":{"color":"rgba(53,183,121,1)"},"error_y":{"color":"rgba(53,183,121,1)"},"error_x":{"color":"rgba(53,183,121,1)"},"line":{"color":"rgba(53,183,121,1)"},"frame":null},{"x":[-139.21561198263248],"y":[-354.04110281065033],"z":[-25.582681179347702],"type":"scatter3d","mode":"markers","name":"subject28","marker":{"color":"rgba(64,188,114,1)","line":{"color":"rgba(64,188,114,1)"}},"textfont":{"color":"rgba(64,188,114,1)"},"error_y":{"color":"rgba(64,188,114,1)"},"error_x":{"color":"rgba(64,188,114,1)"},"line":{"color":"rgba(64,188,114,1)"},"frame":null},{"x":[1228.7591719334248],"y":[767.78529477808308],"z":[37.169700168771186],"type":"scatter3d","mode":"markers","name":"subject29","marker":{"color":"rgba(76,194,108,1)","line":{"color":"rgba(76,194,108,1)"}},"textfont":{"color":"rgba(76,194,108,1)"},"error_y":{"color":"rgba(76,194,108,1)"},"error_x":{"color":"rgba(76,194,108,1)"},"line":{"color":"rgba(76,194,108,1)"},"frame":null},{"x":[811.17778235681385],"y":[-8.1787533309573934],"z":[-98.887673541408788],"type":"scatter3d","mode":"markers","name":"subject30","marker":{"color":"rgba(89,200,100,1)","line":{"color":"rgba(89,200,100,1)"}},"textfont":{"color":"rgba(89,200,100,1)"},"error_y":{"color":"rgba(89,200,100,1)"},"error_x":{"color":"rgba(89,200,100,1)"},"line":{"color":"rgba(89,200,100,1)"},"frame":null},{"x":[928.5729456361762],"y":[106.76876209010369],"z":[-429.45197499451075],"type":"scatter3d","mode":"markers","name":"subject31","marker":{"color":"rgba(103,204,92,1)","line":{"color":"rgba(103,204,92,1)"}},"textfont":{"color":"rgba(103,204,92,1)"},"error_y":{"color":"rgba(103,204,92,1)"},"error_x":{"color":"rgba(103,204,92,1)"},"line":{"color":"rgba(103,204,92,1)"},"frame":null},{"x":[-540.61165103568896],"y":[-978.94998345969964],"z":[-544.48011993303032],"type":"scatter3d","mode":"markers","name":"subject32","marker":{"color":"rgba(118,209,83,1)","line":{"color":"rgba(118,209,83,1)"}},"textfont":{"color":"rgba(118,209,83,1)"},"error_y":{"color":"rgba(118,209,83,1)"},"error_x":{"color":"rgba(118,209,83,1)"},"line":{"color":"rgba(118,209,83,1)"},"frame":null},{"x":[1492.1748309963689],"y":[553.30473000832933],"z":[-347.55245757108122],"type":"scatter3d","mode":"markers","name":"subject33","marker":{"color":"rgba(135,213,73,1)","line":{"color":"rgba(135,213,73,1)"}},"textfont":{"color":"rgba(135,213,73,1)"},"error_y":{"color":"rgba(135,213,73,1)"},"error_x":{"color":"rgba(135,213,73,1)"},"line":{"color":"rgba(135,213,73,1)"},"frame":null},{"x":[2114.0263642139776],"y":[-106.89904741399585],"z":[-858.40640693743262],"type":"scatter3d","mode":"markers","name":"subject34","marker":{"color":"rgba(151,216,63,1)","line":{"color":"rgba(151,216,63,1)"}},"textfont":{"color":"rgba(151,216,63,1)"},"error_y":{"color":"rgba(151,216,63,1)"},"error_x":{"color":"rgba(151,216,63,1)"},"line":{"color":"rgba(151,216,63,1)"},"frame":null},{"x":[356.84859516884637],"y":[509.8896072338261],"z":[206.49270163446249],"type":"scatter3d","mode":"markers","name":"subject35","marker":{"color":"rgba(169,219,51,1)","line":{"color":"rgba(169,219,51,1)"}},"textfont":{"color":"rgba(169,219,51,1)"},"error_y":{"color":"rgba(169,219,51,1)"},"error_x":{"color":"rgba(169,219,51,1)"},"line":{"color":"rgba(169,219,51,1)"},"frame":null},{"x":[-790.85197376379836],"y":[785.09580812368836],"z":[-870.78017026189502],"type":"scatter3d","mode":"markers","name":"subject36","marker":{"color":"rgba(186,222,40,1)","line":{"color":"rgba(186,222,40,1)"}},"textfont":{"color":"rgba(186,222,40,1)"},"error_y":{"color":"rgba(186,222,40,1)"},"error_x":{"color":"rgba(186,222,40,1)"},"line":{"color":"rgba(186,222,40,1)"},"frame":null},{"x":[1278.243834844099],"y":[185.53250529679789],"z":[1169.7027770031548],"type":"scatter3d","mode":"markers","name":"subject37","marker":{"color":"rgba(203,225,30,1)","line":{"color":"rgba(203,225,30,1)"}},"textfont":{"color":"rgba(203,225,30,1)"},"error_y":{"color":"rgba(203,225,30,1)"},"error_x":{"color":"rgba(203,225,30,1)"},"line":{"color":"rgba(203,225,30,1)"},"frame":null},{"x":[-87.911241945606932],"y":[-64.331068792979323],"z":[830.2917175463358],"type":"scatter3d","mode":"markers","name":"subject38","marker":{"color":"rgba(221,227,24,1)","line":{"color":"rgba(221,227,24,1)"}},"textfont":{"color":"rgba(221,227,24,1)"},"error_y":{"color":"rgba(221,227,24,1)"},"error_x":{"color":"rgba(221,227,24,1)"},"line":{"color":"rgba(221,227,24,1)"},"frame":null},{"x":[2153.6876763454757],"y":[223.89386860419617],"z":[-182.15357856271621],"type":"scatter3d","mode":"markers","name":"subject39","marker":{"color":"rgba(237,229,27,1)","line":{"color":"rgba(237,229,27,1)"}},"textfont":{"color":"rgba(237,229,27,1)"},"error_y":{"color":"rgba(237,229,27,1)"},"error_x":{"color":"rgba(237,229,27,1)"},"line":{"color":"rgba(237,229,27,1)"},"frame":null},{"x":[-473.60606625059734],"y":[504.13728571154633],"z":[412.05581827319992],"type":"scatter3d","mode":"markers","name":"subject40","marker":{"color":"rgba(253,231,37,1)","line":{"color":"rgba(253,231,37,1)"}},"textfont":{"color":"rgba(253,231,37,1)"},"error_y":{"color":"rgba(253,231,37,1)"},"error_x":{"color":"rgba(253,231,37,1)"},"line":{"color":"rgba(253,231,37,1)"},"frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+</section>
+<section id="facial-recognition" class="level2">
+<h2 class="anchored" data-anchor-id="facial-recognition">Facial recognition</h2>
+<p>Identifying new instances of known subjects (people, plants, types of coffee mugs, whatever) is really common task in machine learning. So, let’s use the <code>faces</code> data and PCA to identify people with are known to the system but with pictures we haven’t seen before. This is a classic train and test situation.</p>
+<section id="traintest" class="level3">
+<h3 class="anchored" data-anchor-id="traintest">Train/Test</h3>
+<p>We will start by pulling two random pix of each person for a test data set and leaving the other eight in for training.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>testVec <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>,<span class="dv">2</span>)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">39</span>){</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  base <span class="ot">&lt;-</span> i<span class="sc">*</span><span class="dv">10</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>  testVec <span class="ot">&lt;-</span> <span class="fu">c</span>(testVec,<span class="fu">sample</span>((base<span class="sc">+</span><span class="dv">1</span>)<span class="sc">:</span>(base<span class="sc">+</span><span class="dv">10</span>),<span class="dv">2</span>))</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="co"># test images</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>ids[testVec,]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 80 × 2
+   person    rep  
+   &lt;chr&gt;     &lt;chr&gt;
+ 1 subject01 v02  
+ 2 subject01 v01  
+ 3 subject02 v04  
+ 4 subject02 v09  
+ 5 subject03 v07  
+ 6 subject03 v06  
+ 7 subject04 v05  
+ 8 subject04 v01  
+ 9 subject05 v07  
+10 subject05 v01  
+# ℹ 70 more rows</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># train images</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>ids[<span class="sc">-</span>testVec,]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 320 × 2
+   person    rep  
+   &lt;chr&gt;     &lt;chr&gt;
+ 1 subject01 v03  
+ 2 subject01 v04  
+ 3 subject01 v05  
+ 4 subject01 v06  
+ 5 subject01 v07  
+ 6 subject01 v08  
+ 7 subject01 v09  
+ 8 subject01 v10  
+ 9 subject02 v01  
+10 subject02 v02  
+# ℹ 310 more rows</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>facesTest <span class="ot">&lt;-</span> faces[,testVec]</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>facesTrain <span class="ot">&lt;-</span> faces[,<span class="sc">-</span>testVec]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="pca-on-training" class="level3">
+<h3 class="anchored" data-anchor-id="pca-on-training">PCA on training</h3>
+<p>Let’s run the PCA on the training data.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>facesPCA <span class="ot">&lt;-</span> <span class="fu">prcomp</span>(<span class="fu">t</span>(facesTrain), <span class="at">center =</span> <span class="cn">TRUE</span>, <span class="at">scale. =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>eigenvalues <span class="ot">&lt;-</span> facesPCA<span class="sc">$</span>sdev<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>eigenvectors <span class="ot">&lt;-</span> facesPCA<span class="sc">$</span>rotation</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>scores <span class="ot">&lt;-</span> facesPCA<span class="sc">$</span>x</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p>To save space and computing time let’s keep the PCs that explain 95% of the variance. This isn’t really needed here since the data set is small, but if we have millions of images we’d want to do this for sure.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>cumVar  <span class="ot">&lt;-</span> <span class="fu">cumsum</span>(eigenvalues) <span class="sc">/</span> <span class="fu">sum</span>(eigenvalues)</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>thres95 <span class="ot">&lt;-</span> <span class="fu">min</span>(<span class="fu">which</span>(cumVar <span class="sc">&gt;</span> <span class="fl">0.95</span>))</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>thres95</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 110</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># subset the PCs</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>eigenvectors <span class="ot">&lt;-</span> eigenvectors[,<span class="dv">1</span><span class="sc">:</span>thres95]</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>eigenvalues <span class="ot">&lt;-</span> eigenvalues[<span class="dv">1</span><span class="sc">:</span>thres95]</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>scores <span class="ot">&lt;-</span> scores[,<span class="dv">1</span><span class="sc">:</span>thres95]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="project-the-test-photos" class="level3">
+<h3 class="anchored" data-anchor-id="project-the-test-photos">Project the test photos</h3>
+<p>Here we will project the test faces (the photos the PCA hasn’t seen) into the PCA training space. Other than rescaling the new faces to match the old faces, this is just calculating the scores which we do with the eigenvectors.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># these are scores</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>testFaceProj <span class="ot">&lt;-</span><span class="fu">scale</span>(<span class="fu">t</span>(facesTest), </span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>                     <span class="at">scale =</span> facesPCA<span class="sc">$</span>scale, </span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>                     <span class="at">center =</span> facesPCA<span class="sc">$</span>center)  <span class="sc">%*%</span> eigenvectors</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(testFaceProj) <span class="co"># PCs by samples</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1]  80 110</code></pre>
+</div>
+</div>
+</section>
+<section id="distance" class="level3">
+<h3 class="anchored" data-anchor-id="distance">Distance</h3>
+<p>Now we can get the distance between the test scores and the average scores for each subject. I have <a href="https://en.wikipedia.org/wiki/Euclidean_distance">Euclidean distance</a>, <a href="https://en.wikipedia.org/wiki/Taxicab_geometry">Manhattan distance</a>, and <a href="https://en.wikipedia.org/wiki/Mahalanobis_distance">Mahalanobis distance</a> in the code below. I’ll use the taxicab (Manhattan) distance but if you want to change that just comment and uncomment the method you want. I could have written a function here to choose a method but this seemed like enough for one week.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>subjects <span class="ot">&lt;-</span> <span class="fu">str_sub</span>(<span class="fu">rownames</span>(scores),<span class="at">start=</span><span class="dv">1</span>,<span class="at">end=</span><span class="dv">9</span>)</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>subjectScores <span class="ot">&lt;-</span> <span class="fu">aggregate</span>(scores,<span class="fu">list</span>(subjects),mean)</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>distMat <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="at">data =</span> <span class="cn">NA</span>, <span class="at">nrow =</span> <span class="fu">nrow</span>(subjectScores), <span class="at">ncol =</span> <span class="fu">nrow</span>(testFaceProj))</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(distMat) <span class="ot">&lt;-</span> <span class="fu">rownames</span>(testFaceProj)</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(distMat) <span class="ot">&lt;-</span> subjectScores<span class="sc">$</span>Group<span class="fl">.1</span></span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">ncol</span>(distMat)) {</span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>  x1 <span class="ot">&lt;-</span> testFaceProj[j,]</span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(distMat)) {</span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>    x2 <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(subjectScores[i,<span class="sc">-</span><span class="dv">1</span>])</span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Euclidean distance</span></span>
+<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>    <span class="co">#distMat[i,j] &lt;- sqrt(sum((x1-x2)^2))</span></span>
+<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Manhattan</span></span>
+<span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a>    <span class="co">#distMat[i,j] &lt;- sum(abs(x1 - t(x2)))</span></span>
+<span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Mahalanobis</span></span>
+<span id="cb29-16"><a href="#cb29-16" aria-hidden="true" tabindex="-1"></a>    m <span class="ot">&lt;-</span> x1<span class="sc">/</span><span class="fu">sqrt</span>(eigenvalues[<span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(x1)])</span>
+<span id="cb29-17"><a href="#cb29-17" aria-hidden="true" tabindex="-1"></a>    n <span class="ot">&lt;-</span> x2<span class="sc">/</span><span class="fu">sqrt</span>(eigenvalues[<span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(x1)])</span>
+<span id="cb29-18"><a href="#cb29-18" aria-hidden="true" tabindex="-1"></a>    distMat[i,j] <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">t</span>(m <span class="sc">-</span> n)<span class="sc">%*%</span>(m <span class="sc">-</span> n))</span>
+<span id="cb29-19"><a href="#cb29-19" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb29-20"><a href="#cb29-20" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p>The object <code>distMat</code> has the known subjects on the rows and the unknown photos in columns. Thus, the values in the matrix is the distance between the unknown photo and the known subjects.</p>
+<p>Let’s look at the first test photo. You and I know this is one of the pictures of subject one and that the PCA space was built without it. In fact, <code>names(facesTest)[1]</code> is the image subject01v02. But the classification algorithm doesn’t know who this is. We can plot the distance between this unknown photo and all the known subjects.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>tmp <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">distances =</span> distMat[,<span class="dv">1</span>], <span class="at">subjects=</span><span class="fu">rownames</span>(distMat))</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> tmp) <span class="sc">+</span> </span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">mapping=</span> <span class="fu">aes</span>(<span class="at">x=</span>distances,<span class="at">y=</span><span class="fu">reorder</span>(subjects,distances))) <span class="sc">+</span></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x=</span><span class="st">"Distance"</span>, <span class="at">y=</span><span class="st">"Known Subjects"</span>, </span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Distance in eigenspace for unkown photo:"</span>,</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="fu">names</span>(facesTest)[<span class="dv">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="09iveJustSeenAFace_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>We can see that this image is closest in the eigenspace to <code>subject01</code> followed by <code>subject30</code> and <code>subject06</code> who are a good step away (and subject 17 is the most distant). So we did in fact find the right subject from this unknown photo. Kind of amazing.</p>
+</section>
+<section id="classify" class="level3">
+<h3 class="anchored" data-anchor-id="classify">Classify</h3>
+<p>We can look at all the test photos and pull out the minimum distance for each one and match it up in an error matrix. This is a very simple classification algorithm. We could set up other criteria and get a probabilistic understanding if we were feeling up to it. But again, since this module is just for fun, I’ll leave it simple for now.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(distMat) <span class="ot">&lt;-</span> ids<span class="sc">$</span>person[testVec]</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>accVec <span class="ot">&lt;-</span> <span class="fu">logical</span>(<span class="fu">ncol</span>(distMat))</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(accVec) <span class="ot">&lt;-</span> <span class="fu">colnames</span>(distMat)</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">ncol</span>(distMat)){</span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>  closestSubject <span class="ot">&lt;-</span> <span class="fu">rownames</span>(distMat)[<span class="fu">which.min</span>(distMat[,i])]</span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>  accVec[i] <span class="ot">&lt;-</span> closestSubject <span class="sc">==</span> <span class="fu">colnames</span>(distMat)[i]</span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a>accVec</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>subject01 subject01 subject02 subject02 subject03 subject03 subject04 subject04 
+     TRUE      TRUE      TRUE      TRUE     FALSE      TRUE      TRUE      TRUE 
+subject05 subject05 subject06 subject06 subject07 subject07 subject08 subject08 
+     TRUE      TRUE      TRUE      TRUE      TRUE      TRUE     FALSE      TRUE 
+subject09 subject09 subject10 subject10 subject11 subject11 subject12 subject12 
+     TRUE      TRUE      TRUE      TRUE      TRUE      TRUE      TRUE      TRUE 
+subject13 subject13 subject14 subject14 subject15 subject15 subject16 subject16 
+     TRUE      TRUE      TRUE      TRUE      TRUE      TRUE      TRUE      TRUE 
+subject17 subject17 subject18 subject18 subject19 subject19 subject20 subject20 
+     TRUE      TRUE      TRUE      TRUE      TRUE      TRUE      TRUE      TRUE 
+subject21 subject21 subject22 subject22 subject23 subject23 subject24 subject24 
+     TRUE      TRUE      TRUE      TRUE      TRUE      TRUE      TRUE      TRUE 
+subject25 subject25 subject26 subject26 subject27 subject27 subject28 subject28 
+     TRUE      TRUE      TRUE      TRUE      TRUE      TRUE      TRUE      TRUE 
+subject29 subject29 subject30 subject30 subject31 subject31 subject32 subject32 
+     TRUE      TRUE      TRUE      TRUE      TRUE     FALSE      TRUE      TRUE 
+subject33 subject33 subject34 subject34 subject35 subject35 subject36 subject36 
+     TRUE      TRUE      TRUE      TRUE      TRUE      TRUE      TRUE      TRUE 
+subject37 subject37 subject38 subject38 subject39 subject39 subject40 subject40 
+     TRUE      TRUE      TRUE      TRUE      TRUE      TRUE      TRUE      TRUE </code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(accVec)<span class="sc">/</span><span class="fu">length</span>(accVec)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>accVec
+ FALSE   TRUE 
+0.0375 0.9625 </code></pre>
+</div>
+</div>
+<p>Astoundingly we classified almost all of them correctly (96.25%)!</p>
+</section>
+</section>
+<section id="environmental-applications" class="level2">
+<h2 class="anchored" data-anchor-id="environmental-applications">Environmental applications</h2>
+<p>I find the human facial recognition to be a little scary to be honest. It creeps me out. But I wanted you to see this kind of machine learning application in action and this is a classic example.</p>
+<p>There are more benign applications for sure. The iNaturalist app and database are being used for <a href="https://www.inaturalist.org/pages/computer_vision_demo">automated species identification</a> using machine learning and there is a rich literature out there on this kind of work. E.g., <a href="https://besjournals.onlinelibrary.wiley.com/doi/full/10.1111/2041-210X.13075">Wäldchen and Mäder (2018)</a>, <a href="https://www.nature.com/articles/s41598-020-67573-7">Villon et al.&nbsp;(2020)</a> and <a href="https://scholar.google.com/scholar?q=species+identification+machine+learning+with+iNaturalist&amp;hl=en&amp;as_sdt=0&amp;as_vis=1&amp;oi=scholart">many more</a>. In fact image processing and machine learning are showing up environmental research all over the place – camera traps, illegal wildlife trade from social media posts, habitat classification from remote sensing, carbon budgets, the works.</p>
+<p>Some of the techniques and methods used differ (e.g., neural nets are often combined with data reduction) but if you are interested and want to learn more this basic walk through will get you rolling.</p>
+<p>Which brings us to your work.</p>
+</section>
+<section id="your-work" class="level2">
+<h2 class="anchored" data-anchor-id="your-work">Your work</h2>
+<p>OK so now it’s your turn. We’re going to run the same pipeline you just watched – PCA for data reduction, nearest-neighbor classification, train and test – but on plant leaves instead of human faces. It’s a much more direct environmental application, and it turns out the conceptual structure is almost identical. Faces are flattened into pixel vectors; leaves are described by shape descriptor vectors. The math doesn’t know the difference.</p>
+<section id="the-data" class="level3">
+<h3 class="anchored" data-anchor-id="the-data">The data</h3>
+<p>We’ll use the <a href="https://doi.org/10.24432/C5RG76">One-Hundred Plant Species Leaves data set</a> from the UCI Machine Learning Repository. It contains 16 samples of leaves from each of 100 plant species, with three different 64-element descriptor vectors per sample: shape, margin texture, and fine-scale texture. We’re going to use the <strong>shape</strong> descriptor, which encodes the outline geometry of the leaf as a contour signature. Each row is one leaf. The first column is the species label (an integer from 1 to 100) and the remaining 64 columns are the shape descriptor values.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>leafShape <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/data_Sha_64.txt"</span>, <span class="at">col_names =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="co"># first column is the species label, the rest are shape descriptor values</span></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(leafShape)[<span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="st">"species"</span></span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(leafShape)[<span class="dv">2</span><span class="sc">:</span><span class="dv">65</span>] <span class="ot">&lt;-</span> <span class="fu">str_c</span>(<span class="st">"shapeValue"</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">64</span>)</span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>leafShape <span class="ot">&lt;-</span> leafShape <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">species =</span> <span class="fu">factor</span>(species))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p>There are 1600 rows (100 species <span class="math inline">\(\times\)</span> 16 samples) and 65 columns (1 label + 64 descriptor values). Look at the data be sure you understand how it’s formatted.</p>
+<p>Ok. One thing is driving me bonkers with this. The genera names are supposed to be capitalized. The species names are not. I’m going to fix that.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>leafShape <span class="ot">&lt;-</span> leafShape <span class="sc">%&gt;%</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">species =</span> <span class="fu">str_replace</span>(species, <span class="st">"(?&lt;=</span><span class="sc">\\</span><span class="st">s)</span><span class="sc">\\</span><span class="st">S+"</span>, str_to_lower))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p><code>(?&lt;=\\s)\\S+</code> matches the first non-whitespace run that follows a space (i.e., the species name) and <code>str_to_lower</code> lowercases it. So “Acer Campestre” becomes “Acer campestre”. Not a biggie but it was bugging me.</p>
+<p>There are a few species in there that are hybrids (e.g., “Prunus X Shmittii”) and one that is only classified to genus (i.e., “Phildelphus”). We could take those out I suppose. They annoy me but that’s my own issue. It doesn’t matter for our purposes I guess.</p>
+</section>
+<section id="wrangle" class="level3">
+<h3 class="anchored" data-anchor-id="wrangle">Wrangle</h3>
+<p>That data matrix is fine for running PCA. I kind of have a hard time wrapping my head around that as a matrix. I’ll make it long kind of how we did that above with the faces.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>leafShapeLong <span class="ot">&lt;-</span> leafShape <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(species) <span class="sc">%&gt;%</span> </span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">sample =</span> <span class="fu">row_number</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> shapeValue1<span class="sc">:</span>shapeValue64, <span class="at">names_to =</span> <span class="st">"contourPosition"</span>, <span class="at">values_to =</span> <span class="st">"shapeValue"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">contourPosition =</span> <span class="fu">as.integer</span>(<span class="fu">str_remove</span>(contourPosition, <span class="st">"shapeValue"</span>)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="what-the-data-actually-are" class="level3">
+<h3 class="anchored" data-anchor-id="what-the-data-actually-are">What the data actually are</h3>
+<p>Before diving into the numbers, it helps to see what we’re actually working with. Here are four binary silhouette images of <em>Acer circinatum</em> (Vine Maple). These are four of the 16 samples for this species.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;"><img src="assets/leaves/Acer_Circinatum_01.ab.jpg" class="img-fluid" style="width:45.0%"></td>
+<td style="text-align: center;"><img src="assets/leaves/Acer_Circinatum_02.ab.jpg" class="img-fluid" style="width:45.0%"></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;"><img src="assets/leaves/Acer_Circinatum_03.ab.jpg" class="img-fluid" style="width:45.0%"></td>
+<td style="text-align: center;"><img src="assets/leaves/Acer_Circinatum_04.ab.jpg" class="img-fluid" style="width:45.0%"></td>
+</tr>
+</tbody>
+</table>
+<p>And for <em>Alnus rubra</em> (Red alder)</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;"><img src="assets/leaves/Alnus_Rubra_01.ab.jpg" class="img-fluid" style="width:45.0%"></td>
+<td style="text-align: center;"><img src="assets/leaves/Alnus_Rubra_02.ab.jpg" class="img-fluid" style="width:45.0%"></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;"><img src="assets/leaves/Alnus_Rubra_03.ab.jpg" class="img-fluid" style="width:45.0%"></td>
+<td style="text-align: center;"><img src="assets/leaves/Alnus_Rubra_04.ab.jpg" class="img-fluid" style="width:45.0%"></td>
+</tr>
+</tbody>
+</table>
+<p>These silhouettes are what was fed into the feature extraction pipeline that produced the data set we are using. But we are not working with these images directly. For each silhouette, the researchers computed a 64-element shape descriptor – a numerical summary of the leaf’s outline geometry. Think of it as a compact fingerprint of the shape: you can’t reconstruct the image from the numbers, but leaves of the same species produce similar fingerprints, and that similarity is what the classifier exploits.</p>
+</section>
+<section id="visualize-the-shape-of-some-leaves" class="level3">
+<h3 class="anchored" data-anchor-id="visualize-the-shape-of-some-leaves">Visualize the shape of some leaves</h3>
+<p>Unlike pixel images, the shape descriptors here are contour signatures – essentially a waveform that traces the outline of the leaf at 64 equally-spaced points around its perimeter. You can plot them as line plots. Let’s look at the data for the first four samples of <em>Acer circinatum</em> (Vine Maple).</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>leafShapeLong <span class="sc">%&gt;%</span> <span class="fu">filter</span>(species <span class="sc">==</span> <span class="st">"Acer circinatum"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(sample <span class="sc">%in%</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> contourPosition, <span class="at">y =</span> shapeValue, <span class="at">color =</span> <span class="fu">as.factor</span>(sample))) <span class="sc">+</span></span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">alpha =</span> <span class="fl">0.6</span>) <span class="sc">+</span></span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Contour position (1–64)"</span>, </span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Shape descriptor value"</span>,</span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Leaf contour signatures: Acer circinatum"</span>,</span>
+<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a>       <span class="at">color =</span> <span class="st">"Leaf sample"</span>) <span class="sc">+</span> </span>
+<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="09iveJustSeenAFace_files/figure-html/unnamed-chunk-29-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The 64 values don’t represent pixel brightness — they encode the geometry of the leaf’s outline at 64 points around its perimeter. Think of it as a numerical fingerprint of the leaf’s shape. Peaks in the waveform correspond to sharp features like the leaf tip; the valleys correspond to smoother regions. Within a species, these waveforms should be similar. Across species, they should differ.</p>
+<p>Let’s look at the same but for a totally different species. Here are the first four samples of <em>Alnus rubra</em>.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>leafShapeLong <span class="sc">%&gt;%</span> <span class="fu">filter</span>(species <span class="sc">==</span> <span class="st">"Alnus rubra"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(sample <span class="sc">%in%</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> contourPosition, <span class="at">y =</span> shapeValue, <span class="at">color =</span> <span class="fu">as.factor</span>(sample))) <span class="sc">+</span></span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">alpha =</span> <span class="fl">0.6</span>) <span class="sc">+</span></span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Contour position (1–64)"</span>, </span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Shape descriptor value"</span>,</span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Leaf contour signatures: Alnus rubra"</span>,</span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>       <span class="at">color =</span> <span class="st">"Leaf sample"</span>) <span class="sc">+</span> </span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="09iveJustSeenAFace_files/figure-html/unnamed-chunk-30-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Those are really distinct! Let’s see if a PCA approach like the eigenfaces works here.</p>
+</section>
+<section id="pca" class="level3">
+<h3 class="anchored" data-anchor-id="pca">PCA</h3>
+<p>The data in <code>leafShape</code> are already in the right orientation – one leaf per row, 64 shape values as columns. No transpose needed. Run <code>prcomp</code> with <code>center = TRUE</code> on just the descriptor columns (not the species label). Plot cumulative variance explained. Looks like 10 PCs get 99% of the variance.</p>
+<p>How does this compare to the face data? You needed about 120 PCs to hit 95% variance in the faces. How many do you need here? What does that tell you about the structure of leaf shape variation compared to the structure of face variation?</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> leafShape <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="sc">-</span>species) <span class="sc">%&gt;%</span> <span class="fu">as.matrix</span>()</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>leafPCA <span class="ot">&lt;-</span> <span class="fu">prcomp</span>(X, <span class="at">center =</span> <span class="cn">TRUE</span>, <span class="at">scale. =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>eigenvalues <span class="ot">&lt;-</span> leafPCA<span class="sc">$</span>sdev<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>cumVar <span class="ot">&lt;-</span> <span class="fu">cumsum</span>(eigenvalues) <span class="sc">/</span> <span class="fu">sum</span>(eigenvalues)</span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(cumVar), <span class="at">y =</span> cumVar)) <span class="sc">+</span></span>
+<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="fl">0.99</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">color =</span> <span class="st">"red"</span>) <span class="sc">+</span></span>
+<span id="cb40-10"><a href="#cb40-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"PC"</span>, <span class="at">y =</span> <span class="st">"Cumulative variance explained"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="09iveJustSeenAFace_files/figure-html/unnamed-chunk-31-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>thres99 <span class="ot">&lt;-</span> <span class="fu">min</span>(<span class="fu">which</span>(cumVar <span class="sc">&gt;</span> <span class="fl">0.99</span>))</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>thres99</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 10</code></pre>
+</div>
+</div>
+</section>
+<section id="eigenleaves" class="level3">
+<h3 class="anchored" data-anchor-id="eigenleaves">Eigenleaves</h3>
+<p>Here are the first nine eigenvector values.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>eigenvectors <span class="ot">&lt;-</span> leafPCA<span class="sc">$</span>rotation</span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a><span class="fu">as_tibble</span>(<span class="fu">t</span>(eigenvectors[, <span class="dv">1</span><span class="sc">:</span><span class="dv">9</span>])) <span class="sc">%&gt;%</span></span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">PC =</span> <span class="fu">str_c</span>(<span class="st">"PC"</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">9</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="sc">-</span>PC, <span class="at">names_to =</span> <span class="st">"position"</span>, <span class="at">values_to =</span> <span class="st">"value"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">position =</span> <span class="fu">as.integer</span>(<span class="fu">str_remove</span>(position, <span class="st">"shapeValue"</span>))) <span class="sc">%&gt;%</span></span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> position, <span class="at">y =</span> value)) <span class="sc">+</span></span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>PC, <span class="at">scales =</span> <span class="st">"free_y"</span>) <span class="sc">+</span></span>
+<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Contour position (1–64)"</span>, <span class="at">y =</span> <span class="st">"Eigenvector value"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="09iveJustSeenAFace_files/figure-html/unnamed-chunk-32-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>With the faces data we could plot the eigenvectors as images and they looked like spooky ghost faces. You might expect something similar here – “eigenleaves” that look like abstract leaf shapes. They don’t. The shape descriptors are already a mathematical abstraction of the outline, so the eigenvectors of those descriptors are an abstraction of an abstraction. They’re just wiggly lines with no obvious biological interpretation.</p>
+<p>That’s fine and actually worth noting: PCA doesn’t always produce interpretable components. Here it’s doing a purely instrumental job – compressing 64 dimensions down to a handful that capture most of the variance, so that nearest-neighbor distance in that reduced space is fast and meaningful. The biology is in the classification result, not the eigenvectors.</p>
+</section>
+<section id="map-the-species" class="level3">
+<h3 class="anchored" data-anchor-id="map-the-species">Map the species</h3>
+<p>Let’s get to work on classifying. Average the PCA scores for each species across its 16 samples and plot them in the space of the first two PCs, labeled by species number. Which species are close together? Which are far apart? If you happen to know what some of the species are (the data set includes taxa like <em>Quercus</em>, <em>Salix</em>, <em>Acer</em>, and many others – <a href="https://doi.org/10.24432/C5RG76">see the paper</a> for the full list), do the groupings make any botanical sense?</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="co"># your species map here</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="train-test-classify" class="level3">
+<h3 class="anchored" data-anchor-id="train-test-classify">Train, test, classify</h3>
+<p>Hold out four of the 16 samples per species as a test set (25% holdout: 1200 leaves for training, 400 for testing). Rerun PCA on the training leaves only. Project the test leaves into that training PCA space, calculate Mahalanobis-style distances to the mean score for each species, and classify by nearest neighbor – exactly as we did with the faces.</p>
+<p>Report your overall accuracy. Higher or lower than the faces result (96.25%)? Think carefully about why. You have 100 species instead of 40 people, which makes the problem harder by definition. But you also have a richer descriptor space that is specifically designed to capture shape. Does that help?</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="co"># your train/test/classify code here</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p>Include a short reflection. What worked? What surprised you? If accuracy is lower than you hoped, what would you try next – more PCs, a different descriptor (margin? texture?), a different distance metric? What if we tried to classify to genus instead of species?</p>
+
+
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list" style="display: none">
+<div id="ref-R-ggrepel" class="csl-entry" role="listitem">
+Slowikowski, Kamil. 2026. <em>Ggrepel: Automatically Position Non-Overlapping Text Labels with Ggplot2</em>. <a href="https://ggrepel.slowkow.com/">https://ggrepel.slowkow.com/</a>.
+</div>
+<div id="ref-R-tidyverse" class="csl-entry" role="listitem">
+Wickham, Hadley. 2023. <em>Tidyverse: Easily Install and Load the Tidyverse</em>. <a href="https://tidyverse.tidyverse.org">https://tidyverse.tidyverse.org</a>.
+</div>
+</div>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./08InTheBag.html" class="pagination-link" aria-label="Improving Model Performance">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">Improving Model Performance</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./10PackagesUsed.html" class="pagination-link" aria-label="References">
+        <span class="nav-page-text"><span class="chapter-title">References</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/AndyBunn/machineLearningNotes/edit/main/09iveJustSeenAFace.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/AndyBunn/machineLearningNotes/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

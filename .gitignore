@@ -34,3 +34,8 @@ rsconnect/
 .DS_Store
 data.zip
 todo.txt
+_freeze
+
+
+/.quarto/
+**/*.quarto_ipynb

@@ -6,9 +6,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="">
+<meta name="description" content="Machine learning notes and exercises">
 
-<title>Machine Learning for Environmental Science</title>
+<title>References – Machine Learning for Environmental Science</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -21,7 +21,26 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="site_libs/quarto-nav/quarto-nav.js"></script>
@@ -31,6 +50,7 @@ ul.task-list li input[type="checkbox"] {
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
+<link href="./09iveJustSeenAFace.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
@@ -74,7 +94,7 @@ ul.task-list li input[type="checkbox"] {
 <link rel="stylesheet" href="custom.css">
 </head>
 
-<body class="nav-fixed fullcontent quarto-light">
+<body class="nav-sidebar floating nav-fixed quarto-light">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
@@ -93,16 +113,119 @@ ul.task-list li input[type="checkbox"] {
           <div id="quarto-search" class="" title="Search"></div>
       </div> <!-- /container-fluid -->
     </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./10PackagesUsed.html"><span class="chapter-title">References</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
 </header>
 <!-- content -->
-<div id="quarto-content" class="quarto-container page-layout-custom page-navbar">
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header sidebar-header-stacked">
+      <a href="./index.html" class="sidebar-logo-link">
+      </a>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Cover Page</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./00Welcome.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Welcome</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01birdsBoot.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Bootstrapping</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01xAsideMethods_and_generics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Aside: Understanding Methods and Generics in R</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02alpacaPermute.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Permutation</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03crossValidationIntro.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Always Be Cross Validating (ABCv)</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04HiDiddilyHoNeighborino.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Classifying with kNN</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05SoManyChoices.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Classifying with Decision Trees</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06Discrete2Continuous.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Continuous Prediction with Regression Trees</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06xAsideOLS_Algebric_Matrix.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Aside: OLS via Algebra and Matrices</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07IfIOnlyHadABrain.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Neural Nets</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07xAsideAnimateNeuralNet.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Aside: Animate a NN</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./08InTheBag.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Improving Model Performance</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./09iveJustSeenAFace.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Eigen Faces</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./10PackagesUsed.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">References</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+        
+    </div>
 <!-- main -->
+<main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Machine Learning for Environmental Science</h1>
+<h1 class="title"><span class="chapter-title">References</span></h1>
 </div>
 
 
@@ -119,303 +242,95 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Source+Code+Pro:wght@400;600&family=Libre+Baskerville:ital@1&display=swap');
-
-  /* Kill Quarto's auto-generated title block on cover page */
-  #title-block-header { display: none !important; }
-
-  /* Scoped reset -- do NOT use * {} or it kills Quarto's navbar */
-  .banner, .banner * { box-sizing: border-box; }
-
-  .banner {
-    width: 100%;
-    height: calc(100vh - 60px);
-    position: relative;
-    background: #0d1118;
-    overflow: hidden;
-    font-family: 'Source Code Pro', monospace;
-    margin: 0;
-    padding: 0;
-  }
-
-  .topo-layer {
-    position: absolute;
-    inset: 0;
-    opacity: 0.18;
-  }
-
-  .color-wash {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      135deg,
-      #0d1118 0%,
-      #0f1628 20%,
-      #101e35 35%,
-      #0e1a30 55%,
-      #0b1525 75%,
-      #091020 100%
-    );
-  }
-
-  .grain {
-    position: absolute;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.4'/%3E%3C/svg%3E");
-    opacity: 0.06;
-  }
-
-  .blob1 {
-    position: absolute;
-    width: 500px;
-    height: 500px;
-    border-radius: 50%;
-    background: radial-gradient(ellipse, rgba(99, 102, 241, 0.10) 0%, transparent 70%);
-    top: -150px;
-    right: 100px;
-  }
-  .blob2 {
-    position: absolute;
-    width: 350px;
-    height: 350px;
-    border-radius: 50%;
-    background: radial-gradient(ellipse, rgba(56, 189, 248, 0.08) 0%, transparent 70%);
-    bottom: -100px;
-    left: 200px;
-  }
-  .blob3 {
-    position: absolute;
-    width: 280px;
-    height: 280px;
-    border-radius: 50%;
-    background: radial-gradient(ellipse, rgba(139, 92, 246, 0.07) 0%, transparent 70%);
-    top: 50px;
-    left: 500px;
-  }
-
-  .accent-bar {
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 5px;
-    background: linear-gradient(180deg, #818cf8 0%, #38bdf8 50%, #a78bfa 100%);
-  }
-
-  .content {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 48px 64px 48px 80px;
-  }
-
-  .enter-button {
-    display: inline-block;
-    margin-bottom: 32px;
-    align-self: flex-start;
-    font-family: 'Source Code Pro', monospace;
-    font-size: 16px;
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    color: #818cf8;
-    text-decoration: none;
-    text-transform: uppercase;
-    border: 1px solid #2e3a6a;
-    padding: 12px 28px;
-    border-radius: 2px;
-    background: rgba(99, 102, 241, 0.06);
-    transition: background 0.2s, color 0.2s;
-  }
-  .enter-button:hover {
-    background: rgba(99, 102, 241, 0.14);
-    color: #a5b4fc;
-  }
-
-  .banner-title {
-    font-family: 'Playfair Display', serif;
-    font-weight: 700;
-    font-size: 58px;
-    line-height: 1.05;
-    color: #f0ede6;
-    letter-spacing: -0.01em;
-    margin-bottom: 6px;
-  }
-
-  .banner-title .accent-word {
-    color: #818cf8;
-    font-style: italic;
-    font-weight: 700;
-  }
-
-  .banner-subtitle {
-    font-family: 'Playfair Display', serif;
-    font-style: italic;
-    font-size: 22px;
-    color: #7a9ab5;
-    margin-bottom: 28px;
-    letter-spacing: 0.02em;
-  }
-
-  .tags {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-
-  .tag {
-    font-family: 'Source Code Pro', monospace;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    color: #4a5a8a;
-    border: 1px solid #1e2a52;
-    padding: 4px 10px;
-    border-radius: 2px;
-    text-transform: uppercase;
-    background: rgba(99, 102, 241, 0.04);
-  }
-
-  .right-panel {
-    position: absolute;
-    right: 60px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 320px;
-    height: 280px;
-    opacity: 0.7;
-  }
-
-  .bottom-rule {
-    position: absolute;
-    bottom: 52px;
-    left: 80px;
-    right: 60px;
-    height: 1px;
-    background: linear-gradient(90deg, #1e2a52, #1a2a40, transparent);
-  }
-
-  .credit {
-    position: absolute;
-    bottom: 24px;
-    left: 80px;
-    font-family: 'Source Code Pro', monospace;
-    font-size: 14px;
-    letter-spacing: 0.12em;
-    color: #3a4a7a;
-    text-transform: uppercase;
-  }
-</style>
-
-<div class="banner">
-  <div class="color-wash"></div>
-
-  <!-- Background: faint grid suggesting data/matrix -->
-  <svg class="topo-layer" viewbox="0 0 1200 400" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <style>.gridline { fill: none; stroke: #818cf8; stroke-width: 0.6; }</style>
-    </defs>
-    <!-- Horizontal grid lines -->
-    <line class="gridline" x1="600" y1="40" x2="1180" y2="40"></line>
-    <line class="gridline" x1="600" y1="100" x2="1180" y2="100"></line>
-    <line class="gridline" x1="600" y1="160" x2="1180" y2="160"></line>
-    <line class="gridline" x1="600" y1="220" x2="1180" y2="220"></line>
-    <line class="gridline" x1="600" y1="280" x2="1180" y2="280"></line>
-    <line class="gridline" x1="600" y1="340" x2="1180" y2="340"></line>
-    <!-- Vertical grid lines -->
-    <line class="gridline" x1="660" y1="20" x2="660" y2="380"></line>
-    <line class="gridline" x1="760" y1="20" x2="760" y2="380"></line>
-    <line class="gridline" x1="860" y1="20" x2="860" y2="380"></line>
-    <line class="gridline" x1="960" y1="20" x2="960" y2="380"></line>
-    <line class="gridline" x1="1060" y1="20" x2="1060" y2="380"></line>
-    <line class="gridline" x1="1160" y1="20" x2="1160" y2="380"></line>
-    <!-- A few decision boundary curves cutting across the grid -->
-    <path d="M 620 360 C 700 300, 780 200, 860 160 C 920 135, 980 140, 1060 120 C 1110 110, 1150 90, 1180 80" fill="none" stroke="#818cf8" stroke-width="1.2" opacity="0.5"></path>
-    <path d="M 620 300 C 700 260, 780 180, 860 150 C 940 122, 1020 130, 1100 110" fill="none" stroke="#38bdf8" stroke-width="1.0" opacity="0.4"></path>
-  </svg>
-
-  <div class="blob1"></div>
-  <div class="blob2"></div>
-  <div class="blob3"></div>
-  <div class="grain"></div>
-  <div class="accent-bar"></div>
-
-  <!-- Right panel: small neural network diagram -->
-  <svg class="right-panel" viewbox="0 0 320 280" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <style>text { font-family: 'Source Code Pro', monospace; }</style>
-    </defs>
-
-    <!-- Edges: input -> hidden -->
-    <line x1="60" y1="60" x2="160" y2="50" stroke="#2e3a6a" stroke-width="1.2"></line>
-    <line x1="60" y1="60" x2="160" y2="110" stroke="#2e3a6a" stroke-width="1.2"></line>
-    <line x1="60" y1="60" x2="160" y2="170" stroke="#2e3a6a" stroke-width="1.2"></line>
-    <line x1="60" y1="60" x2="160" y2="230" stroke="#2e3a6a" stroke-width="1.2"></line>
-    <line x1="60" y1="140" x2="160" y2="50" stroke="#2e3a6a" stroke-width="1.2"></line>
-    <line x1="60" y1="140" x2="160" y2="110" stroke="#2e3a6a" stroke-width="1.2"></line>
-    <line x1="60" y1="140" x2="160" y2="170" stroke="#2e3a6a" stroke-width="1.2"></line>
-    <line x1="60" y1="140" x2="160" y2="230" stroke="#2e3a6a" stroke-width="1.2"></line>
-    <line x1="60" y1="220" x2="160" y2="50" stroke="#2e3a6a" stroke-width="1.2"></line>
-    <line x1="60" y1="220" x2="160" y2="110" stroke="#2e3a6a" stroke-width="1.2"></line>
-    <line x1="60" y1="220" x2="160" y2="170" stroke="#2e3a6a" stroke-width="1.2"></line>
-    <line x1="60" y1="220" x2="160" y2="230" stroke="#2e3a6a" stroke-width="1.2"></line>
-
-    <!-- Edges: hidden -> output (highlighted) -->
-    <line x1="160" y1="50" x2="260" y2="95" stroke="#818cf8" stroke-width="1.4" opacity="0.7"></line>
-    <line x1="160" y1="110" x2="260" y2="95" stroke="#818cf8" stroke-width="1.4" opacity="0.7"></line>
-    <line x1="160" y1="170" x2="260" y2="185" stroke="#38bdf8" stroke-width="1.4" opacity="0.7"></line>
-    <line x1="160" y1="230" x2="260" y2="185" stroke="#38bdf8" stroke-width="1.4" opacity="0.7"></line>
-    <line x1="160" y1="50" x2="260" y2="185" stroke="#818cf8" stroke-width="0.8" opacity="0.3"></line>
-    <line x1="160" y1="230" x2="260" y2="95" stroke="#38bdf8" stroke-width="0.8" opacity="0.3"></line>
-    <line x1="160" y1="110" x2="260" y2="185" stroke="#818cf8" stroke-width="0.8" opacity="0.4"></line>
-    <line x1="160" y1="170" x2="260" y2="95" stroke="#38bdf8" stroke-width="0.8" opacity="0.4"></line>
-
-    <!-- Input nodes -->
-    <circle cx="60" cy="60" r="10" fill="#0d1118" stroke="#38bdf8" stroke-width="1.5" opacity="0.8"></circle>
-    <circle cx="60" cy="140" r="10" fill="#0d1118" stroke="#38bdf8" stroke-width="1.5" opacity="0.8"></circle>
-    <circle cx="60" cy="220" r="10" fill="#0d1118" stroke="#38bdf8" stroke-width="1.5" opacity="0.8"></circle>
-
-    <!-- Hidden nodes -->
-    <circle cx="160" cy="50" r="10" fill="#0d1118" stroke="#818cf8" stroke-width="1.5" opacity="0.8"></circle>
-    <circle cx="160" cy="110" r="10" fill="#0d1118" stroke="#818cf8" stroke-width="1.5" opacity="0.8"></circle>
-    <circle cx="160" cy="170" r="10" fill="#0d1118" stroke="#818cf8" stroke-width="1.5" opacity="0.8"></circle>
-    <circle cx="160" cy="230" r="10" fill="#0d1118" stroke="#818cf8" stroke-width="1.5" opacity="0.8"></circle>
-
-    <!-- Output nodes -->
-    <circle cx="260" cy="95" r="10" fill="#0d1118" stroke="#a78bfa" stroke-width="1.5" opacity="0.9"></circle>
-    <circle cx="260" cy="185" r="10" fill="#0d1118" stroke="#a78bfa" stroke-width="1.5" opacity="0.9"></circle>
-
-    <!-- Labels -->
-    <text x="160" y="268" fill="#3a4a7a" font-size="10" letter-spacing="2" text-anchor="middle">NEURAL NET</text>
-    <text x="60" y="248" fill="#3a4a7a" font-size="9" letter-spacing="1" text-anchor="middle">input</text>
-    <text x="260" y="210" fill="#3a4a7a" font-size="9" letter-spacing="1" text-anchor="middle">output</text>
-  </svg>
-
-  <div class="content">
-    <a href="00Welcome.html" class="enter-button">Welcome →</a>
-    <div class="banner-title">
-      Machine <span class="accent-word">Learning</span><br>
-      for Environmental Science
-    </div>
-    <div class="banner-subtitle">resampling, prediction, and generalization</div>
-    <div class="tags">
-      <span class="tag">Bootstrapping</span>
-      <span class="tag">Cross-Validation</span>
-      <span class="tag">Random Forests</span>
-      <span class="tag">Neural Nets</span>
-    </div>
-  </div>
-
-  <div class="bottom-rule"></div>
-  <div class="credit">Andy Bunn &nbsp;·&nbsp; ESCI 506</div>
-
+<p>This document was built using the R packages listed below. Citations are automatically generated from the file <code>packages.bib</code>.</p>
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-R-visNetwork" class="csl-entry" role="listitem">
+Almende B.V. and Contributors, and Benoit Thieurmel. 2025.
+<em>visNetwork: Network Visualization Using Vis.js Library</em>. <a href="https://datastorm-open.github.io/visNetwork/">https://datastorm-open.github.io/visNetwork/</a>.
+</div>
+<div id="ref-R-ggthemes" class="csl-entry" role="listitem">
+Arnold, Jeffrey B. 2025. <em>Ggthemes: Extra Themes, Scales and Geoms
+for Ggplot2</em>. <a href="https://jrnold.github.io/ggthemes/">https://jrnold.github.io/ggthemes/</a>.
+</div>
+<div id="ref-R-randomForest" class="csl-entry" role="listitem">
+Breiman, Leo, Adele Cutler, Andy Liaw, and Matthew Wiener. 2024.
+<em>randomForest: Breiman and Cutlers Random Forests for Classification
+and Regression</em>. <a href="https://www.stat.berkeley.edu/~breiman/RandomForests/">https://www.stat.berkeley.edu/~breiman/RandomForests/</a>.
+</div>
+<div id="ref-R-boot" class="csl-entry" role="listitem">
+Canty, Angelo, and Brian Ripley. 2025. <em>Boot: Bootstrap
+Functions</em>. <a href="https://doi.org/10.32614/CRAN.package.boot">https://doi.org/10.32614/CRAN.package.boot</a>.
+</div>
+<div id="ref-R-neuralnet" class="csl-entry" role="listitem">
+Fritsch, Stefan, Frauke Guenther, and Marvin N. Wright. 2019.
+<em>Neuralnet: Training of Neural Networks</em>. <a href="https://github.com/bips-hb/neuralnet">https://github.com/bips-hb/neuralnet</a>.
+</div>
+<div id="ref-R-caret" class="csl-entry" role="listitem">
+Kuhn, Max. 2024. <em>Caret: Classification and Regression Training</em>.
+<a href="https://github.com/topepo/caret/">https://github.com/topepo/caret/</a>.
+</div>
+<div id="ref-R-C50" class="csl-entry" role="listitem">
+Kuhn, Max, and Ross Quinlan. 2025. <em>C50: C5.0 Decision Trees and
+Rule-Based Models</em>. <a href="https://topepo.github.io/C5.0/">https://topepo.github.io/C5.0/</a>.
+</div>
+<div id="ref-R-Cubist" class="csl-entry" role="listitem">
+———. 2026. <em>Cubist: Rule- and Instance-Based Regression
+Modeling</em>. <a href="https://topepo.github.io/Cubist/">https://topepo.github.io/Cubist/</a>.
+</div>
+<div id="ref-R-PNWColors" class="csl-entry" role="listitem">
+Lawlor, Jake. 2020. <em>PNWColors: Color Palettes Inspired by Nature in
+the US Pacific Northwest</em>. <a href="https://github.com/jakelawlor/PNWColors">https://github.com/jakelawlor/PNWColors</a>.
+</div>
+<div id="ref-R-av" class="csl-entry" role="listitem">
+Ooms, Jeroen. 2025. <em>Av: Working with Audio and Video in r</em>. <a href="https://ropensci.r-universe.dev/av">https://ropensci.r-universe.dev/av</a>.
+</div>
+<div id="ref-R-gganimate" class="csl-entry" role="listitem">
+Pedersen, Thomas Lin, and David Robinson. 2025. <em>Gganimate: A Grammar
+of Animated Graphics</em>. <a href="https://gganimate.com">https://gganimate.com</a>.
+</div>
+<div id="ref-R-ipred" class="csl-entry" role="listitem">
+Peters, Andrea, and Torsten Hothorn. 2024. <em>Ipred: Improved
+Predictors</em>. <a href="https://doi.org/10.32614/CRAN.package.ipred">https://doi.org/10.32614/CRAN.package.ipred</a>.
+</div>
+<div id="ref-R-gbm" class="csl-entry" role="listitem">
+Ridgeway, Greg, and GBM Developers. 2026. <em>Gbm: Generalized Boosted
+Regression Models</em>. <a href="https://github.com/gbm-developers/gbm">https://github.com/gbm-developers/gbm</a>.
+</div>
+<div id="ref-R-class" class="csl-entry" role="listitem">
+Ripley, Brian. 2025a. <em>Class: Functions for Classification</em>. <a href="http://www.stats.ox.ac.uk/pub/MASS4/">http://www.stats.ox.ac.uk/pub/MASS4/</a>.
+</div>
+<div id="ref-R-nnet" class="csl-entry" role="listitem">
+———. 2025b. <em>Nnet: Feed-Forward Neural Networks and Multinomial
+Log-Linear Models</em>. <a href="http://www.stats.ox.ac.uk/pub/MASS4/">http://www.stats.ox.ac.uk/pub/MASS4/</a>.
+</div>
+<div id="ref-R-ggrepel" class="csl-entry" role="listitem">
+Slowikowski, Kamil. 2026. <em>Ggrepel: Automatically Position
+Non-Overlapping Text Labels with Ggplot2</em>. <a href="https://ggrepel.slowkow.com/">https://ggrepel.slowkow.com/</a>.
+</div>
+<div id="ref-R-rpart" class="csl-entry" role="listitem">
+Therneau, Terry, and Beth Atkinson. 2025. <em>Rpart: Recursive
+Partitioning and Regression Trees</em>. <a href="https://github.com/bethatkinson/rpart">https://github.com/bethatkinson/rpart</a>.
+</div>
+<div id="ref-R-sparkline" class="csl-entry" role="listitem">
+Vaidyanathan, Ramnath, Kent Russell, and Gareth Watts. 2016.
+<em>Sparkline: jQuery Sparkline Htmlwidget</em>. <a href="https://doi.org/10.32614/CRAN.package.sparkline">https://doi.org/10.32614/CRAN.package.sparkline</a>.
+</div>
+<div id="ref-R-tidyverse" class="csl-entry" role="listitem">
+Wickham, Hadley. 2023. <em>Tidyverse: Easily Install and Load the
+Tidyverse</em>. <a href="https://tidyverse.tidyverse.org">https://tidyverse.tidyverse.org</a>.
+</div>
+<div id="ref-R-scales" class="csl-entry" role="listitem">
+Wickham, Hadley, Thomas Lin Pedersen, and Dana Seidel. 2025. <em>Scales:
+Scale Functions for Visualization</em>. <a href="https://scales.r-lib.org">https://scales.r-lib.org</a>.
+</div>
+<div id="ref-R-ggridges" class="csl-entry" role="listitem">
+Wilke, Claus O. 2025. <em>Ggridges: Ridgeline Plots in Ggplot2</em>. <a href="https://wilkelab.org/ggridges/">https://wilkelab.org/ggridges/</a>.
+</div>
 </div>
 
 
 
-
+</main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     const icon = "";
@@ -816,9 +731,18 @@ ul.task-list li input[type="checkbox"] {
     }
   });
   </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./09iveJustSeenAFace.html" class="pagination-link" aria-label="Eigen Faces">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">Eigen Faces</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+  </div>
+</nav>
 </div> <!-- /content -->
 
 
 
 
-<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions"><ul><li><a href="https://github.com/AndyBunn/machineLearningNotes/edit/main/index.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/AndyBunn/machineLearningNotes/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions"><ul><li><a href="https://github.com/AndyBunn/machineLearningNotes/edit/main/10PackagesUsed.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/AndyBunn/machineLearningNotes/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

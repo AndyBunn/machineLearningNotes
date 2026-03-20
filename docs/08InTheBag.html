@@ -1,0 +1,1633 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.25">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Machine learning notes and exercises">
+
+<title>Improving Model Performance – Machine Learning for Environmental Science</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./09iveJustSeenAFace.html" rel="next">
+<link href="./07xAsideAnimateNeuralNet.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-a04a01d9790747593e0658c5ce91c85b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script src="site_libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+<link href="site_libs/vis-9.1.0/vis-network.min.css" rel="stylesheet">
+<script src="site_libs/vis-9.1.0/vis-network.min.js"></script>
+<script src="site_libs/visNetwork-binding-2.1.4/visNetwork.js"></script>
+<script src="site_libs/FileSaver-1.1.20151003/FileSaver.min.js"></script>
+<script src="site_libs/Blob-1.0/Blob.js"></script>
+<script src="site_libs/canvas-toBlob-1.0/canvas-toBlob.js"></script>
+<script src="site_libs/html2canvas-0.5.0/html2canvas.js"></script>
+<script src="site_libs/jspdf-1.3.2/jspdf.debug.js"></script>
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<link href="site_libs/jquery-sparkline-2.1.2/jquery.sparkline.css" rel="stylesheet">
+<script src="site_libs/jquery-sparkline-2.1.2/jquery.sparkline.js"></script>
+<script src="site_libs/sparkline-binding-2.0/sparkline.js"></script>
+
+
+<link rel="stylesheet" href="custom.css">
+</head>
+
+<body class="nav-sidebar floating nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="./index.html" class="navbar-brand navbar-brand-logo">
+    </a>
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">Machine Learning for Environmental Science</span>
+    </a>
+  </div>
+        <div class="quarto-navbar-tools tools-end">
+    <a href="https://github.com/AndyBunn/machineLearningNotes" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+</div>
+          <div id="quarto-search" class="" title="Search"></div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./08InTheBag.html"><span class="chapter-title">Improving Model Performance</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header sidebar-header-stacked">
+      <a href="./index.html" class="sidebar-logo-link">
+      </a>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Cover Page</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./00Welcome.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Welcome</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01birdsBoot.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Bootstrapping</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01xAsideMethods_and_generics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Aside: Understanding Methods and Generics in R</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02alpacaPermute.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Permutation</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03crossValidationIntro.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Always Be Cross Validating (ABCv)</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04HiDiddilyHoNeighborino.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Classifying with kNN</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05SoManyChoices.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Classifying with Decision Trees</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06Discrete2Continuous.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Continuous Prediction with Regression Trees</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06xAsideOLS_Algebric_Matrix.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Aside: OLS via Algebra and Matrices</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07IfIOnlyHadABrain.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Neural Nets</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07xAsideAnimateNeuralNet.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Aside: Animate a NN</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./08InTheBag.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">Improving Model Performance</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./09iveJustSeenAFace.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Eigen Faces</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./10PackagesUsed.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">References</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#big-idea-many-models-beat-one-model" id="toc-big-idea-many-models-beat-one-model" class="nav-link active" data-scroll-target="#big-idea-many-models-beat-one-model">Big Idea: Many Models Beat One Model</a>
+  <ul class="collapse">
+  <li><a href="#why-bagging-works-well-for-trees" id="toc-why-bagging-works-well-for-trees" class="nav-link" data-scroll-target="#why-bagging-works-well-for-trees">Why Bagging Works Well for Trees</a></li>
+  </ul></li>
+  <li><a href="#packages" id="toc-packages" class="nav-link" data-scroll-target="#packages">Packages</a></li>
+  <li><a href="#reading" id="toc-reading" class="nav-link" data-scroll-target="#reading">Reading</a></li>
+  <li><a href="#decision-tree-to-bagging-to-tuning" id="toc-decision-tree-to-bagging-to-tuning" class="nav-link" data-scroll-target="#decision-tree-to-bagging-to-tuning">Decision Tree to Bagging to Tuning</a>
+  <ul class="collapse">
+  <li><a href="#the-modeling-ladder" id="toc-the-modeling-ladder" class="nav-link" data-scroll-target="#the-modeling-ladder">The Modeling Ladder</a></li>
+  <li><a href="#fish-your-wish" id="toc-fish-your-wish" class="nav-link" data-scroll-target="#fish-your-wish">Fish Your Wish</a></li>
+  <li><a href="#train-and-test" id="toc-train-and-test" class="nav-link" data-scroll-target="#train-and-test">Train and Test</a></li>
+  <li><a href="#straight-decision-tree" id="toc-straight-decision-tree" class="nav-link" data-scroll-target="#straight-decision-tree">Straight Decision Tree</a></li>
+  <li><a href="#bagging" id="toc-bagging" class="nav-link" data-scroll-target="#bagging">Bagging</a></li>
+  <li><a href="#random-forest-aka-randomforest-aka-rf" id="toc-random-forest-aka-randomforest-aka-rf" class="nav-link" data-scroll-target="#random-forest-aka-randomforest-aka-rf">Random Forest (aka randomForest, aka rF)</a></li>
+  <li><a href="#a-tuned-random-forest" id="toc-a-tuned-random-forest" class="nav-link" data-scroll-target="#a-tuned-random-forest">A Tuned Random Forest</a></li>
+  <li><a href="#skill" id="toc-skill" class="nav-link" data-scroll-target="#skill">Skill</a></li>
+  </ul></li>
+  <li><a href="#takeaway" id="toc-takeaway" class="nav-link" data-scroll-target="#takeaway">Takeaway</a></li>
+  <li><a href="#but-where-is-the-tree" id="toc-but-where-is-the-tree" class="nav-link" data-scroll-target="#but-where-is-the-tree">But where is the tree?</a>
+  <ul class="collapse">
+  <li><a href="#how-can-they-predict-new-data" id="toc-how-can-they-predict-new-data" class="nav-link" data-scroll-target="#how-can-they-predict-new-data">How can they predict new data?</a></li>
+  <li><a href="#which-trees-are-used" id="toc-which-trees-are-used" class="nav-link" data-scroll-target="#which-trees-are-used">Which trees are used?</a></li>
+  </ul></li>
+  <li><a href="#your-work" id="toc-your-work" class="nav-link" data-scroll-target="#your-work">Your Work</a></li>
+  <li><a href="#postscript-boosting-and-stacking" id="toc-postscript-boosting-and-stacking" class="nav-link" data-scroll-target="#postscript-boosting-and-stacking">Postscript: Boosting and Stacking</a>
+  <ul class="collapse">
+  <li><a href="#boosting" id="toc-boosting" class="nav-link" data-scroll-target="#boosting">Boosting</a></li>
+  </ul></li>
+  <li><a href="#stacking-briefly" id="toc-stacking-briefly" class="nav-link" data-scroll-target="#stacking-briefly">Stacking (briefly)</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/AndyBunn/machineLearningNotes/edit/main/08InTheBag.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/AndyBunn/machineLearningNotes/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">Improving Model Performance</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="big-idea-many-models-beat-one-model" class="level2">
+<h2 class="anchored" data-anchor-id="big-idea-many-models-beat-one-model">Big Idea: Many Models Beat One Model</h2>
+<p>Many machine learning algorithms are unstable. Small changes in the training data can lead to very different models. Decision trees are a classic example: change a few rows and the first split can change completely.</p>
+<p>Ensemble methods address this problem by building many models and combining them.</p>
+<p>Instead of trusting one model, we let a crowd of models vote.</p>
+<p>Three common ensemble strategies are:</p>
+<ul>
+<li><strong>Bagging (Bootstrap Aggregating)</strong> – train many models on bootstrap samples of the data and average their predictions.</li>
+<li><strong>Boosting</strong> – train models sequentially so that each new model focuses on correcting the errors of the previous one.</li>
+<li><strong>Stacking</strong> – combine predictions from multiple model types using a meta-model.</li>
+</ul>
+<p>In this module we focus mostly on bagging, which leads directly to one of the most widely used algorithms in machine learning: random forests.</p>
+<section id="why-bagging-works-well-for-trees" class="level3">
+<h3 class="anchored" data-anchor-id="why-bagging-works-well-for-trees">Why Bagging Works Well for Trees</h3>
+<p>Decision trees have high variance. If we train the same tree algorithm on slightly different samples of the data we often get very different trees.</p>
+<p>That variability hurts prediction performance.</p>
+<p>Bagging fixes this by:</p>
+<ol type="1">
+<li>Drawing many bootstrap samples from the training data.</li>
+<li>Fitting a tree to each sample.</li>
+<li>Combining predictions across all trees (majority vote for classification).</li>
+</ol>
+<p>Each individual tree may be noisy, but the average of many trees is usually more stable and more accurate.</p>
+<p>This is the same idea behind the “wisdom of crowds.”</p>
+</section>
+</section>
+<section id="packages" class="level2">
+<h2 class="anchored" data-anchor-id="packages">Packages</h2>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse) <span class="co"># for general use</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(caret) <span class="co"># and to tune the rf</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rpart) <span class="co"># for decision trees</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(visNetwork) <span class="co"># for plotting DT</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ipred) <span class="co"># for bagging</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(randomForest) <span class="co"># for rf</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gbm) <span class="co"># for boosting</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p>As usual we’ll want <code>tidyverse</code><span class="citation" data-cites="R-tidyverse">(<a href="10PackagesUsed.html#ref-R-tidyverse" role="doc-biblioref">Wickham 2023</a>)</span>. The big workhorse for cross validation is the <code>caret</code><span class="citation" data-cites="R-caret">(<a href="10PackagesUsed.html#ref-R-caret" role="doc-biblioref">Kuhn 2024</a>)</span> library. And the a lot of other packages since we are covering a lot of algorithms: <code>rpart</code><span class="citation" data-cites="R-rpart">(<a href="10PackagesUsed.html#ref-R-rpart" role="doc-biblioref">Therneau and Atkinson 2025</a>)</span>, <code>visNetwork</code><span class="citation" data-cites="R-visNetwork">(<a href="10PackagesUsed.html#ref-R-visNetwork" role="doc-biblioref">Almende B.V. and Contributors and Thieurmel 2025</a>)</span>, <code>ipred</code><span class="citation" data-cites="R-ipred">(<a href="10PackagesUsed.html#ref-R-ipred" role="doc-biblioref">Peters and Hothorn 2024</a>)</span>, <code>randomForest</code><span class="citation" data-cites="R-randomForest">(<a href="10PackagesUsed.html#ref-R-randomForest" role="doc-biblioref">Breiman et al. 2024</a>)</span>, <code>gbm</code><span class="citation" data-cites="R-gbm">(<a href="10PackagesUsed.html#ref-R-gbm" role="doc-biblioref">Ridgeway and Developers 2026</a>)</span>.</p>
+</section>
+<section id="reading" class="level2">
+<h2 class="anchored" data-anchor-id="reading">Reading</h2>
+<p>Chapter 11: Improving Model Performance in Machine Learning with R: Expert techniques for predictive modeling, 3rd Edition. Link on Canvas.</p>
+</section>
+<section id="decision-tree-to-bagging-to-tuning" class="level2">
+<h2 class="anchored" data-anchor-id="decision-tree-to-bagging-to-tuning">Decision Tree to Bagging to Tuning</h2>
+<p>I’m going to show you four different approaches to the same classification problem. The first is a straight decision tree with <code>rpart</code>. The second is a “forest” of bagged trees. The third is a full “random forest.” And finally, we can tune the random forest approach. At each step we will look at performance on withheld testing data.</p>
+<section id="the-modeling-ladder" class="level3">
+<h3 class="anchored" data-anchor-id="the-modeling-ladder">The Modeling Ladder</h3>
+<p>We will build models of increasing complexity:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Method</th>
+<th>Idea</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Decision Tree (<code>rpart</code>)</td>
+<td>One tree fit to the data</td>
+</tr>
+<tr class="even">
+<td>Bagging</td>
+<td>Many trees trained on bootstrap samples</td>
+</tr>
+<tr class="odd">
+<td>Random Forest</td>
+<td>Bagging + random feature selection</td>
+</tr>
+<tr class="even">
+<td>Tuned Random Forest</td>
+<td>Random forest with hyperparameters optimized</td>
+</tr>
+</tbody>
+</table>
+<p>Each step generally reduces variance and improves prediction accuracy.</p>
+</section>
+<section id="fish-your-wish" class="level3">
+<h3 class="anchored" data-anchor-id="fish-your-wish">Fish Your Wish</h3>
+<p>Let’s go back to the fish data we used in the initial kNN module. Go back and take a look if you don’t remember. I’ll read the data in, filter it a bit, drop the <code>NA</code> values, and make the common name a factor.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>fish <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/fishcatch.csv"</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>fishFiltered <span class="ot">&lt;-</span> fish <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="sc">-</span>std_name, <span class="sc">-</span>sex) <span class="sc">%&gt;%</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">drop_na</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">common_name =</span> <span class="fu">factor</span>(common_name))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="train-and-test" class="level3">
+<h3 class="anchored" data-anchor-id="train-and-test">Train and Test</h3>
+<p>Because we are working with a reasonably large dataset (for our purposes), we’ll split the data for training and testing.</p>
+<p>Instead of randomly sampling rows, we use <code>createDataPartition()</code> from <code>caret</code>, which performs a stratified split. This keeps the proportion of each fish species roughly the same in both the training and testing sets.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">3</span>) <span class="co"># for reproducibility </span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>rows2test <span class="ot">&lt;-</span> <span class="fu">createDataPartition</span>(fishFiltered<span class="sc">$</span>common_name, </span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">p =</span> <span class="dv">1</span><span class="sc">/</span><span class="dv">2</span>, </span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">list =</span> <span class="cn">FALSE</span>)[,<span class="dv">1</span>]</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>testingFish  <span class="ot">&lt;-</span> fishFiltered[rows2test, ]</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>trainingFish <span class="ot">&lt;-</span> fishFiltered[<span class="sc">-</span>rows2test, ]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="straight-decision-tree" class="level3">
+<h3 class="anchored" data-anchor-id="straight-decision-tree">Straight Decision Tree</h3>
+<p>Here is the simplest version of this classification task. I’ll use <code>rpart</code> here. This is conceptually the same as using <code>C50</code> which we used in the decision tree. I want you to be aware that <code>rpart</code> is used commonly for classification as well as regression. Some of the details about how the splitting criteria are setup is different from <code>C50</code> but it’s very similar. And <code>rpart</code> plays nicely with the <code>visTree</code> function which is nice.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>rpartModel <span class="ot">&lt;-</span> <span class="fu">rpart</span>(common_name<span class="sc">~</span>.,</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>                    <span class="at">data=</span>trainingFish)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">visTree</span>(rpartModel)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div id="htmlwidget-8746836e2be25030c0ef" style="width:100%;height:600px;" class="visNetwork html-widget"></div>
+<script type="application/json" data-for="htmlwidget-8746836e2be25030c0ef">{"x":{"nodes":{"id":[1,2,4,5,3,6,7],"label":["height2length_pct","weight_g","bream","silver_bream","height2length_pct","perch","pike"],"level":[1,2,3,3,2,3,3],"color":["#F1B8C2","#B4C7ED","#7D91B6","#B98099","#F1B8C2","#9F87B5","#AC83AE"],"value":[78,22,15,7,56,41,15],"shape":["dot","dot","square","square","dot","square","square"],"title":["<div style=\"text-align:center;\">N : <b>100%<\/b> (78)<br>Complexity : <b>0.34<\/b><br>bream : <b>21.8%<\/b> (17)<br>ide : <b>3.8%<\/b> (3)<br>perch : <b>35.9%<\/b> (28)<br>pike : <b>10.3%<\/b> (8)<br>roach : <b>12.8%<\/b> (10)<br>silver_bream : <b>6.4%<\/b> (5)<br>smelt : <b>9%<\/b> (7)<\/div>","<div style=\"text-align:center;\">N : <b>28.2%<\/b> (22)<br>Complexity : <b>0.06<\/b><br>bream : <b>77.3%<\/b> (17)<br>ide : <b>0%<\/b> (0)<br>perch : <b>0%<\/b> (0)<br>pike : <b>0%<\/b> (0)<br>roach : <b>0%<\/b> (0)<br>silver_bream : <b>22.7%<\/b> (5)<br>smelt : <b>0%<\/b> (0)<hr class = \"rPartvisNetwork\">\n<div class =\"showOnMe2\"><div style=\"text-align:center;\"><U style=\"color:blue;\"  onmouseover=\"this.style.cursor='pointer';\" onmouseout=\"this.style.cursor='default';\">Rules<\/U><\/div>\n<div class=\"showMeRpartTTp2\" style=\"display:none;\">\n<b> height2length_pct <\/b> >= 33.45<\/script><script type=\"text/javascript\">$(document).ready(function(){\n$(\".showOnMe2\").click(function(){\n$(\".showMeRpartTTp2\").toggle();\n$.sparkline_display_visible();\n});\n  });<\/script><\/div><\/div>\n\n<\/div>","<div style=\"text-align:center;\">N : <b>19.2%<\/b> (15)<br>Complexity : <b>0.01<\/b><br>bream : <b>100%<\/b> (15)<br>ide : <b>0%<\/b> (0)<br>perch : <b>0%<\/b> (0)<br>pike : <b>0%<\/b> (0)<br>roach : <b>0%<\/b> (0)<br>silver_bream : <b>0%<\/b> (0)<br>smelt : <b>0%<\/b> (0)<hr class = \"rPartvisNetwork\">\n<div class =\"showOnMe2\"><div style=\"text-align:center;\"><U style=\"color:blue;\"  onmouseover=\"this.style.cursor='pointer';\" onmouseout=\"this.style.cursor='default';\">Rules<\/U><\/div>\n<div class=\"showMeRpartTTp2\" style=\"display:none;\">\n<b> height2length_pct <\/b> >= 33.45<br><b> weight_g <\/b> >= 395<\/script><script type=\"text/javascript\">$(document).ready(function(){\n$(\".showOnMe2\").click(function(){\n$(\".showMeRpartTTp2\").toggle();\n$.sparkline_display_visible();\n});\n  });<\/script><\/div><\/div>\n\n<\/div>","<div style=\"text-align:center;\">N : <b>9%<\/b> (7)<br>Complexity : <b>0.01<\/b><br>bream : <b>28.6%<\/b> (2)<br>ide : <b>0%<\/b> (0)<br>perch : <b>0%<\/b> (0)<br>pike : <b>0%<\/b> (0)<br>roach : <b>0%<\/b> (0)<br>silver_bream : <b>71.4%<\/b> (5)<br>smelt : <b>0%<\/b> (0)<hr class = \"rPartvisNetwork\">\n<div class =\"showOnMe2\"><div style=\"text-align:center;\"><U style=\"color:blue;\"  onmouseover=\"this.style.cursor='pointer';\" onmouseout=\"this.style.cursor='default';\">Rules<\/U><\/div>\n<div class=\"showMeRpartTTp2\" style=\"display:none;\">\n<b> height2length_pct <\/b> >= 33.45<br><b> weight_g <\/b> < 395<\/script><script type=\"text/javascript\">$(document).ready(function(){\n$(\".showOnMe2\").click(function(){\n$(\".showMeRpartTTp2\").toggle();\n$.sparkline_display_visible();\n});\n  });<\/script><\/div><\/div>\n\n<\/div>","<div style=\"text-align:center;\">N : <b>71.8%<\/b> (56)<br>Complexity : <b>0.16<\/b><br>bream : <b>0%<\/b> (0)<br>ide : <b>5.4%<\/b> (3)<br>perch : <b>50%<\/b> (28)<br>pike : <b>14.3%<\/b> (8)<br>roach : <b>17.9%<\/b> (10)<br>silver_bream : <b>0%<\/b> (0)<br>smelt : <b>12.5%<\/b> (7)<hr class = \"rPartvisNetwork\">\n<div class =\"showOnMe2\"><div style=\"text-align:center;\"><U style=\"color:blue;\"  onmouseover=\"this.style.cursor='pointer';\" onmouseout=\"this.style.cursor='default';\">Rules<\/U><\/div>\n<div class=\"showMeRpartTTp2\" style=\"display:none;\">\n<b> height2length_pct <\/b> < 33.45<\/script><script type=\"text/javascript\">$(document).ready(function(){\n$(\".showOnMe2\").click(function(){\n$(\".showMeRpartTTp2\").toggle();\n$.sparkline_display_visible();\n});\n  });<\/script><\/div><\/div>\n\n<\/div>","<div style=\"text-align:center;\">N : <b>52.6%<\/b> (41)<br>Complexity : <b>0<\/b><br>bream : <b>0%<\/b> (0)<br>ide : <b>7.3%<\/b> (3)<br>perch : <b>68.3%<\/b> (28)<br>pike : <b>0%<\/b> (0)<br>roach : <b>24.4%<\/b> (10)<br>silver_bream : <b>0%<\/b> (0)<br>smelt : <b>0%<\/b> (0)<hr class = \"rPartvisNetwork\">\n<div class =\"showOnMe2\"><div style=\"text-align:center;\"><U style=\"color:blue;\"  onmouseover=\"this.style.cursor='pointer';\" onmouseout=\"this.style.cursor='default';\">Rules<\/U><\/div>\n<div class=\"showMeRpartTTp2\" style=\"display:none;\">\n<b>  <\/b> 21.45 <= <b>height2length_pct<\/b> < 33.45<\/script><script type=\"text/javascript\">$(document).ready(function(){\n$(\".showOnMe2\").click(function(){\n$(\".showMeRpartTTp2\").toggle();\n$.sparkline_display_visible();\n});\n  });<\/script><\/div><\/div>\n\n<\/div>","<div style=\"text-align:center;\">N : <b>19.2%<\/b> (15)<br>Complexity : <b>0.01<\/b><br>bream : <b>0%<\/b> (0)<br>ide : <b>0%<\/b> (0)<br>perch : <b>0%<\/b> (0)<br>pike : <b>53.3%<\/b> (8)<br>roach : <b>0%<\/b> (0)<br>silver_bream : <b>0%<\/b> (0)<br>smelt : <b>46.7%<\/b> (7)<hr class = \"rPartvisNetwork\">\n<div class =\"showOnMe2\"><div style=\"text-align:center;\"><U style=\"color:blue;\"  onmouseover=\"this.style.cursor='pointer';\" onmouseout=\"this.style.cursor='default';\">Rules<\/U><\/div>\n<div class=\"showMeRpartTTp2\" style=\"display:none;\">\n<b> height2length_pct <\/b> < 21.45<\/script><script type=\"text/javascript\">$(document).ready(function(){\n$(\".showOnMe2\").click(function(){\n$(\".showMeRpartTTp2\").toggle();\n$.sparkline_display_visible();\n});\n  });<\/script><\/div><\/div>\n\n<\/div>"],"fixed":[true,true,true,true,true,true,true],"colorClust":["#9F87B5","#7D91B6","#7D91B6","#B98099","#9F87B5","#9F87B5","#AC83AE"],"labelClust":["perch","bream","bream","silver_bream","perch","perch","pike"],"Leaf":[0,0,1,1,0,1,1],"font.size":[16,16,16,16,16,16,16],"scaling.min":[22.5,22.5,22.5,22.5,22.5,22.5,22.5],"scaling.max":[22.5,22.5,22.5,22.5,22.5,22.5,22.5]},"edges":{"id":["edge1","edge2","edge3","edge4","edge5","edge6"],"from":[1,2,2,1,3,3],"to":[2,4,5,3,6,7],"label":[">= 33.45",">= 395","< 395","< 33.45",">= 21.45","< 21.45"],"value":[22,15,7,56,41,15],"title":["<div style=\"text-align:center;\"><b>height2length_pct<\/b><\/div><div style=\"text-align:center;\">>=33.45<\/div>","<div style=\"text-align:center;\"><b>weight_g<\/b><\/div><div style=\"text-align:center;\">>=395<\/div>","<div style=\"text-align:center;\"><b>weight_g<\/b><\/div><div style=\"text-align:center;\"><395<\/div>","<div style=\"text-align:center;\"><b>height2length_pct<\/b><\/div><div style=\"text-align:center;\"><33.45<\/div>","<div style=\"text-align:center;\"><b>height2length_pct<\/b><\/div><div style=\"text-align:center;\">>=21.45<\/div>","<div style=\"text-align:center;\"><b>height2length_pct<\/b><\/div><div style=\"text-align:center;\"><21.45<\/div>"],"color":["#8181F7","#8181F7","#8181F7","#8181F7","#8181F7","#8181F7"],"font.size":[14,14,14,14,14,14],"font.align":["horizontal","horizontal","horizontal","horizontal","horizontal","horizontal"],"smooth.enabled":[true,true,true,true,true,true],"smooth.type":["cubicBezier","cubicBezier","cubicBezier","cubicBezier","cubicBezier","cubicBezier"],"smooth.roundness":[0.5,0.5,0.5,0.5,0.5,0.5]},"nodesToDataframe":true,"edgesToDataframe":true,"options":{"width":"100%","height":"100%","nodes":{"shape":"dot"},"manipulation":{"enabled":false},"layout":{"hierarchical":{"enabled":true,"direction":"UD"}},"interaction":{"dragNodes":false,"selectConnectedEdges":false,"tooltipDelay":500,"zoomSpeed":1},"edges":{"scaling":{"label":{"enabled":false}}}},"groups":null,"width":"100%","height":"600px","idselection":{"enabled":false,"style":"width: 150px; height: 26px","useLabels":true,"main":"Select by id"},"byselection":{"enabled":false,"style":"width: 150px; height: 26px","multiple":false,"hideColor":"rgba(200,200,200,0.5)","highlight":false},"main":{"text":"","style":"font-family:Georgia, Times New Roman, Times, serif;font-weight:bold;font-size:20px;text-align:center;"},"submain":{"text":"","style":"font-family:Georgia, Times New Roman, Times, serif;font-size:12px;text-align:center;"},"footer":{"text":"","style":"font-family:Georgia, Times New Roman, Times, serif;font-size:12px;text-align:center;"},"background":"rgba(0, 0, 0, 0)","highlight":{"enabled":true,"hoverNearest":false,"degree":{"from":50000,"to":0},"algorithm":"hierarchical","hideColor":"rgba(200,200,200,0.5)","labelOnly":true},"collapse":{"enabled":true,"fit":true,"resetHighlight":true,"clusterOptions":{"fixed":true,"physics":false},"keepCoord":true,"labelSuffix":"(cluster)"},"tooltipStay":300,"tooltipStyle":"position: fixed;visibility:hidden;padding: 5px;\n                      white-space: nowrap;\n                      font-family: cursive;font-size:12px;font-color:purple;background-color: #E6E6E6;\n                      border-radius: 15px;","OnceEvents":{"stabilized":"function() { \n        this.setOptions({layout:{hierarchical:false}, physics:{solver:'barnesHut', enabled:true, stabilization : false}, nodes : {physics : false, fixed : true}});\n    }"},"legend":{"width":0.1,"useGroups":false,"position":"left","ncol":1,"stepX":100,"stepY":100,"zoom":true,"nodes":{"label":["height2length_pct","weight_g","bream","ide","perch","pike","roach","silver_bream","smelt"],"color":["#F1B8C2","#B4C7ED","#7D91B6","#8F8CB7","#9F87B5","#AC83AE","#B481A5","#B98099","#B9828C"],"shape":["dot","dot","square","square","square","square","square","square","square"],"size":[22,22,22,22,22,22,22,22,22],"Leaf":[0,0,1,1,1,1,1,1,1],"font.size":[16,16,16,16,16,16,16,16,16],"id":[10000,10001,10002,10003,10004,10005,10006,10007,10008]},"nodesToDataframe":true},"tree":{"updateShape":true,"shapeVar":"dot","shapeY":"square","colorVar":{"variable":["height2length_pct","weight_g"],"color":["#F1B8C2","#B4C7ED"]},"colorY":{"colorY":{"modality":["bream","ide","perch","pike","roach","silver_bream","smelt"],"color":["#7D91B6","#8F8CB7","#9F87B5","#AC83AE","#B481A5","#B98099","#B9828C"]},"vardecidedClust":["perch","bream","bream","silver_bream","perch","perch","pike"]}},"export":{"type":"png","css":"float:right;-webkit-border-radius: 10;\n                  -moz-border-radius: 10;\n                  border-radius: 10px;\n                  font-family: Arial;\n                  color: #ffffff;\n                  font-size: 12px;\n                  background: #090a0a;\n                  padding: 4px 8px 4px 4px;\n                  text-decoration: none;","background":"#fff","name":"network.png","label":"Export as png"}},"evals":["OnceEvents.stabilized"],"jsHooks":[]}</script>
+</div>
+</div>
+<p>One of the things to beware of is that this is the last graphical tree you’ll see as we move forward. Because we are going to on to forests of trees, there is no easy visualization with other methods. Instead we interpret via performance metrics like accuarcy and kappa.</p>
+<p>And here is the confusion matrix on the testing data.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>obs <span class="ot">&lt;-</span> testingFish<span class="sc">$</span>common_name</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(rpartModel,testingFish, <span class="at">type =</span> <span class="st">"class"</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>rpartCM <span class="ot">&lt;-</span> <span class="fu">confusionMatrix</span>(<span class="at">data =</span> pred, <span class="at">reference =</span> obs)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>rpartCM</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Confusion Matrix and Statistics
+
+              Reference
+Prediction     bream ide perch pike roach silver_bream smelt
+  bream           14   0     0    0     0            0     0
+  ide              0   0     0    0     0            0     0
+  perch            0   3    27    0    10            0     0
+  pike             0   0     1    9     0            0     7
+  roach            0   0     0    0     0            0     0
+  silver_bream     3   0     0    0     0            6     0
+  smelt            0   0     0    0     0            0     0
+
+Overall Statistics
+                                          
+               Accuracy : 0.7             
+                 95% CI : (0.5872, 0.7974)
+    No Information Rate : 0.35            
+    P-Value [Acc &gt; NIR] : 1.984e-10       
+                                          
+                  Kappa : 0.6029          
+                                          
+ Mcnemar's Test P-Value : NA              
+
+Statistics by Class:
+
+                     Class: bream Class: ide Class: perch Class: pike
+Sensitivity                0.8235     0.0000       0.9643      1.0000
+Specificity                1.0000     1.0000       0.7500      0.8873
+Pos Pred Value             1.0000        NaN       0.6750      0.5294
+Neg Pred Value             0.9545     0.9625       0.9750      1.0000
+Prevalence                 0.2125     0.0375       0.3500      0.1125
+Detection Rate             0.1750     0.0000       0.3375      0.1125
+Detection Prevalence       0.1750     0.0000       0.5000      0.2125
+Balanced Accuracy          0.9118     0.5000       0.8571      0.9437
+                     Class: roach Class: silver_bream Class: smelt
+Sensitivity                 0.000              1.0000       0.0000
+Specificity                 1.000              0.9595       1.0000
+Pos Pred Value                NaN              0.6667          NaN
+Neg Pred Value              0.875              1.0000       0.9125
+Prevalence                  0.125              0.0750       0.0875
+Detection Rate              0.000              0.0750       0.0000
+Detection Prevalence        0.000              0.1125       0.0000
+Balanced Accuracy           0.500              0.9797       0.5000</code></pre>
+</div>
+</div>
+</section>
+<section id="bagging" class="level3">
+<h3 class="anchored" data-anchor-id="bagging">Bagging</h3>
+<p>Bagging stands for Bootstrap Aggregating.</p>
+<p>The algorithm works like this:</p>
+<ol type="1">
+<li>Draw a bootstrap sample from the training data.</li>
+<li>Train a decision tree on that sample.</li>
+<li>Repeat this many times (often hundreds).</li>
+<li>Combine predictions across trees.</li>
+</ol>
+<p>Because each tree sees a slightly different dataset, the trees differ from each other. When we aggregate their predictions, random noise tends to cancel out.</p>
+<p>The result is usually lower variance and better predictive performance than a single tree.</p>
+<p>Now we will do a bootstrap aggregate of the same classification task with the <code>bagging</code> function. We will use 100 separate bootstrap replications (so 100 different trees).</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>baggedModel <span class="ot">&lt;-</span> <span class="fu">bagging</span>(common_name<span class="sc">~</span>., </span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>                       <span class="at">data=</span>trainingFish,</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>                       <span class="at">nbagg =</span> <span class="dv">100</span>,</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>                       <span class="at">coob =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>baggedModel</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Bagging classification trees with 100 bootstrap replications 
+
+Call: bagging.data.frame(formula = common_name ~ ., data = trainingFish, 
+    nbagg = 100, coob = TRUE)
+
+Out-of-bag estimate of misclassification error:  0.2564 </code></pre>
+</div>
+</div>
+<p>And the confusion matrix on the testing data. Same testing and training split, right?</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(baggedModel,testingFish)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>baggedCM <span class="ot">&lt;-</span> <span class="fu">confusionMatrix</span>(<span class="at">data =</span> pred, <span class="at">reference =</span> obs)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>baggedCM</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Confusion Matrix and Statistics
+
+              Reference
+Prediction     bream ide perch pike roach silver_bream smelt
+  bream           17   0     0    0     0            0     0
+  ide              0   1     1    0     0            0     0
+  perch            0   2    23    0     3            0     0
+  pike             0   0     0    9     0            0     0
+  roach            0   0     3    0     7            0     0
+  silver_bream     0   0     0    0     0            6     0
+  smelt            0   0     1    0     0            0     7
+
+Overall Statistics
+                                          
+               Accuracy : 0.875           
+                 95% CI : (0.7821, 0.9384)
+    No Information Rate : 0.35            
+    P-Value [Acc &gt; NIR] : &lt; 2.2e-16       
+                                          
+                  Kappa : 0.8415          
+                                          
+ Mcnemar's Test P-Value : NA              
+
+Statistics by Class:
+
+                     Class: bream Class: ide Class: perch Class: pike
+Sensitivity                1.0000     0.3333       0.8214      1.0000
+Specificity                1.0000     0.9870       0.9038      1.0000
+Pos Pred Value             1.0000     0.5000       0.8214      1.0000
+Neg Pred Value             1.0000     0.9744       0.9038      1.0000
+Prevalence                 0.2125     0.0375       0.3500      0.1125
+Detection Rate             0.2125     0.0125       0.2875      0.1125
+Detection Prevalence       0.2125     0.0250       0.3500      0.1125
+Balanced Accuracy          1.0000     0.6602       0.8626      1.0000
+                     Class: roach Class: silver_bream Class: smelt
+Sensitivity                0.7000               1.000       1.0000
+Specificity                0.9571               1.000       0.9863
+Pos Pred Value             0.7000               1.000       0.8750
+Neg Pred Value             0.9571               1.000       1.0000
+Prevalence                 0.1250               0.075       0.0875
+Detection Rate             0.0875               0.075       0.0875
+Detection Prevalence       0.1250               0.075       0.1000
+Balanced Accuracy          0.8286               1.000       0.9932</code></pre>
+</div>
+</div>
+<section id="reminder-why-is-bootstrapping-ok" class="level4">
+<h4 class="anchored" data-anchor-id="reminder-why-is-bootstrapping-ok">Reminder: Why is bootstrapping OK?</h4>
+<p>You might sometimes feel like bootstrapping is cheating. We are repeatedly sampling from the same dataset, so it can feel like we are just reusing the same information.</p>
+<p>The important idea is that our dataset is not the population. It is only a sample from a much larger population of possible observations.</p>
+<p>Bootstrapping treats the observed dataset as the best available approximation of that population. By sampling from it with replacement, we create many slightly different datasets that mimic the variability we might see if we repeatedly sampled from the real population.</p>
+<p>Each bootstrap dataset contains: - some observations multiple times - some observations not at all</p>
+<p>Those small differences are enough to produce slightly different models.</p>
+<p>Bagging takes advantage of this. Instead of trusting one model trained on one dataset, we train many models on many bootstrap versions of the data and combine their predictions.</p>
+<p>The goal is not to create new information. The goal is to expose how sensitive the model is to small changes in the data and stabilize the predictions by averaging across many models.</p>
+</section>
+</section>
+<section id="random-forest-aka-randomforest-aka-rf" class="level3">
+<h3 class="anchored" data-anchor-id="random-forest-aka-randomforest-aka-rf">Random Forest (aka randomForest, aka rF)</h3>
+<p>And now we will pull in the big algorithm. The <code>randomForest</code> approach is pretty ubiquitous in ML now. Make sure to read this section in the text and <a href="https://www.youtube.com/watch?v=J4Wdy0Wc_xQ&amp;ab_channel=StatQuestwithJoshStarmer">watch the StatQuest guy explain it all</a>.</p>
+<p>Random forests build on bagging but add an additional layer of randomness.</p>
+<p>In bagging: - every tree can consider all predictor variables when choosing a split.</p>
+<p>In random forests: - each split only considers a random subset of predictors.</p>
+<p>Why do this?</p>
+<p>If one predictor is very strong, bagged trees will tend to split on it first every time. This makes the trees highly correlated.</p>
+<p>Random forests force trees to explore different predictors, making the trees less correlated, which improves the ensemble when we average them.</p>
+<section id="bagging-vs-random-forest" class="level4">
+<h4 class="anchored" data-anchor-id="bagging-vs-random-forest">Bagging vs Random Forest?</h4>
+<p>Both methods train many trees on bootstrap samples. In bagging, every split can consider all predictors. In a random forest, each split considers only a random subset of predictors (mtry). This reduces correlation among trees and usually improves prediction. Or a simple way I think about it is that bagging uses different rows from the data and random forest uses different rows and different columns.</p>
+<p>Let’s grow a random forest of 100 trees.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>rfModel <span class="ot">&lt;-</span> <span class="fu">randomForest</span>(common_name<span class="sc">~</span>.,</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>                        <span class="at">ntree =</span> <span class="dv">100</span>,</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>                        <span class="at">data=</span>trainingFish)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>rfModel</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+ randomForest(formula = common_name ~ ., data = trainingFish,      ntree = 100) 
+               Type of random forest: classification
+                     Number of trees: 100
+No. of variables tried at each split: 2
+
+        OOB estimate of  error rate: 32.05%
+Confusion matrix:
+             bream ide perch pike roach silver_bream smelt class.error
+bream           16   0     0    0     0            1     0  0.05882353
+ide              0   0     3    0     0            0     0  1.00000000
+perch            0   1    18    0     7            0     2  0.35714286
+pike             0   0     0    8     0            0     0  0.00000000
+roach            0   0     9    0     1            0     0  0.90000000
+silver_bream     1   0     0    0     0            4     0  0.20000000
+smelt            0   0     1    0     0            0     6  0.14285714</code></pre>
+</div>
+</div>
+<p>And the confusion matrix on the testing data.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(rfModel,testingFish)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>rfCM <span class="ot">&lt;-</span> <span class="fu">confusionMatrix</span>(<span class="at">data =</span> pred, <span class="at">reference =</span> obs)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>rfCM</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Confusion Matrix and Statistics
+
+              Reference
+Prediction     bream ide perch pike roach silver_bream smelt
+  bream           17   0     0    0     0            0     0
+  ide              0   1     0    0     0            0     0
+  perch            0   2    24    0     2            0     0
+  pike             0   0     0    9     0            0     0
+  roach            0   0     4    0     8            0     0
+  silver_bream     0   0     0    0     0            6     0
+  smelt            0   0     0    0     0            0     7
+
+Overall Statistics
+                                          
+               Accuracy : 0.9             
+                 95% CI : (0.8124, 0.9558)
+    No Information Rate : 0.35            
+    P-Value [Acc &gt; NIR] : &lt; 2.2e-16       
+                                          
+                  Kappa : 0.873           
+                                          
+ Mcnemar's Test P-Value : NA              
+
+Statistics by Class:
+
+                     Class: bream Class: ide Class: perch Class: pike
+Sensitivity                1.0000     0.3333       0.8571      1.0000
+Specificity                1.0000     1.0000       0.9231      1.0000
+Pos Pred Value             1.0000     1.0000       0.8571      1.0000
+Neg Pred Value             1.0000     0.9747       0.9231      1.0000
+Prevalence                 0.2125     0.0375       0.3500      0.1125
+Detection Rate             0.2125     0.0125       0.3000      0.1125
+Detection Prevalence       0.2125     0.0125       0.3500      0.1125
+Balanced Accuracy          1.0000     0.6667       0.8901      1.0000
+                     Class: roach Class: silver_bream Class: smelt
+Sensitivity                0.8000               1.000       1.0000
+Specificity                0.9429               1.000       1.0000
+Pos Pred Value             0.6667               1.000       1.0000
+Neg Pred Value             0.9706               1.000       1.0000
+Prevalence                 0.1250               0.075       0.0875
+Detection Rate             0.1000               0.075       0.0875
+Detection Prevalence       0.1500               0.075       0.0875
+Balanced Accuracy          0.8714               1.000       1.0000</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="a-tuned-random-forest" class="level3">
+<h3 class="anchored" data-anchor-id="a-tuned-random-forest">A Tuned Random Forest</h3>
+<p>The main tuning parameter in a random forest is <code>mtry</code>, the number of predictors randomly considered at each split.</p>
+<p>Small values increase tree diversity but may weaken individual trees. Larger values make trees more similar.</p>
+<p>Cross-validation helps find a good balance.</p>
+<p>So let’s try to tune this model.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>cvScheme <span class="ot">&lt;-</span> <span class="fu">trainControl</span>(<span class="at">method =</span> <span class="st">"repeatedcv"</span>,</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>                         <span class="at">number=</span><span class="dv">5</span>,<span class="at">repeats =</span> <span class="dv">20</span>)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>rfTuningGrid <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">mtry =</span> <span class="dv">2</span><span class="sc">:</span><span class="dv">6</span>)</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>rfTuned <span class="ot">&lt;-</span> <span class="fu">train</span>(common_name<span class="sc">~</span>.,</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>                 <span class="at">data=</span>trainingFish,</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>                 <span class="at">method=</span><span class="st">"rf"</span>,</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>                 <span class="at">trControl =</span> cvScheme,</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>                 <span class="at">tuneGrid =</span> rfTuningGrid)</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>rfTuned</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Random Forest 
+
+78 samples
+ 8 predictor
+ 7 classes: 'bream', 'ide', 'perch', 'pike', 'roach', 'silver_bream', 'smelt' 
+
+No pre-processing
+Resampling: Cross-Validated (5 fold, repeated 20 times) 
+Summary of sample sizes: 64, 60, 62, 63, 63, 62, ... 
+Resampling results across tuning parameters:
+
+  mtry  Accuracy   Kappa    
+  2     0.7317534  0.6487901
+  3     0.7386554  0.6596274
+  4     0.7428917  0.6650762
+  5     0.7485912  0.6722428
+  6     0.7552825  0.6816600
+
+Accuracy was used to select the optimal model using the largest value.
+The final value used for the model was mtry = 6.</code></pre>
+</div>
+</div>
+<p>And the confusion matrix on the testing data.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(rfTuned,testingFish)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>rfTunedCM <span class="ot">&lt;-</span> <span class="fu">confusionMatrix</span>(<span class="at">data =</span> pred, <span class="at">reference =</span> obs)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>rfTunedCM</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Confusion Matrix and Statistics
+
+              Reference
+Prediction     bream ide perch pike roach silver_bream smelt
+  bream           17   0     0    0     0            0     0
+  ide              0   1     0    0     0            0     0
+  perch            0   2    25    0     2            0     0
+  pike             0   0     0    9     0            0     0
+  roach            0   0     3    0     8            0     0
+  silver_bream     0   0     0    0     0            6     0
+  smelt            0   0     0    0     0            0     7
+
+Overall Statistics
+                                         
+               Accuracy : 0.9125         
+                 95% CI : (0.828, 0.9641)
+    No Information Rate : 0.35           
+    P-Value [Acc &gt; NIR] : &lt; 2.2e-16      
+                                         
+                  Kappa : 0.8884         
+                                         
+ Mcnemar's Test P-Value : NA             
+
+Statistics by Class:
+
+                     Class: bream Class: ide Class: perch Class: pike
+Sensitivity                1.0000     0.3333       0.8929      1.0000
+Specificity                1.0000     1.0000       0.9231      1.0000
+Pos Pred Value             1.0000     1.0000       0.8621      1.0000
+Neg Pred Value             1.0000     0.9747       0.9412      1.0000
+Prevalence                 0.2125     0.0375       0.3500      0.1125
+Detection Rate             0.2125     0.0125       0.3125      0.1125
+Detection Prevalence       0.2125     0.0125       0.3625      0.1125
+Balanced Accuracy          1.0000     0.6667       0.9080      1.0000
+                     Class: roach Class: silver_bream Class: smelt
+Sensitivity                0.8000               1.000       1.0000
+Specificity                0.9571               1.000       1.0000
+Pos Pred Value             0.7273               1.000       1.0000
+Neg Pred Value             0.9710               1.000       1.0000
+Prevalence                 0.1250               0.075       0.0875
+Detection Rate             0.1000               0.075       0.0875
+Detection Prevalence       0.1375               0.075       0.0875
+Balanced Accuracy          0.8786               1.000       1.0000</code></pre>
+</div>
+</div>
+</section>
+<section id="skill" class="level3">
+<h3 class="anchored" data-anchor-id="skill">Skill</h3>
+<p>While there is lots and lots of information in each of the confusion matrices, here is what most folks think is the bottom line for classification skill.</p>
+<p>We will focus on two summary metrics:</p>
+<ul>
+<li><strong>Accuracy</strong> – proportion of correct predictions</li>
+<li><strong>Kappa</strong> – improvement over random guessing</li>
+</ul>
+<p>Higher values indicate better classification performance.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rbind</span>(<span class="at">rpart=</span>rpartCM<span class="sc">$</span>overall[<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>],</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>      <span class="at">bagging=</span>baggedCM<span class="sc">$</span>overall[<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>],</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>      <span class="at">randomForest =</span> rfCM<span class="sc">$</span>overall[<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>],</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>      <span class="at">tunedRandomForest =</span> rfTunedCM<span class="sc">$</span>overall[<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>                  Accuracy     Kappa
+rpart               0.7000 0.6028956
+bagging             0.8750 0.8415214
+randomForest        0.9000 0.8729655
+tunedRandomForest   0.9125 0.8884462</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="takeaway" class="level2">
+<h2 class="anchored" data-anchor-id="takeaway">Takeaway</h2>
+<p>Decision trees are easy to understand but often unstable.</p>
+<p>Bagging stabilizes trees by averaging across many bootstrap samples.</p>
+<p>Random forests go one step further by forcing trees to explore different predictors, producing a strong and reliable ensemble.</p>
+</section>
+<section id="but-where-is-the-tree" class="level2">
+<h2 class="anchored" data-anchor-id="but-where-is-the-tree">But where is the tree?</h2>
+<p>If you trained a single decision tree earlier in the course, you could draw it.<br>
+There was one model and it had a visible structure.</p>
+<p>Bagging and random forests are different.</p>
+<p>Instead of fitting one tree, these methods fit many trees. Often hundreds.</p>
+<p>Each tree is trained on: - a bootstrap sample of the rows, and - (for random forests) a random subset of predictors when choosing splits.</p>
+<p>We can look at variable importance with something like <code>varImp(rfTuned)</code> to get an idea of what the critical drivers are but forests are much more opaque than individual trees in terms of inference.</p>
+<section id="how-can-they-predict-new-data" class="level3">
+<h3 class="anchored" data-anchor-id="how-can-they-predict-new-data">How can they predict new data?</h3>
+<p>You might notice something odd: each tree only sees a bootstrap sample of the training data. Some observations are left out. So how can the model make predictions for new data?</p>
+<p>The important thing to understand is that a decision tree does not memorize rows. It just learns rules about predictor values.</p>
+<p>For example a tree might learn rules like:</p>
+<pre><code>if length &lt; 25 → perch
+if length ≥ 25 and height &lt; 12 → roach
+if length ≥ 25 and height ≥ 12 → bream</code></pre>
+<p>Those rules apply to any observation with those predictor values, whether or not that observation appeared in the bootstrap sample.</p>
+<p>So when we make a prediction for a new data point:</p>
+<ol type="1">
+<li>The observation is sent down every tree in the ensemble.</li>
+<li>Each tree produces a prediction.</li>
+<li>The predictions are combined.</li>
+</ol>
+<p>For classification: - trees vote, and the majority class wins.</p>
+<p>For regression: - predictions are averaged.</p>
+</section>
+<section id="which-trees-are-used" class="level3">
+<h3 class="anchored" data-anchor-id="which-trees-are-used">Which trees are used?</h3>
+<p>All of them.</p>
+<p>If the model contains 500 trees, the new observation is run through all 500 trees, and their predictions are aggregated.</p>
+<p>The individual trees are usually noisy and not very interesting on their own. The strength of bagging and random forests comes from the combined prediction of many trees.</p>
+</section>
+</section>
+<section id="your-work" class="level2">
+<h2 class="anchored" data-anchor-id="your-work">Your Work</h2>
+<p>Let’s assume that you are hip to the general idea of how <code>rpart</code> is doing its classification. Remember it works like the C5.0 algorithm with some differences in how many samples are required for a split. But it’s essentially the same as C5.0.</p>
+<p>For each bullet below write a paragraph, or so, explaining to your peer reviewer:</p>
+<ul>
+<li><p>How <code>bagging</code> differs from the straight <code>rpart</code> approach,</p></li>
+<li><p>How <code>randomForest</code> differs from <code>bagging</code> and,</p></li>
+<li><p>How the <code>caret</code> approach using <code>train</code> differs from <code>randomForest</code>.</p></li>
+</ul>
+<p>Next, try something nutty: Go find a model we have never used. Start by looking <a href="https://topepo.github.io/caret/models-clustered-by-tag-similarity.html">here</a>. Pick either a classification or a dual-use model (can be used for classification or regression) and run it on the fish data.</p>
+<p>For instance here is a “Model Averaged Neural Network” without paying any attention to the tuning or cross validation.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>avNNetModel <span class="ot">&lt;-</span> <span class="fu">train</span>(common_name<span class="sc">~</span>.,<span class="at">data=</span>trainingFish,</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>                     <span class="at">method=</span><span class="st">"avNNet"</span>,</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>                     <span class="at">preProcess =</span> <span class="st">"range"</span>, <span class="co"># recall that NN need preprocessing!</span></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>                     <span class="at">trace =</span> <span class="cn">FALSE</span>) <span class="co"># makes it quiet</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>avNNetModel</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Model Averaged Neural Network 
+
+78 samples
+ 8 predictor
+ 7 classes: 'bream', 'ide', 'perch', 'pike', 'roach', 'silver_bream', 'smelt' 
+
+Pre-processing: re-scaling to [0, 1] (8) 
+Resampling: Bootstrapped (25 reps) 
+Summary of sample sizes: 78, 78, 78, 78, 78, 78, ... 
+Resampling results across tuning parameters:
+
+  size  decay  Accuracy   Kappa    
+  1     0e+00  0.5190170  0.3002396
+  1     1e-04  0.5791789  0.4176441
+  1     1e-01  0.5441244  0.3391690
+  3     0e+00  0.5294712  0.3540930
+  3     1e-04  0.6654848  0.5386148
+  3     1e-01  0.7180472  0.6040233
+  5     0e+00  0.4761047  0.2772846
+  5     1e-04  0.6817720  0.5561172
+  5     1e-01  0.7415262  0.6396381
+
+Tuning parameter 'bag' was held constant at a value of FALSE
+Accuracy was used to select the optimal model using the largest value.
+The final values used for the model were size = 5, decay = 0.1 and bag = FALSE.</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(avNNetModel,testingFish)</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>avNNetCM <span class="ot">&lt;-</span> <span class="fu">confusionMatrix</span>(<span class="at">data =</span> pred, <span class="at">reference =</span> obs)</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>avNNetCM</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Confusion Matrix and Statistics
+
+              Reference
+Prediction     bream ide perch pike roach silver_bream smelt
+  bream           17   0     0    0     0            6     0
+  ide              0   0     0    0     0            0     0
+  perch            0   3    28    0    10            0     0
+  pike             0   0     0    9     0            0     0
+  roach            0   0     0    0     0            0     0
+  silver_bream     0   0     0    0     0            0     0
+  smelt            0   0     0    0     0            0     7
+
+Overall Statistics
+                                          
+               Accuracy : 0.7625          
+                 95% CI : (0.6542, 0.8505)
+    No Information Rate : 0.35            
+    P-Value [Acc &gt; NIR] : 5.955e-14       
+                                          
+                  Kappa : 0.6787          
+                                          
+ Mcnemar's Test P-Value : NA              
+
+Statistics by Class:
+
+                     Class: bream Class: ide Class: perch Class: pike
+Sensitivity                1.0000     0.0000       1.0000      1.0000
+Specificity                0.9048     1.0000       0.7500      1.0000
+Pos Pred Value             0.7391        NaN       0.6829      1.0000
+Neg Pred Value             1.0000     0.9625       1.0000      1.0000
+Prevalence                 0.2125     0.0375       0.3500      0.1125
+Detection Rate             0.2125     0.0000       0.3500      0.1125
+Detection Prevalence       0.2875     0.0000       0.5125      0.1125
+Balanced Accuracy          0.9524     0.5000       0.8750      1.0000
+                     Class: roach Class: silver_bream Class: smelt
+Sensitivity                 0.000               0.000       1.0000
+Specificity                 1.000               1.000       1.0000
+Pos Pred Value                NaN                 NaN       1.0000
+Neg Pred Value              0.875               0.925       1.0000
+Prevalence                  0.125               0.075       0.0875
+Detection Rate              0.000               0.000       0.0875
+Detection Prevalence        0.000               0.000       0.0875
+Balanced Accuracy           0.500               0.500       1.0000</code></pre>
+</div>
+</div>
+<p>Skill is meh.</p>
+<p>What if we wanted to tune it? We can see what parameters are available via <code>modelLookup("avNNet")</code></p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">modelLookup</span>(<span class="st">"avNNet"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>   model parameter         label forReg forClass probModel
+1 avNNet      size #Hidden Units   TRUE     TRUE      TRUE
+2 avNNet     decay  Weight Decay   TRUE     TRUE      TRUE
+3 avNNet       bag       Bagging   TRUE     TRUE      TRUE</code></pre>
+</div>
+</div>
+<p>This tells us that there are three tweaks we can make to try to improve performance: <code>size</code>, <code>decay</code>, and <code>bag</code>. What are reasonable values for those? I have no idea! But looking at the help for <code>avNNet</code> tells us that it calls <code>nnet</code>. By looking at those I was able to make an initial stab at figuring it out. I’m still not sure if these are in the right range for this algorithm frankly but it’s a start. Oh and I’ll cross validate it too.</p>
+<p>Warning. This will take awhile to run.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>avNNetTuningGrid <span class="ot">&lt;-</span> <span class="fu">expand.grid</span>(<span class="at">bag =</span> <span class="fu">c</span>(<span class="cn">TRUE</span>,<span class="cn">FALSE</span>),</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>                                <span class="at">decay =</span> <span class="fu">seq</span>(<span class="dv">0</span>,<span class="fl">0.01</span>,<span class="at">by=</span><span class="fl">0.005</span>),</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>                                <span class="at">size =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">3</span>,<span class="dv">5</span>,<span class="dv">10</span>,<span class="dv">20</span>))</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>avNNetModelTuned <span class="ot">&lt;-</span> <span class="fu">train</span>(common_name<span class="sc">~</span>.,<span class="at">data=</span>trainingFish,</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>                     <span class="at">method=</span><span class="st">"avNNet"</span>,</span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>                     <span class="at">preProcess =</span> <span class="st">"range"</span>,</span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>                     <span class="at">trControl =</span> cvScheme,</span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>                     <span class="at">tuneGrid =</span> avNNetTuningGrid,</span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>                     <span class="at">trace =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a>avNNetModelTuned</span>
+<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a>pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(avNNetModelTuned,testingFish)</span>
+<span id="cb28-14"><a href="#cb28-14" aria-hidden="true" tabindex="-1"></a>avNNetTunedCM <span class="ot">&lt;-</span> <span class="fu">confusionMatrix</span>(<span class="at">data =</span> pred, <span class="at">reference =</span> obs)</span>
+<span id="cb28-15"><a href="#cb28-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-16"><a href="#cb28-16" aria-hidden="true" tabindex="-1"></a>avNNetTunedCM</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p>This worked well on the testing data.</p>
+<p>What monstrous algorithm did you unleash on the data? A kNN variant? A SVM? Neural network? Multivariate Adaptive Regression Spline? Model Tree? Radial Basis Function? Self-Organizing Map? Did it work well on the testing data? Do you have any idea what it does? How did you tune it?</p>
+</section>
+<section id="postscript-boosting-and-stacking" class="level2">
+<h2 class="anchored" data-anchor-id="postscript-boosting-and-stacking">Postscript: Boosting and Stacking</h2>
+<section id="boosting" class="level3">
+<h3 class="anchored" data-anchor-id="boosting">Boosting</h3>
+<p>I’ve given you a lot above! But I’d be remiss if I didn’t crack the door open for boosting which is a very common technique.</p>
+<p>Bagging and random forests build many independent trees and combine their predictions.</p>
+<p>Boosting takes a different approach.</p>
+<p>Instead of training trees independently, boosting builds trees sequentially. Each new tree focuses on correcting the errors made by the previous trees.</p>
+<p>The idea is simple:</p>
+<ol type="1">
+<li>Fit a small tree to the data.</li>
+<li>Identify where that tree makes mistakes.</li>
+<li>Fit another tree that focuses on those mistakes.</li>
+<li>Repeat many times.</li>
+</ol>
+<p>The final prediction combines the contribution of all trees.</p>
+<section id="a-helpful-way-to-think-about-boosting" class="level4">
+<h4 class="anchored" data-anchor-id="a-helpful-way-to-think-about-boosting">A helpful way to think about boosting</h4>
+<p>Bagging and random forests rely on the wisdom of crowds. Many independent trees vote.</p>
+<p>Boosting is more like an iterative improvement process. Each tree tries to fix the remaining errors.</p>
+</section>
+<section id="weak-learners" class="level4">
+<h4 class="anchored" data-anchor-id="weak-learners">Weak learners</h4>
+<p>Boosting typically uses very small trees, sometimes called <em>weak learners</em>. These trees might be:</p>
+<ul>
+<li>shallow</li>
+<li>simple</li>
+<li>not very accurate on their own</li>
+</ul>
+<p>But when hundreds of them are added together, the combined model can become very powerful.</p>
+</section>
+<section id="how-predictions-work" class="level4">
+<h4 class="anchored" data-anchor-id="how-predictions-work">How predictions work</h4>
+<p>Even though trees are built sequentially, predictions still use all trees in the model.</p>
+<p>For regression: - predictions are added together across trees.</p>
+<p>For classification: - trees contribute weighted votes that are combined into a final prediction.</p>
+</section>
+<section id="the-key-difference-from-bagging-and-random-forests" class="level4">
+<h4 class="anchored" data-anchor-id="the-key-difference-from-bagging-and-random-forests">The key difference from bagging and random forests</h4>
+<p>Bagging and random forests: - trees are built independently - trees reduce variance</p>
+<p>Boosting: - trees are built sequentially - trees reduce bias by correcting errors</p>
+<p>Because of this, boosting models can often outperform random forests, but they are usually more sensitive to tuning.</p>
+<p>Here is an untuned boosting attempt.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>gbmCaret <span class="ot">&lt;-</span> <span class="fu">train</span>(common_name<span class="sc">~</span>.,</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>                  <span class="at">data=</span>trainingFish,</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>                  <span class="at">method=</span><span class="st">"gbm"</span>,</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>                  <span class="at">trControl =</span> cvScheme,</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>                  <span class="at">verbose =</span> <span class="cn">FALSE</span>) <span class="co"># makes it quiet</span></span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>gbmCaret</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Stochastic Gradient Boosting 
+
+78 samples
+ 8 predictor
+ 7 classes: 'bream', 'ide', 'perch', 'pike', 'roach', 'silver_bream', 'smelt' 
+
+No pre-processing
+Resampling: Cross-Validated (5 fold, repeated 20 times) 
+Summary of sample sizes: 61, 62, 62, 65, 62, 63, ... 
+Resampling results across tuning parameters:
+
+  interaction.depth  n.trees  Accuracy   Kappa    
+  1                   50      0.7664745  0.6965524
+  1                  100      0.7532854  0.6801043
+  1                  150      0.7421058  0.6658439
+  2                   50      0.7692778  0.7006079
+  2                  100      0.7548527  0.6826783
+  2                  150      0.7394383  0.6637660
+  3                   50      0.7708838  0.7025738
+  3                  100      0.7517874  0.6782875
+  3                  150      0.7411605  0.6655430
+
+Tuning parameter 'shrinkage' was held constant at a value of 0.1
+
+Tuning parameter 'n.minobsinnode' was held constant at a value of 10
+Accuracy was used to select the optimal model using the largest value.
+The final values used for the model were n.trees = 50, interaction.depth =
+ 3, shrinkage = 0.1 and n.minobsinnode = 10.</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(gbmCaret,testingFish)</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>gbmCaretCM <span class="ot">&lt;-</span> <span class="fu">confusionMatrix</span>(<span class="at">data =</span> pred, <span class="at">reference =</span> obs)</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>gbmCaretCM</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Confusion Matrix and Statistics
+
+              Reference
+Prediction     bream ide perch pike roach silver_bream smelt
+  bream           17   0     0    0     0            0     0
+  ide              0   0     0    0     0            0     0
+  perch            0   3    23    1     3            0     0
+  pike             0   0     0    8     0            0     0
+  roach            0   0     4    0     7            0     0
+  silver_bream     0   0     0    0     0            6     0
+  smelt            0   0     1    0     0            0     7
+
+Overall Statistics
+                                        
+               Accuracy : 0.85          
+                 95% CI : (0.7526, 0.92)
+    No Information Rate : 0.35          
+    P-Value [Acc &gt; NIR] : &lt; 2.2e-16     
+                                        
+                  Kappa : 0.8079        
+                                        
+ Mcnemar's Test P-Value : NA            
+
+Statistics by Class:
+
+                     Class: bream Class: ide Class: perch Class: pike
+Sensitivity                1.0000     0.0000       0.8214      0.8889
+Specificity                1.0000     1.0000       0.8654      1.0000
+Pos Pred Value             1.0000        NaN       0.7667      1.0000
+Neg Pred Value             1.0000     0.9625       0.9000      0.9861
+Prevalence                 0.2125     0.0375       0.3500      0.1125
+Detection Rate             0.2125     0.0000       0.2875      0.1000
+Detection Prevalence       0.2125     0.0000       0.3750      0.1000
+Balanced Accuracy          1.0000     0.5000       0.8434      0.9444
+                     Class: roach Class: silver_bream Class: smelt
+Sensitivity                0.7000               1.000       1.0000
+Specificity                0.9429               1.000       0.9863
+Pos Pred Value             0.6364               1.000       0.8750
+Neg Pred Value             0.9565               1.000       1.0000
+Prevalence                 0.1250               0.075       0.0875
+Detection Rate             0.0875               0.075       0.0875
+Detection Prevalence       0.1375               0.075       0.1000
+Balanced Accuracy          0.8214               1.000       0.9932</code></pre>
+</div>
+</div>
+<p>To tune this you can look fire up <code>modelLookup("gbm")</code> and then build a tuning grid. Note that this code will take awhile to run.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>gbmTuningGrid <span class="ot">&lt;-</span> <span class="fu">expand.grid</span>(</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">n.trees =</span> <span class="fu">c</span>(<span class="dv">300</span>, <span class="dv">600</span>, <span class="dv">1000</span>),</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">interaction.depth =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>),</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">shrinkage =</span> <span class="fu">c</span>(<span class="fl">0.025</span>, <span class="fl">0.05</span>, <span class="fl">0.1</span>),</span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">n.minobsinnode =</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">10</span>)</span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>gbmCaretTuned <span class="ot">&lt;-</span> <span class="fu">train</span>(common_name<span class="sc">~</span>.,</span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>                  <span class="at">data=</span>trainingFish,</span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a>                  <span class="at">method=</span><span class="st">"gbm"</span>,</span>
+<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a>                  <span class="at">trControl =</span> cvScheme, </span>
+<span id="cb33-12"><a href="#cb33-12" aria-hidden="true" tabindex="-1"></a>                  <span class="at">tuneGrid =</span> gbmTuningGrid,</span>
+<span id="cb33-13"><a href="#cb33-13" aria-hidden="true" tabindex="-1"></a>                  <span class="at">verbose =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb33-14"><a href="#cb33-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-15"><a href="#cb33-15" aria-hidden="true" tabindex="-1"></a>gbmCaretTuned</span>
+<span id="cb33-16"><a href="#cb33-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-17"><a href="#cb33-17" aria-hidden="true" tabindex="-1"></a>pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(gbmCaretTuned,testingFish)</span>
+<span id="cb33-18"><a href="#cb33-18" aria-hidden="true" tabindex="-1"></a>gbmCaretTunedCM <span class="ot">&lt;-</span> <span class="fu">confusionMatrix</span>(<span class="at">data =</span> pred, <span class="at">reference =</span> obs)</span>
+<span id="cb33-19"><a href="#cb33-19" aria-hidden="true" tabindex="-1"></a>gbmCaretTunedCM</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+</section>
+</section>
+<section id="stacking-briefly" class="level2">
+<h2 class="anchored" data-anchor-id="stacking-briefly">Stacking (briefly)</h2>
+<p>Bagging, random forests, and boosting combine many versions of the same kind of model (trees) in different ways.</p>
+<p>Stacking is different: it combines different model types.</p>
+<p>The idea:</p>
+<ol type="1">
+<li>Train several base models (for example: a random forest, a boosted tree model, and a k-nearest neighbors model).</li>
+<li>Use cross-validation to generate out-of-sample predictions from each base model.</li>
+<li>Train a meta-model that learns how to combine those predictions into a final prediction.</li>
+</ol>
+<p>So the meta-model is not learning from the original predictors directly. It is learning from the predictions of other models.</p>
+<p>Two important cautions:</p>
+<ul>
+<li>Stacking only makes sense if the base models make different kinds of mistakes. If they all fail on the same observations, stacking won’t help.</li>
+<li>You have to generate meta-model training data using out-of-sample predictions (typically from cross-validation), otherwise stacking can overfit badly.</li>
+</ul>
+<p>We are not doing stacking in this module, but it is a common approach in machine learning competitions and in applied work when you want to squeeze out a bit more predictive performance.</p>
+
+
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list" style="display: none">
+<div id="ref-R-visNetwork" class="csl-entry" role="listitem">
+Almende B.V. and Contributors, and Benoit Thieurmel. 2025. <em>visNetwork: Network Visualization Using Vis.js Library</em>. <a href="https://datastorm-open.github.io/visNetwork/">https://datastorm-open.github.io/visNetwork/</a>.
+</div>
+<div id="ref-R-randomForest" class="csl-entry" role="listitem">
+Breiman, Leo, Adele Cutler, Andy Liaw, and Matthew Wiener. 2024. <em>randomForest: Breiman and Cutlers Random Forests for Classification and Regression</em>. <a href="https://www.stat.berkeley.edu/~breiman/RandomForests/">https://www.stat.berkeley.edu/~breiman/RandomForests/</a>.
+</div>
+<div id="ref-R-caret" class="csl-entry" role="listitem">
+Kuhn, Max. 2024. <em>Caret: Classification and Regression Training</em>. <a href="https://github.com/topepo/caret/">https://github.com/topepo/caret/</a>.
+</div>
+<div id="ref-R-ipred" class="csl-entry" role="listitem">
+Peters, Andrea, and Torsten Hothorn. 2024. <em>Ipred: Improved Predictors</em>. <a href="https://doi.org/10.32614/CRAN.package.ipred">https://doi.org/10.32614/CRAN.package.ipred</a>.
+</div>
+<div id="ref-R-gbm" class="csl-entry" role="listitem">
+Ridgeway, Greg, and GBM Developers. 2026. <em>Gbm: Generalized Boosted Regression Models</em>. <a href="https://github.com/gbm-developers/gbm">https://github.com/gbm-developers/gbm</a>.
+</div>
+<div id="ref-R-rpart" class="csl-entry" role="listitem">
+Therneau, Terry, and Beth Atkinson. 2025. <em>Rpart: Recursive Partitioning and Regression Trees</em>. <a href="https://github.com/bethatkinson/rpart">https://github.com/bethatkinson/rpart</a>.
+</div>
+<div id="ref-R-tidyverse" class="csl-entry" role="listitem">
+Wickham, Hadley. 2023. <em>Tidyverse: Easily Install and Load the Tidyverse</em>. <a href="https://tidyverse.tidyverse.org">https://tidyverse.tidyverse.org</a>.
+</div>
+</div>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./07xAsideAnimateNeuralNet.html" class="pagination-link" aria-label="Aside: Animate a NN">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Aside: Animate a NN</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./09iveJustSeenAFace.html" class="pagination-link" aria-label="Eigen Faces">
+        <span class="nav-page-text"><span class="chapter-title">Eigen Faces</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/AndyBunn/machineLearningNotes/edit/main/08InTheBag.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/AndyBunn/machineLearningNotes/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>
