@@ -36,8 +36,8 @@ reference-location: document
 
 format:
   html:
-    theme: cosmo
-    css: custom.css
+    theme: flatly
+    css: style.css
     code-fold: show
     toc: true
     toc-depth: 3

@@ -1,0 +1,379 @@
+/* ============================================================
+   style.css — ML for Environmental Science (ESCI 506)
+   Forest/earth palette to match the cover page.
+   Philosophy: readable first, branded second.
+   Targets: Quarto book with theme: cosmo
+   ============================================================ */
+
+/* ── Google Fonts (only what's actually used) ─────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Source+Code+Pro:wght@400;600&display=swap');
+
+/* ── Palette tokens + Bootstrap variable overrides ────────── */
+:root {
+  --bg:          #faf8f4;      /* warm off-white page */
+  --surface:     #f3f0ea;      /* subtle card / code bg */
+  --border:      #ddd8cc;      /* muted rule color */
+  --text:        #1e2419;      /* near-black, warm */
+  --text-muted:  #5a6850;      /* secondary prose */
+  --accent:      #8a6018;      /* amber/gold — primary accent */
+  --accent-soft: #c8922a;      /* lighter amber for hovers */
+  --sage:        #4a7a50;      /* sage green — secondary accent */
+  --sage-light:  #d4e8d0;      /* very pale sage for highlights */
+  --code-bg:     #f0ede6;      /* warm parchment for code blocks */
+  --code-text:   #2a3a20;      /* dark forest text in code */
+  --inline-bg:   #ede9e0;      /* inline code background */
+  --inline-text: #6b4010;      /* inline code text — warm brown */
+
+  /* Kill Bootstrap/flatly teal & cyan — replace with our palette */
+  --bs-link-color:           #4a7a50;
+  --bs-link-hover-color:     #c8922a;
+  --bs-link-color-rgb:       74, 122, 80;
+  --bs-link-hover-color-rgb: 200, 146, 42;
+  --bs-primary:              #8a6018;
+  --bs-primary-rgb:          138, 96, 24;
+}
+
+/* ── Base page ────────────────────────────────────────────── */
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  line-height: 1.75;
+}
+
+/* Main content column */
+.page-columns .column-body,
+#quarto-content main {
+  background-color: var(--bg);
+}
+
+/* ── Headings ─────────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.25;
+  margin-top: 2em;
+  margin-bottom: 0.5em;
+}
+
+h1 { font-size: 2.1em; }
+h2 { font-size: 1.55em; }
+h3 { font-size: 1.25em; }
+h4 { font-size: 1.05em; font-style: italic; }
+
+/* Thin rule under h2 */
+h2 {
+  padding-bottom: 0.35em;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Section numbers */
+.header-section-number {
+  color: var(--accent);
+  margin-right: 0.35em;
+  font-weight: 400;
+  font-style: italic;
+}
+
+/* ── Links ────────────────────────────────────────────────── */
+a {
+  color: var(--sage);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: color 0.18s, border-color 0.18s;
+}
+a:hover {
+  color: var(--accent-soft);
+  border-bottom-color: var(--accent-soft);
+  text-decoration: none;
+}
+
+/* ── Inline code ──────────────────────────────────────────── */
+code {
+  font-family: 'Source Code Pro', 'Menlo', monospace;
+  font-size: 0.875em;
+  background: var(--inline-bg);
+  color: var(--inline-text);
+  padding: 0.13em 0.4em;
+  border-radius: 3px;
+}
+
+/* ── Code blocks ──────────────────────────────────────────── */
+/* Quarto wraps highlighted blocks in div.sourceCode > pre.sourceCode */
+div.sourceCode {
+  background: var(--code-bg);
+  border: none;
+  border-left: 3px solid var(--accent);
+  border-radius: 4px;
+  margin: 1.4em 0;
+}
+
+div.sourceCode pre.sourceCode {
+  background: transparent;
+  border: none;
+  margin: 0;
+  padding: 1.1em 1.3em;
+  overflow-x: auto;
+  line-height: 1.6;
+}
+
+div.sourceCode pre.sourceCode code {
+  background: transparent;
+  color: var(--code-text);
+  padding: 0;
+  font-size: 0.855em;
+  border-radius: 0;
+}
+
+/* Non-highlighted pre (output blocks) */
+pre:not(.sourceCode) {
+  background: #e8e4da;
+  border-left: 3px solid var(--border);
+  border-radius: 4px;
+  padding: 1em 1.3em;
+  margin: 0.5em 0 1.4em;
+  overflow-x: auto;
+  line-height: 1.6;
+  color: var(--text-muted);
+  font-size: 0.855em;
+  font-family: 'Source Code Pro', monospace;
+}
+
+/* Code fold button */
+.code-fold-btn {
+  color: var(--accent) !important;
+  font-family: 'Source Code Pro', monospace;
+  font-size: 0.78em;
+  letter-spacing: 0.05em;
+}
+
+/* ── Figures & captions ───────────────────────────────────── */
+img {
+  border-radius: 3px;
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+.figure, figure {
+  margin: 1.8em auto;
+  text-align: center;
+}
+
+.caption, figcaption, p.caption {
+  font-size: 0.82em;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-top: 0.5em;
+  text-align: center;
+}
+
+/* ── Blockquotes ──────────────────────────────────────────── */
+blockquote {
+  border-left: 3px solid var(--sage);
+  background: var(--sage-light);
+  margin: 1.5em 0;
+  padding: 0.8em 1.2em;
+  border-radius: 0 4px 4px 0;
+  color: var(--text);
+}
+
+blockquote p { margin: 0; }
+
+/* ── Callout blocks (Quarto native) ───────────────────────── */
+.callout {
+  border-radius: 4px;
+  border-left-width: 3px;
+  margin: 1.5em 0;
+}
+
+.callout-note     { border-left-color: var(--sage); }
+.callout-tip      { border-left-color: #6aaa6e; }
+.callout-warning  { border-left-color: var(--accent-soft); }
+.callout-important { border-left-color: #a05010; }
+
+/* ── Tables ───────────────────────────────────────────────── */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92em;
+  margin: 1.5em 0;
+}
+
+thead {
+  background: var(--surface);
+  border-bottom: 2px solid var(--accent);
+}
+
+th {
+  font-family: 'Source Code Pro', monospace;
+  font-size: 0.8em;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  padding: 0.6em 0.9em;
+  text-align: left;
+}
+
+td {
+  padding: 0.55em 0.9em;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--sage-light); }
+
+/* ── Horizontal rules ─────────────────────────────────────── */
+hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2.5em 0;
+}
+
+/* ── Quarto sidebar (left TOC) ────────────────────────────── */
+#quarto-sidebar {
+  background: #f3f0e8;
+  border-right: 1px solid var(--border);
+}
+
+#quarto-sidebar .sidebar-title {
+  color: var(--text);
+  font-family: 'Playfair Display', serif;
+  font-size: 0.95em;
+  font-style: italic;
+  padding: 1em 1em 0.5em;
+}
+
+#quarto-sidebar .sidebar-item-text,
+#quarto-sidebar .sidebar-section-item {
+  color: var(--text-muted);
+  font-size: 0.85em;
+  line-height: 1.45;
+}
+
+#quarto-sidebar a {
+  color: var(--text-muted);
+  border-bottom: none;
+}
+
+#quarto-sidebar a:hover {
+  color: var(--accent-soft);
+  border-bottom: none;
+}
+
+#quarto-sidebar .active > a,
+#quarto-sidebar .sidebar-item.active .sidebar-item-text {
+  color: var(--accent) !important;
+  background: rgba(138, 96, 24, 0.07);
+  border-left: 2px solid var(--accent);
+  font-weight: 600;
+}
+
+/* ── Quarto navbar ────────────────────────────────────────── */
+.navbar {
+  background-color: #0e1a12 !important;
+  border-bottom: 1px solid #1e2a18;
+}
+
+.navbar .navbar-brand,
+.navbar .navbar-brand:hover {
+  color: #d4d8c8 !important;
+  font-family: 'Source Code Pro', monospace;
+  font-size: 0.88em;
+  letter-spacing: 0.07em;
+}
+
+.navbar-nav .nav-link {
+  color: #8aaa78 !important;
+  font-family: 'Source Code Pro', monospace;
+  font-size: 0.82em;
+}
+
+.navbar-nav .nav-link:hover {
+  color: #e8b84b !important;
+}
+
+/* ── Page-level TOC (right margin) ───────────────────────── */
+#quarto-margin-sidebar nav a,
+#quarto-margin-sidebar .nav-link {
+  color: var(--text-muted) !important;
+  font-size: 0.82em;
+  border-bottom: none;
+  text-decoration: none;
+}
+
+#quarto-margin-sidebar nav a:hover,
+#quarto-margin-sidebar .nav-link:hover {
+  color: var(--accent-soft) !important;
+}
+
+/* Active TOC item — override flatly's cyan aggressively */
+#quarto-margin-sidebar .toc-active > a,
+#quarto-margin-sidebar .nav-link.active,
+#quarto-margin-sidebar .nav-link.active:focus,
+#quarto-margin-sidebar li.active > a {
+  color: var(--accent) !important;
+  font-weight: 600;
+  border-left: 2px solid var(--accent);
+  padding-left: 0.5em;
+  background: transparent !important;
+}
+
+/* ── Prev/Next navigation ─────────────────────────────────── */
+.page-navigation .nav-page a {
+  font-family: 'Source Code Pro', monospace;
+  font-size: 0.82em;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+  border-bottom: none;
+  opacity: 0.75;
+  transition: opacity 0.18s;
+}
+
+.page-navigation .nav-page a:hover {
+  opacity: 1;
+  color: var(--accent-soft);
+}
+
+/* ── Math ─────────────────────────────────────────────────── */
+.MathJax_Display,
+mjx-container[display="true"] {
+  overflow-x: auto;
+  padding: 0.2em 0;
+}
+
+/* ── Footnotes ────────────────────────────────────────────── */
+section.footnotes {
+  font-size: 0.85em;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+  padding-top: 1em;
+  margin-top: 2em;
+}
+
+/* ── Bibliography ─────────────────────────────────────────── */
+div.csl-entry {
+  font-size: 0.88em;
+  color: var(--text-muted);
+  padding: 0.3em 0;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ── Scrollbar (Webkit) ───────────────────────────────────── */
+::-webkit-scrollbar { width: 7px; height: 7px; }
+::-webkit-scrollbar-track { background: #f0ede6; }
+::-webkit-scrollbar-thumb { background: #b0a888; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* ── Print ────────────────────────────────────────────────── */
+@media print {
+  body { background: #fff; color: #000; font-size: 12pt; }
+  div.sourceCode,
+  pre { background: #f5f5f5 !important; color: #000 !important;
+        border-left: 2px solid #888; }
+  #quarto-sidebar,
+  .navbar,
+  .page-navigation { display: none; }
+}
